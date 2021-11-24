@@ -1,0 +1,94 @@
+diff --git a/.cargo/config b/.cargo/config
+index 3b5b6e4..b08ce29 100644
+--- a/.cargo/config
++++ b/.cargo/config
+@@ -1,5 +1,5 @@
+ [source]
+-[source.debian-packages]
+-directory = "/usr/share/cargo/registry"
++[source.vendor]
++directory = "vendor"
+ [source.crates-io]
+-replace-with = "debian-packages"
++replace-with = "vendor"
+diff --git a/Cargo.toml b/Cargo.toml
+index ffd72b2..f808e7e 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,5 +1,5 @@
+ [package]
+-name = "termproxy"
++name = "pve-xtermjs"
+ version = "4.12.0"
+ authors = [
+     "Dominik Csapak <d.csapak@proxmox.com>",
+@@ -14,4 +14,5 @@ exclude = [ "build", "debian" ]
+ mio = { version = "0.7", features = [ "net", "os-ext" ] }
+ curl = "0.4"
+ clap = "2.33"
+-proxmox = { version = "0.10.0", default-features = false }
++#proxmox = { version = "0.10.0", default-features = false }
++proxmox = { path = "../proxmox/proxmox", default-features = false }
+diff --git a/Makefile b/Makefile
+index 0cabc7d..18891c9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -35,6 +35,14 @@ $(SUBDIRS):
+ cargo-build:
+ 	cargo build $(CARGO_BUILD_ARGS)
+ 
++.PHONY: cargo-vendor
++cargo-vendor:
++	cargo vendor
++	rm -f vendor/endian_trait/rust-toolchain
++	rm -f vendor/endian_trait_derive/rust-toolchain
++	sed -i "s#\"rust-toolchain[^,]\+,##"  vendor/endian_trait/.cargo-checksum.json
++	sed -i "s#\"rust-toolchain[^,]\+,##"  vendor/endian_trait_derive/.cargo-checksum.json
++
+ .PHONY: build
+ build:
+ 	rm -rf build
+@@ -53,9 +61,10 @@ build:
+ 
+ .PHONY: deb
+ deb: ${DEB}
+-$(DEB): build
+-	cd build; dpkg-buildpackage -b -uc -us --no-pre-clean
+-	lintian ${DEB}
++$(DEB): cargo-vendor
++	echo "git clone git://git.proxmox.com/git/pve-xtermjs.git\\ngit checkout ${GITVERSION}" > debian/SOURCE
++	DEB_CARGO_PACKAGE=$(PACKAGE) dpkg-buildpackage -b -uc -us --no-pre-clean
++	lintian ../${DEB}
+ 	@echo ${DEB}
+ 
+ .PHONY: dsc
+diff --git a/debian/cargo-checksum.json b/debian/cargo-checksum.json
+new file mode 100644
+index 0000000..e69de29
+diff --git a/debian/compat b/debian/compat
+new file mode 100644
+index 0000000..f599e28
+--- /dev/null
++++ b/debian/compat
+@@ -0,0 +1 @@
++10
+diff --git a/debian/control b/debian/control
+index d9612f8..29df636 100644
+--- a/debian/control
++++ b/debian/control
+@@ -3,15 +3,6 @@ Section: admin
+ Priority: optional
+ Build-Depends: debhelper (>= 12),
+  dh-cargo (>= 24),
+- cargo:native,
+- rustc:native,
+- libstd-rust-dev,
+- librust-clap-2+default-dev (>= 2.33-~~),
+- librust-curl-0.4+default-dev,
+- librust-mio-0.7+default-dev,
+- librust-mio-0.7+net-dev,
+- librust-mio-0.7+os-ext-dev,
+- librust-proxmox-0.10-dev
+ Maintainer: Proxmox Support Team <support@proxmox.com>
+ Standards-Version: 4.5.1
+ Vcs-Git: git://git.proxmox.com/git/pve-xtermjs.git

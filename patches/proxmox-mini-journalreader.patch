@@ -1,0 +1,18 @@
+diff --git a/src/mini-journalreader.c b/src/mini-journalreader.c
+index 92176ac..2e0cfa9 100644
+--- a/src/mini-journalreader.c
++++ b/src/mini-journalreader.c
+@@ -214,10 +214,12 @@ int main(int argc, char *argv[]) {
+     uint64_t begin = 0;
+     uint64_t end = 0;
+     char c;
++    int opt = 0;
+ 
+     progname = argv[0];
+ 
+-    while ((c = (char)getopt (argc, argv, "b:e:d:n:f:t:h")) != -1) {
++    while ((opt = getopt (argc, argv, "b:e:d:n:f:t:h")) != -1) {
++	c = (char) opt;
+         switch (c) {
+             case 'b':
+                 begin = arg_to_uint64(optarg);
