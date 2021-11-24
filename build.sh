@@ -63,8 +63,8 @@ else
 	echo "libproxmox-acme-perl up-to-date"
 fi
 
-PROXMOX_WIDGETTOOLKIT_VERSION="3.4-1"
-PROXMOX_WIDGETTOOLKIT_GIT="ceff5d3fc037d18c01a3c36acabc8c5713279f3d"
+PROXMOX_WIDGETTOOLKIT_VERSION="3.4-4"
+PROXMOX_WIDGETTOOLKIT_GIT="ca867fb10dc048ef8a85f36e8ef5b602276f8bfb"
 
 if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMOX_WIDGETTOOLKIT_VERSION}; then
 	if [ ! -d proxmox-widget-toolkit ]; then
@@ -76,6 +76,7 @@ if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMO
 	git checkout ${PROXMOX_WIDGETTOOLKIT_GIT}
 	${SUDO} apt -y build-dep .
 	make deb || exit 0
+	cp -a proxmox-widget-toolkit-dev_${PROXMOX_WIDGETTOOLKIT_VERSION}_all.deb ../packages
 	${SUDO} apt -y install ./proxmox-widget-toolkit-dev_${PROXMOX_WIDGETTOOLKIT_VERSION}_all.deb
 	cd ..
 else
