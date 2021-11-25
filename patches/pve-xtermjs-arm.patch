@@ -15,13 +15,6 @@ diff --git a/Cargo.toml b/Cargo.toml
 index ffd72b2..f808e7e 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -1,5 +1,5 @@
- [package]
--name = "termproxy"
-+name = "pve-xtermjs"
- version = "4.12.0"
- authors = [
-     "Dominik Csapak <d.csapak@proxmox.com>",
 @@ -14,4 +14,5 @@ exclude = [ "build", "debian" ]
  mio = { version = "0.7", features = [ "net", "os-ext" ] }
  curl = "0.4"
