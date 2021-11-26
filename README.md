@@ -6,7 +6,7 @@ Script for building Proxmox Backup Server for Armbian64
  apt-get -y install \
 	build-essential curl sudo git lintian \
 	pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev \
-	libnetaddr-ip-perl
+	libnetaddr-ip-perl libpam0g-dev libcurl4-openssl-dev
 ```
 ## Install ``rustup``
 ```
