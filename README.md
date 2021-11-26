@@ -10,8 +10,8 @@ Script for building Proxmox Backup Server for Armbian64
 ```
 ## Install ``rustup``
 ```
-curl -sSf https://sh.rustup.rs -sSf | sh -s
-source .cargo/env
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s
+source ~/.cargo/env
 ```
 
 ## Start build script
