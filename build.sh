@@ -30,7 +30,16 @@ function git_clean_and_checkout() {
 
 SUDO="sudo"
 
-[ ! -d packages ] && mkdir packages
+SCRIPT=$(realpath "${0}")
+BASE=$(dirname "${SCRIPT}")
+PACKAGES="${BASE}/packages"
+PATCHES="${BASE}/patches"
+SOURCES="${BASE}/sources"
+
+[ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
+[ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
+
+cd "${SOURCES}"
 
 PVE_ESLINT_VER="7.28.0-1"
 PVE_ESLINT_GIT="ef0a5638b025ec9b9e3aa4df61a5b3b6bd471439"
@@ -68,7 +77,7 @@ if ! dpkg-query -W -f='${Version}' libproxmox-acme-perl | grep -q ${PROXMOX_ACME
 	git_clean_and_checkout ${PROXMOX_ACME_GIT}
 	#${SUDO} apt -y build-dep .  # don't install build-dep, because it will remove libpve-common-perl
 	make deb || exit 0
-	cp -a libproxmox-acme-plugins_${PROXMOX_ACME_VER}_all.deb ../packages/
+	cp -a libproxmox-acme-plugins_${PROXMOX_ACME_VER}_all.deb "${PACKAGES}"
 	${SUDO} apt -y --fix-broken install ./libproxmox-acme-perl_${PROXMOX_ACME_VER}_all.deb ./libproxmox-acme-plugins_${PROXMOX_ACME_VER}_all.deb
 	cd ..
 else
@@ -85,7 +94,7 @@ if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMO
 	make deb || exit 0
 	cp -a proxmox-widget-toolkit_${PROXMOX_WIDGETTOOLKIT_VER}_all.deb \
 		proxmox-widget-toolkit-dev_${PROXMOX_WIDGETTOOLKIT_VER}_all.deb \
-		../packages/
+		"${PACKAGES}"
 	${SUDO} apt -y install ./proxmox-widget-toolkit-dev_${PROXMOX_WIDGETTOOLKIT_VER}_all.deb
 	cd ..
 else
@@ -101,7 +110,7 @@ PROMXOX_FUSE_GIT="0e0966af8886c176d8decfe18cb7ead4db5a83a6"
 PROXMOX_GIT="c0312f3717bd00ace434929e7d3305b058f4aae9"
 PROXMOX_OPENID_GIT="d6e7e2599f5190d38dfab58426ebd0ce6a55dd1e"
 PXAR_GIT="b203d38bcd399f852f898d24403f3d592e5f75f8"
-if [ ! -e packages/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb ]; then
+if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
@@ -119,8 +128,8 @@ if [ ! -e packages/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb ]; then
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
-	patch -p1 -d proxmox-backup/ < patches/proxmox-backup-arm.patch
-	patch -p1 -d proxmox-backup/ < patches/proxmox-backup-compile.patch
+	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
+	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-compile.patch"
 	cd proxmox-backup/
 	cargo vendor || exit 0
 	${SUDO} apt -y build-dep .
@@ -130,7 +139,7 @@ if [ ! -e packages/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb ]; then
 		proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
 		proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_arm64.deb \
 		proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_arm64.deb \
-		packages/
+		"${PACKAGES}"
 else
 	echo "proxmox-backup up-to-date"
 fi
@@ -138,31 +147,31 @@ fi
 PVE_XTERMJS_VER="4.12.0-1"
 PVE_XTERMJS_GIT="3b087ebf80621a39e2977cad327056ff4b425efe"
 PROXMOX_XTERMJS_GIT="d3636d45d973e79a05a89c7e7e3d0fec73f6e067"
-if [ ! -e packages/pve-xtermjs_${PVE_XTERMJS_VER}_arm64.deb ]; then
+if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_arm64.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
-	patch -p1 -d pve-xtermjs/ < patches/pve-xtermjs-arm.patch
+	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
 	cd pve-xtermjs/
 	${SUDO} apt -y build-dep .
 	make deb || exit 0
 	cd ..
-	cp -a pve-xtermjs{,-dbgsym}_${PVE_XTERMJS_VER}_arm64.deb packages/
+	cp -a pve-xtermjs{,-dbgsym}_${PVE_XTERMJS_VER}_arm64.deb "${PACKAGES}"
 else
 	echo "pve-xtermjs up-to-date"
 fi
 
 PROXMOX_JOURNALREADER_VER="1.2-1"
 PROXMOX_JOURNALREADER_GIT="5ce05d16f63b5bddc0ffffa7070c490763eeda22"
-if [ ! -e packages/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_arm64.deb ]; then
+if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_arm64.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-mini-journalreader.git
 	git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
-	patch -p1 -d proxmox-mini-journalreader/ < patches/proxmox-mini-journalreader.patch
+	patch -p1 -d proxmox-mini-journalreader/ < ${PATCHES}/proxmox-mini-journalreader.patch
 	cd proxmox-mini-journalreader/
 	${SUDO} apt -y build-dep .
 	make deb || exit 0
-	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_arm64.deb ../packages/
+	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_arm64.deb "${PACKAGES}"
 	cd ..
 else
 	echo "proxmox-mini-journalreader up-to-date"
@@ -171,13 +180,13 @@ fi
 
 PBS_I18N_VER="2.6-2"
 PBS_I18N_GIT="bc0fe9172658e0a203480834275472f120501148"
-if [ ! -e packages/pbs-i18n_${PBS_I18N_VER}_all.deb ]; then
+if [ ! -e "${PACKAGES}/pbs-i18n_${PBS_I18N_VER}_all.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-i18n.git
 	git_clean_and_checkout ${PBS_I18N_GIT} proxmox-i18n
 	cd proxmox-i18n/
 	${SUDO} apt -y build-dep .
 	make deb || exit 0
-	cp -a pbs-i18n_${PBS_I18N_VER}_all.deb ../packages/
+	cp -a pbs-i18n_${PBS_I18N_VER}_all.deb "${PACKAGES}"
 	cd ..
 else
 	echo "pbs-i18n up-to-date"
@@ -185,13 +194,13 @@ fi
 
 EXTJS_VER="7.0.0-1"
 EXTJS_GIT="58b59e2e04ae5cc29a12c10350db15cceb556277"
-if [ ! -e packages/libjs-extjs_${EXTJS_VER}_all.deb ]; then
+if [ ! -e "${PACKAGES}/libjs-extjs_${EXTJS_VER}_all.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/extjs.git
 	git_clean_and_checkout ${EXTJS_GIT} extjs
 	cd extjs/
 	${SUDO} apt -y build-dep .
 	make deb || exit 0
-	cp -a libjs-extjs_${EXTJS_VER}_all.deb ../packages/
+	cp -a libjs-extjs_${EXTJS_VER}_all.deb "${PACKAGES}"
 	cd ..
 else
 	echo "libjs-extjs up-to-date"
@@ -199,13 +208,13 @@ fi
 
 QRCODEJS_VER="1.20201119-pve1"
 QRCODEJS_GIT="1cc4649f55853d7d890aa444a7a58a8466f10493"
-if [ ! -e packages/libjs-qrcodejs_${QRCODEJS_VER}_all.deb ]; then
+if [ ! -e "${PACKAGES}/libjs-qrcodejs_${QRCODEJS_VER}_all.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/libjs-qrcodejs.git
 	git_clean_and_checkout ${QRCODEJS_GIT} libjs-qrcodejs
 	cd libjs-qrcodejs/
 	${SUDO} apt -y build-dep .
 	make deb || exit 0
-	cp -a libjs-qrcodejs_${QRCODEJS_VER}_all.deb ../packages/
+	cp -a libjs-qrcodejs_${QRCODEJS_VER}_all.deb "${PACKAGES}"
 	cd ..
 else
 	echo "libjs-qrcodejs up-to-date"
