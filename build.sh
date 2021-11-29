@@ -133,7 +133,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 	cd proxmox-backup/
 	cargo vendor || exit 0
 	${SUDO} apt -y build-dep .
-	dpkg-buildpackage -b -us -uc --no-pre-clean || exit 0
+	dpkg-buildpackage -b -us -uc || exit 0
 	cd ..
 	cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_arm64.deb \
 		proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
