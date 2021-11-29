@@ -15,13 +15,14 @@ diff --git a/Cargo.toml b/Cargo.toml
 index ffd72b2..f808e7e 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -14,4 +14,5 @@ exclude = [ "build", "debian" ]
+@@ -14,4 +14,6 @@ exclude = [ "build", "debian" ]
  mio = { version = "0.7", features = [ "net", "os-ext" ] }
  curl = "0.4"
  clap = "2.33"
 -proxmox = { version = "0.10.0", default-features = false }
 +#proxmox = { version = "0.10.0", default-features = false }
 +proxmox = { path = "../proxmox/proxmox", default-features = false }
++anyhow = "<=1.0.48"
 diff --git a/Makefile b/Makefile
 index 0cabc7d..18891c9 100644
 --- a/Makefile

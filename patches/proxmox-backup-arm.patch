@@ -25,9 +25,18 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index eed8f8f9..0169a1ed 100644
+index eed8f8f9..d06c2a61 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
+@@ -51,7 +51,7 @@ crc32fast = "1"
+ endian_trait = { version = "0.6", features = ["arrays"] }
+ env_logger = "0.7"
+ flate2 = "1.0"
+-anyhow = "1.0"
++anyhow = "<=1.0.48"
+ thiserror = "1.0"
+ futures = "0.3"
+ h2 = { version = "0.3", features = [ "stream" ] }
 @@ -130,6 +130,26 @@ pbs-tape = { path = "pbs-tape" }
  #proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
  #proxmox-schema = { path = "../proxmox/proxmox-schema" }
