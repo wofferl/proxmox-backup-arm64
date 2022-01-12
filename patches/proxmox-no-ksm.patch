@@ -1,0 +1,27 @@
+diff --git a/proxmox/src/sys/linux/procfs/mod.rs b/proxmox/src/sys/linux/procfs/mod.rs
+index 5784e0e..9259581 100644
+--- a/proxmox/src/sys/linux/procfs/mod.rs
++++ b/proxmox/src/sys/linux/procfs/mod.rs
+@@ -4,6 +4,7 @@ use std::fmt;
+ use std::fs::OpenOptions;
+ use std::io::{BufRead, BufReader};
+ use std::net::{Ipv4Addr, Ipv6Addr};
++use std::path::Path;
+ use std::str::FromStr;
+ use std::sync::RwLock;
+ use std::time::Instant;
+@@ -455,8 +456,12 @@ pub fn read_meminfo() -> Result<ProcFsMemInfo, Error> {
+ 
+     meminfo.swapused = meminfo.swaptotal - meminfo.swapfree;
+ 
+-    let spages_line = file_read_firstline("/sys/kernel/mm/ksm/pages_sharing")?;
+-    meminfo.memshared = spages_line.trim_end().parse::<u64>()? * 4096;
++    if Path::new("/sys/kernel/mm/ksm/pages_sharing").exists() {
++        let spages_line = file_read_firstline("/sys/kernel/mm/ksm/pages_sharing")?;
++        meminfo.memshared = spages_line.trim_end().parse::<u64>()? * 4096;
++    } else {
++        meminfo.memshared = 0;
++    }
+ 
+     Ok(meminfo)
+ }

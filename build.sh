@@ -128,6 +128,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
+	patch -p1 -d proxmox/ < "${PATCHES}/proxmox-no-ksm.patch"
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-compile.patch"
 	cd proxmox-backup/
