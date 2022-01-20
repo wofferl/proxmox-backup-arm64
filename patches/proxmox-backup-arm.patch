@@ -25,47 +25,55 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index eed8f8f9..d06c2a61 100644
+index f86c01f5..c8729b91 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -51,7 +51,7 @@ crc32fast = "1"
- endian_trait = { version = "0.6", features = ["arrays"] }
- env_logger = "0.7"
- flate2 = "1.0"
--anyhow = "1.0"
-+anyhow = "<=1.0.48"
- thiserror = "1.0"
- futures = "0.3"
- h2 = { version = "0.3", features = [ "stream" ] }
-@@ -130,6 +130,26 @@ pbs-tape = { path = "pbs-tape" }
- #proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
- #proxmox-schema = { path = "../proxmox/proxmox-schema" }
- #pxar = { path = "../pxar" }
-+proxmox = { path = "../proxmox/proxmox", features = [ "sortable-macro", "api-macro", "cli", "router", "tfa" ] }
-+proxmox-http = { path = "../proxmox/proxmox-http", features = [ "client", "http-helpers", "websocket" ] }
+@@ -126,21 +126,28 @@ pbs-tape = { path = "pbs-tape" }
+ # NOTE: You must run `cargo update` after changing this for it to take effect!
+ [patch.crates-io]
+ #proxmox = { path = "../proxmox/proxmox" }
+-#proxmox-async = { path = "../proxmox/proxmox-async" }
+-#proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
+-#proxmox-fuse = { path = "../proxmox-fuse" }
+-#proxmox-http = { path = "../proxmox/proxmox-http" }
+-#proxmox-io = { path = "../proxmox/proxmox-io" }
+-#proxmox-lang = { path = "../proxmox/proxmox-lang" }
+-#proxmox-router = { path = "../proxmox/proxmox-router" }
+-#proxmox-schema = { path = "../proxmox/proxmox-schema" }
+-#proxmox-section-config = { path = "../proxmox/proxmox-section-config" }
+-#proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
+-#proxmox-sys = { path = "../proxmox/proxmox-sys" }
+-#proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
+-#proxmox-time = { path = "../proxmox/proxmox-time" }
+-#proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
+-#pxar = { path = "../pxar" }
++proxmox-async = { path = "../proxmox/proxmox-async" }
++proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
 +proxmox-fuse = { path = "../proxmox-fuse" }
++proxmox-http = { path = "../proxmox/proxmox-http" }
 +proxmox-io = { path = "../proxmox/proxmox-io" }
 +proxmox-lang = { path = "../proxmox/proxmox-lang" }
-+proxmox-router = { path = "../proxmox/proxmox-router", features = [ "cli" ] }
-+proxmox-schema = { path = "../proxmox/proxmox-schema", features = [ "api-macro" ] }
++proxmox-router = { path = "../proxmox/proxmox-router" }
++proxmox-schema = { path = "../proxmox/proxmox-schema" }
 +proxmox-section-config = { path = "../proxmox/proxmox-section-config" }
-+proxmox-tfa = {  path = "../proxmox/proxmox-tfa", features = [ "u2f" ] }
++proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
++proxmox-sys = { path = "../proxmox/proxmox-sys" }
++proxmox-serde = { path = "../proxmox/proxmox-serde" }
++proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
 +proxmox-time = { path = "../proxmox/proxmox-time" }
 +proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
-+proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
-+proxmox-async = { path = "../proxmox/proxmox-async" }
-+proxmox-sys = { path = "../proxmox/proxmox-sys" }
-+proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
++pxar = { path = "../pxar" }
++proxmox-acme-rs = { path = "../proxmox-acme-rs" }
 +proxmox-apt = { path = "../proxmox-apt" }
 +proxmox-openid = { path = "../proxmox-openid-rs" }
-+proxmox-acme-rs = { path = "../proxmox-acme-rs" }
-+pxar = { path = "../pxar", features = [ "tokio-io" ] }
-+pathpatterns = { path = "../pathpatterns" }
++
++openssl = { path = "rust-openssl/openssl" }
++ffi = { package = "openssl-sys", version = "0.9.69", path = "rust-openssl/openssl-sys" }
  
  [features]
  default = []
 diff --git a/debian/control b/debian/control
-index 170009ab..f3298cbe 100644
+index 90421d80..f3298cbe 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -6,106 +6,6 @@ Build-Depends: debhelper (>= 12),
@@ -82,7 +90,7 @@ index 170009ab..f3298cbe 100644
 - librust-crossbeam-channel-0.5+default-dev,
 - librust-endian-trait-0.6+arrays-dev,
 - librust-endian-trait-0.6+default-dev,
-- librust-env-logger-0.7+default-dev,
+- librust-env-logger-0.9+default-dev,
 - librust-flate2-1+default-dev,
 - librust-foreign-types-0.3+default-dev,
 - librust-futures-0.3+default-dev,
@@ -90,6 +98,7 @@ index 170009ab..f3298cbe 100644
 - librust-h2-0.3+stream-dev,
 - librust-handlebars-3+default-dev,
 - librust-hex-0.4+default-dev (>= 0.4.3-~~),
+- librust-hex-0.4+serde-dev (>= 0.4.3-~~),
 - librust-http-0.2+default-dev,
 - librust-hyper-0.14+default-dev (>= 0.14.5-~~),
 - librust-hyper-0.14+full-dev (>= 0.14.5-~~),
@@ -106,39 +115,38 @@ index 170009ab..f3298cbe 100644
 - librust-pathpatterns-0.1+default-dev (>= 0.1.2-~~),
 - librust-percent-encoding-2+default-dev (>= 2.1-~~),
 - librust-pin-project-lite-0.2+default-dev,
-- librust-proxmox-0.15+default-dev (>= 0.15.3-~~),
-- librust-proxmox-0.15+sortable-macro-dev (>= 0.15.3-~~),
-- librust-proxmox-0.15+tokio-dev (>= 0.15.3-~~),
 - librust-proxmox-acme-rs-0.3+default-dev,
 - librust-proxmox-apt-0.8+default-dev,
-- librust-proxmox-async-0.2+default-dev,
+- librust-proxmox-async-0.3+default-dev,
 - librust-proxmox-borrow-1+default-dev,
 - librust-proxmox-fuse-0.1+default-dev (>= 0.1.1-~~),
-- librust-proxmox-http-0.5+client-dev (>= 0.5.4-~~),
-- librust-proxmox-http-0.5+default-dev (>= 0.5.4-~~),
-- librust-proxmox-http-0.5+http-helpers-dev (>= 0.5.4-~~),
-- librust-proxmox-http-0.5+websocket-dev (>= 0.5.4-~~),
-- librust-proxmox-io-1+default-dev,
-- librust-proxmox-io-1+tokio-dev,
+- librust-proxmox-http-0.6+client-dev,
+- librust-proxmox-http-0.6+default-dev,
+- librust-proxmox-http-0.6+http-helpers-dev,
+- librust-proxmox-http-0.6+websocket-dev,
+- librust-proxmox-io-1+default-dev (>= 1.0.1-~~),
+- librust-proxmox-io-1+tokio-dev (>= 1.0.1-~~),
 - librust-proxmox-lang-1+default-dev,
 - librust-proxmox-openid-0.9+default-dev,
 - librust-proxmox-router-1+cli-dev (>= 1.1-~~),
 - librust-proxmox-router-1+default-dev (>= 1.1-~~),
-- librust-proxmox-schema-1+api-macro-dev (>= 1.0.1-~~),
-- librust-proxmox-schema-1+default-dev (>= 1.0.1-~~),
-- librust-proxmox-schema-1+upid-api-impl-dev (>= 1.0.1-~~),
+- librust-proxmox-schema-1+api-macro-dev (>= 1.1-~~),
+- librust-proxmox-schema-1+default-dev (>= 1.1-~~),
+- librust-proxmox-schema-1+upid-api-impl-dev (>= 1.1-~~),
 - librust-proxmox-section-config-1+default-dev,
-- librust-proxmox-shared-memory-0.1+default-dev (>= 0.1.1-~~),
-- librust-proxmox-sys-0.1+default-dev (>= 0.1.2-~~),
-- librust-proxmox-tfa-1+api-dev (>= 1.3-~~),
-- librust-proxmox-tfa-1+api-types-dev (>= 1.3-~~),
-- librust-proxmox-tfa-1+default-dev (>= 1.3-~~),
-- librust-proxmox-time-1+default-dev (>= 1.1-~~),
+- librust-proxmox-serde-0.1+default-dev,
+- librust-proxmox-shared-memory-0.2+default-dev,
+- librust-proxmox-sys-0.2+default-dev (>= 0.2.1-~~),
+- librust-proxmox-sys-0.2+sortable-macro-dev (>= 0.2.1-~~),
+- librust-proxmox-tfa-2+api-dev,
+- librust-proxmox-tfa-2+api-types-dev,
+- librust-proxmox-tfa-2+default-dev,
+- librust-proxmox-time-1+default-dev (>= 1.1.2-~~),
 - librust-proxmox-uuid-1+default-dev,
 - librust-proxmox-uuid-1+serde-dev,
 - librust-pxar-0.10+default-dev (>= 0.10.1-~~),
 - librust-pxar-0.10+tokio-io-dev (>= 0.10.1-~~),
-- librust-regex-1+default-dev (>= 1.2-~~),
+- librust-regex-1+default-dev (>= 1.5-~~),
 - librust-rustyline-7+default-dev,
 - librust-serde-1+default-dev,
 - librust-serde-1+derive-dev,

@@ -1,7 +1,7 @@
-diff --git a/proxmox/src/sys/linux/procfs/mod.rs b/proxmox/src/sys/linux/procfs/mod.rs
-index 5784e0e..9259581 100644
---- a/proxmox/src/sys/linux/procfs/mod.rs
-+++ b/proxmox/src/sys/linux/procfs/mod.rs
+diff --git a/proxmox-sys/src/linux/procfs/mod.rs b/proxmox-sys/src/linux/procfs/mod.rs
+index 30b9978..ccb14aa 100644
+--- a/proxmox-sys/src/linux/procfs/mod.rs
++++ b/proxmox-sys/src/linux/procfs/mod.rs
 @@ -4,6 +4,7 @@ use std::fmt;
  use std::fs::OpenOptions;
  use std::io::{BufRead, BufReader};
@@ -10,7 +10,7 @@ index 5784e0e..9259581 100644
  use std::str::FromStr;
  use std::sync::RwLock;
  use std::time::Instant;
-@@ -455,8 +456,12 @@ pub fn read_meminfo() -> Result<ProcFsMemInfo, Error> {
+@@ -454,8 +455,12 @@ pub fn read_meminfo() -> Result<ProcFsMemInfo, Error> {
  
      meminfo.swapused = meminfo.swaptotal - meminfo.swapfree;
  

@@ -101,14 +101,14 @@ else
 	echo "proxmox-widget-toolkit up-to-date"
 fi
 
-PROXMOX_BACKUP_VER="2.1.2-1"
-PROXMOX_BACKUP_GIT="2.1.2"
+PROXMOX_BACKUP_VER="2.1.3-1"
+PROXMOX_BACKUP_GIT="8ad9eb779ea7087dc201b8c81ac9aad6256caa17"
 PATHPATTERNS_GIT="916e41c50e75a718ab7b1b95dc770eed9cd7a403"
 PROXMOX_ACME_RS_GIT="fb547f59352155bdc7a9738237e4df8fa0cda10d"
 PROXMOX_APT_GIT="c7b17de1b5fec5807921efc9565917c3d6b09417"
 PROMXOX_FUSE_GIT="0e0966af8886c176d8decfe18cb7ead4db5a83a6"
-PROXMOX_GIT="c0312f3717bd00ace434929e7d3305b058f4aae9"
-PROXMOX_OPENID_GIT="d6e7e2599f5190d38dfab58426ebd0ce6a55dd1e"
+PROXMOX_GIT="1d72829310d229a0d573cb4325ff27037a9a6272"
+PROXMOX_OPENID_GIT="bdcecd3214fc11f2a8b96611624c7075eb20a435"
 PXAR_GIT="b203d38bcd399f852f898d24403f3d592e5f75f8"
 if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
@@ -128,10 +128,13 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
-	patch -p1 -d proxmox/ < "${PATCHES}/proxmox-no-ksm.patch"
-	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
-	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-compile.patch"
+	patch -p1 -d proxmox/ < "${PATCHES}/proxmox-no-ksm.patch" || exit 0
+	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch" || exit 0
 	cd proxmox-backup/
+	# openssl needs fix (https://github.com/proxmox/proxmox-backup/commit/a0c69902c852b8316fdd0a115a310f97230a1a7e)
+	git_clone_or_fetch https://github.com/sfackler/rust-openssl rust-openssl
+	git_clean_and_checkout openssl-v0.10.38 rust-openssl
+	git -C rust-openssl cherry-pick f218ecf0e87df2087412e3ab73a63b38d3f5e985 || exit 0
 	cargo vendor || exit 0
 	${SUDO} apt -y build-dep .
 	dpkg-buildpackage -b -us -uc || exit 0
