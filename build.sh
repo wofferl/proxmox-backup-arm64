@@ -69,8 +69,8 @@ else
 	echo "libpve-common-perl up-to-date"
 fi
 
-PROXMOX_ACME_VER="1.4.0"
-PROXMOX_ACME_GIT="300242d78bd63e91d0bc452e6284dafbec1043b1"
+PROXMOX_ACME_VER="1.4.1"
+PROXMOX_ACME_GIT="5d66271dcfa7a911c9f1d9115eab5743a6576008"
 if ! dpkg-query -W -f='${Version}' libproxmox-acme-perl | grep -q ${PROXMOX_ACME_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme.git
 	cd proxmox-acme/
