@@ -1,5 +1,5 @@
 # proxmox-backup-arm64
-Script for building Proxmox Backup Server for Armbian64
+Script for building Proxmox Backup Server 2.x for Armbian64 based on Bullseye
 
 ## Install build essentials and dependencies
 ```
