@@ -84,8 +84,8 @@ else
 	echo "libproxmox-acme-perl up-to-date"
 fi
 
-PROXMOX_WIDGETTOOLKIT_VER="3.4-5"
-PROXMOX_WIDGETTOOLKIT_GIT="0b7346734634ce031c9d2c0ef960a6c04eb8391a"
+PROXMOX_WIDGETTOOLKIT_VER="3.4-7"
+PROXMOX_WIDGETTOOLKIT_GIT="c39864ee29205e250f0d45a40bfc246cd287b526"
 if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMOX_WIDGETTOOLKIT_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-widget-toolkit.git
 	cd proxmox-widget-toolkit/
