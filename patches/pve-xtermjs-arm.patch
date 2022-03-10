@@ -12,19 +12,20 @@ index 3b5b6e4..b08ce29 100644
 -replace-with = "debian-packages"
 +replace-with = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index ffd72b2..f808e7e 100644
+index 60c3ae0..8464181 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -14,4 +14,6 @@ exclude = [ "build", "debian" ]
- mio = { version = "0.7", features = [ "net", "os-ext" ] }
- curl = "0.4"
+@@ -16,3 +16,8 @@ curl = "0.4"
  clap = "2.33"
--proxmox = { version = "0.10.0", default-features = false }
-+#proxmox = { version = "0.10.0", default-features = false }
-+proxmox = { path = "../proxmox/proxmox", default-features = false }
-+anyhow = "<=1.0.48"
+ proxmox-io = "1"
+ proxmox-sys = "0.2"
++zstd-sys = { features = [ "pkg-config" ] }
++
++[patch.crates-io]
++proxmox-io = { path = "../proxmox/proxmox-io" }
++proxmox-sys = { path = "../proxmox/proxmox-sys" }
 diff --git a/Makefile b/Makefile
-index 0cabc7d..18891c9 100644
+index cd583fb..42d62fe 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -35,6 +35,14 @@ $(SUBDIRS):
@@ -67,22 +68,41 @@ index 0000000..f599e28
 @@ -0,0 +1 @@
 +10
 diff --git a/debian/control b/debian/control
-index d9612f8..29df636 100644
---- a/debian/control
+new file mode 100644
+index 0000000..d59a66c
+--- /dev/null
 +++ b/debian/control
-@@ -3,15 +3,6 @@ Section: admin
- Priority: optional
- Build-Depends: debhelper (>= 12),
-  dh-cargo (>= 24),
-- cargo:native,
-- rustc:native,
-- libstd-rust-dev,
-- librust-clap-2+default-dev (>= 2.33-~~),
-- librust-curl-0.4+default-dev,
-- librust-mio-0.7+default-dev,
-- librust-mio-0.7+net-dev,
-- librust-mio-0.7+os-ext-dev,
-- librust-proxmox-0.10-dev
- Maintainer: Proxmox Support Team <support@proxmox.com>
- Standards-Version: 4.5.1
- Vcs-Git: git://git.proxmox.com/git/pve-xtermjs.git
+@@ -0,0 +1,33 @@
++Source: rust-termproxy
++Section: admin
++Priority: optional
++Build-Depends: debhelper (>= 12),
++ dh-cargo (>= 24),
++ cargo:native,
++ rustc:native,
++ libzstd-dev
++Maintainer: Proxmox Support Team <support@proxmox.com>
++Standards-Version: 4.5.1
++Vcs-Git: git://git.proxmox.com/git/pve-xtermjs.git
++Vcs-Browser: https://git.proxmox.com/?p=pve-xtermjs.git;a=summary
++Homepage: https://www.proxmox.com
++Rules-Requires-Root: no
++
++Package: pve-xtermjs
++Architecture: any
++Multi-Arch: allowed
++Depends:
++ ${misc:Depends},
++ ${shlibs:Depends},
++ ${cargo:Depends}
++Recommends:
++ ${cargo:Recommends}
++Suggests:
++ ${cargo:Suggests}
++Provides:
++ ${cargo:Provides}
++Built-Using: ${cargo:Built-Using}
++XB-X-Cargo-Built-Using: ${cargo:X-Cargo-Built-Using}
++Description: HTML/JS Shell client for Proxmox projects
++ This package provides an xterm.js client/proxy for Proxmoxprojects'  Hosts,
++ Proxmox VE containers or Proxmox VE VM's serial-terminals.
