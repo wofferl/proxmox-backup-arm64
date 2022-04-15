@@ -10,7 +10,7 @@ index 30b9978..ccb14aa 100644
  use std::str::FromStr;
  use std::sync::RwLock;
  use std::time::Instant;
-@@ -454,8 +455,12 @@ pub fn read_meminfo() -> Result<ProcFsMemInfo, Error> {
+@@ -455,8 +456,12 @@ pub fn read_meminfo() -> Result<ProcFsMemInfo, Error> {
  
      meminfo.swapused = meminfo.swaptotal - meminfo.swapfree;
  
