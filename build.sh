@@ -84,8 +84,8 @@ else
 	echo "libproxmox-acme-perl up-to-date"
 fi
 
-PROXMOX_WIDGETTOOLKIT_VER="3.4-7"
-PROXMOX_WIDGETTOOLKIT_GIT="c39864ee29205e250f0d45a40bfc246cd287b526"
+PROXMOX_WIDGETTOOLKIT_VER="3.4-9"
+PROXMOX_WIDGETTOOLKIT_GIT="ad772f5bc6e10b9a172eae6f4269242036ea6e2d"
 if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMOX_WIDGETTOOLKIT_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-widget-toolkit.git
 	cd proxmox-widget-toolkit/
@@ -101,14 +101,14 @@ else
 	echo "proxmox-widget-toolkit up-to-date"
 fi
 
-PROXMOX_BACKUP_VER="2.1.5-1"
-PROXMOX_BACKUP_GIT="7a524f1048c22f99dbd729e141e28397fcf81d3b"
+PROXMOX_BACKUP_VER="2.1.6-1"
+PROXMOX_BACKUP_GIT="fb3c007f8ac362cc475e5bf8b8912c67ce4a6812"
 PATHPATTERNS_GIT="916e41c50e75a718ab7b1b95dc770eed9cd7a403"
-PROXMOX_ACME_RS_GIT="fb547f59352155bdc7a9738237e4df8fa0cda10d"
+PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05"
 PROXMOX_APT_GIT="c7b17de1b5fec5807921efc9565917c3d6b09417"
-PROMXOX_FUSE_GIT="0e0966af8886c176d8decfe18cb7ead4db5a83a6"
-PROXMOX_GIT="41862eeb95b70201c47dfd27fca37879e23be3ff"
-PROXMOX_OPENID_GIT="bdcecd3214fc11f2a8b96611624c7075eb20a435"
+PROMXOX_FUSE_GIT="c27f3c3114fd49f232400fd6c512abdfd32bbc64"
+PROXMOX_GIT="c01b08fea980d67cc8b20ecaa0f282188b2c829c"
+PROXMOX_OPENID_GIT="0afe853119bfa74b15c21f25888b6adfb35342ef"
 PXAR_GIT="b203d38bcd399f852f898d24403f3d592e5f75f8"
 if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
