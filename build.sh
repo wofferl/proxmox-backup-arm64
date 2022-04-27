@@ -41,8 +41,8 @@ SOURCES="${BASE}/sources"
 
 cd "${SOURCES}"
 
-PVE_ESLINT_VER="8.4.0-2"
-PVE_ESLINT_GIT="5f14e37f3d48811d6bfebee346f47d059e37dcb8"
+PVE_ESLINT_VER="8.4.0-3"
+PVE_ESLINT_GIT="0a9df8d6a9c8d765f2a2bd6b9f467341b5124188"
 if ! dpkg-query -W -f='${Version}' pve-eslint | grep -q ${PVE_ESLINT_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-eslint.git
 	cd pve-eslint/
@@ -69,8 +69,8 @@ else
 	echo "libpve-common-perl up-to-date"
 fi
 
-PROXMOX_ACME_VER="1.4.1"
-PROXMOX_ACME_GIT="5d66271dcfa7a911c9f1d9115eab5743a6576008"
+PROXMOX_ACME_VER="1.4.2"
+PROXMOX_ACME_GIT="831d879ba508c40835827852951be1d469208b13"
 if ! dpkg-query -W -f='${Version}' libproxmox-acme-perl | grep -q ${PROXMOX_ACME_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme.git
 	cd proxmox-acme/
@@ -84,8 +84,8 @@ else
 	echo "libproxmox-acme-perl up-to-date"
 fi
 
-PROXMOX_WIDGETTOOLKIT_VER="3.4-9"
-PROXMOX_WIDGETTOOLKIT_GIT="ad772f5bc6e10b9a172eae6f4269242036ea6e2d"
+PROXMOX_WIDGETTOOLKIT_VER="3.4-10"
+PROXMOX_WIDGETTOOLKIT_GIT="081b26ed59f18a062379e4fcec0ed4fabc42d23a"
 if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMOX_WIDGETTOOLKIT_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-widget-toolkit.git
 	cd proxmox-widget-toolkit/
@@ -101,13 +101,13 @@ else
 	echo "proxmox-widget-toolkit up-to-date"
 fi
 
-PROXMOX_BACKUP_VER="2.1.6-1"
-PROXMOX_BACKUP_GIT="fb3c007f8ac362cc475e5bf8b8912c67ce4a6812"
+PROXMOX_BACKUP_VER="2.1.8-1"
+PROXMOX_BACKUP_GIT="60ed7aeae6f1c9004a98ebdbfd0b5852ea22dc39"
 PATHPATTERNS_GIT="916e41c50e75a718ab7b1b95dc770eed9cd7a403"
 PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05"
 PROXMOX_APT_GIT="c7b17de1b5fec5807921efc9565917c3d6b09417"
 PROMXOX_FUSE_GIT="c27f3c3114fd49f232400fd6c512abdfd32bbc64"
-PROXMOX_GIT="c01b08fea980d67cc8b20ecaa0f282188b2c829c"
+PROXMOX_GIT="16daad64c7ddc3cec53da5c87ecab370894c7f4c"
 PROXMOX_OPENID_GIT="0afe853119bfa74b15c21f25888b6adfb35342ef"
 PXAR_GIT="b203d38bcd399f852f898d24403f3d592e5f75f8"
 if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ]; then
@@ -131,10 +131,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 	patch -p1 -d proxmox/ < "${PATCHES}/proxmox-no-ksm.patch" || exit 0
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch" || exit 0
 	cd proxmox-backup/
-	# openssl needs fix (https://github.com/proxmox/proxmox-backup/commit/a0c69902c852b8316fdd0a115a310f97230a1a7e)
-	git_clone_or_fetch https://github.com/sfackler/rust-openssl rust-openssl
-	git_clean_and_checkout openssl-v0.10.38 rust-openssl
-	git -C rust-openssl cherry-pick f218ecf0e87df2087412e3ab73a63b38d3f5e985 || exit 0
 	cargo vendor || exit 0
 	${SUDO} apt -y build-dep .
 	dpkg-buildpackage -b -us -uc || exit 0
@@ -182,8 +178,8 @@ else
 fi
 
 
-PBS_I18N_VER="2.6-2"
-PBS_I18N_GIT="bc0fe9172658e0a203480834275472f120501148"
+PBS_I18N_VER="2.7-1"
+PBS_I18N_GIT="234c18267e15605dbc8b23f8cd263dc7551c4693"
 if [ ! -e "${PACKAGES}/pbs-i18n_${PBS_I18N_VER}_all.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-i18n.git
 	git_clean_and_checkout ${PBS_I18N_GIT} proxmox-i18n

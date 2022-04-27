@@ -28,7 +28,7 @@ diff --git a/Cargo.toml b/Cargo.toml
 index f86c01f5..c8729b91 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -127,21 +127,29 @@ pbs-tape = { path = "pbs-tape" }
+@@ -127,21 +127,26 @@ pbs-tape = { path = "pbs-tape" }
  # NOTE: You must run `cargo update` after changing this for it to take effect!
  [patch.crates-io]
  #proxmox = { path = "../proxmox/proxmox" }
@@ -67,9 +67,6 @@ index f86c01f5..c8729b91 100644
 +proxmox-acme-rs = { path = "../proxmox-acme-rs" }
 +proxmox-apt = { path = "../proxmox-apt" }
 +proxmox-openid = { path = "../proxmox-openid-rs" }
-+
-+openssl = { path = "rust-openssl/openssl" }
-+ffi = { package = "openssl-sys", version = "0.9.69", path = "rust-openssl/openssl-sys" }
  
  [features]
  default = []
