@@ -84,8 +84,8 @@ else
 	echo "libproxmox-acme-perl up-to-date"
 fi
 
-PROXMOX_WIDGETTOOLKIT_VER="3.4-10"
-PROXMOX_WIDGETTOOLKIT_GIT="081b26ed59f18a062379e4fcec0ed4fabc42d23a"
+PROXMOX_WIDGETTOOLKIT_VER="3.5.1"
+PROXMOX_WIDGETTOOLKIT_GIT="3e83971bca2abc2b2921cce7ab597466ce8ce005"
 if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMOX_WIDGETTOOLKIT_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-widget-toolkit.git
 	cd proxmox-widget-toolkit/
@@ -101,13 +101,13 @@ else
 	echo "proxmox-widget-toolkit up-to-date"
 fi
 
-PROXMOX_BACKUP_VER="2.1.8-1"
-PROXMOX_BACKUP_GIT="60ed7aeae6f1c9004a98ebdbfd0b5852ea22dc39"
+PROXMOX_BACKUP_VER="2.2.1-1"
+PROXMOX_BACKUP_GIT="0f8fd71093569c664ae50104392baeb82d1d6e4e"
 PATHPATTERNS_GIT="916e41c50e75a718ab7b1b95dc770eed9cd7a403"
 PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05"
 PROXMOX_APT_GIT="c7b17de1b5fec5807921efc9565917c3d6b09417"
 PROMXOX_FUSE_GIT="c27f3c3114fd49f232400fd6c512abdfd32bbc64"
-PROXMOX_GIT="16daad64c7ddc3cec53da5c87ecab370894c7f4c"
+PROXMOX_GIT="42dd95aa6fab73ed75943b4db86f9633864650e1"
 PROXMOX_OPENID_GIT="0afe853119bfa74b15c21f25888b6adfb35342ef"
 PXAR_GIT="b203d38bcd399f852f898d24403f3d592e5f75f8"
 if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ]; then
@@ -178,8 +178,8 @@ else
 fi
 
 
-PBS_I18N_VER="2.7-1"
-PBS_I18N_GIT="234c18267e15605dbc8b23f8cd263dc7551c4693"
+PBS_I18N_VER="2.7-2"
+PBS_I18N_GIT="bd8a9ba2cc34872d3dd9579e412a19a3b5a05f21"
 if [ ! -e "${PACKAGES}/pbs-i18n_${PBS_I18N_VER}_all.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-i18n.git
 	git_clean_and_checkout ${PBS_I18N_GIT} proxmox-i18n
