@@ -15,12 +15,11 @@ diff --git a/Cargo.toml b/Cargo.toml
 index 60c3ae0..8464181 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -16,3 +16,9 @@ curl = "0.4"
+@@ -16,3 +16,8 @@ curl = "0.4"
  clap = "2.33"
  proxmox-io = "1"
  proxmox-sys = "0.2"
 +zstd-sys = { features = [ "pkg-config" ] }
-+bumpalo = "3.10.*"
 +
 +[patch.crates-io]
 +proxmox-io = { path = "../proxmox/proxmox-io" }
@@ -73,14 +72,11 @@ new file mode 100644
 index 0000000..d59a66c
 --- /dev/null
 +++ b/debian/control
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,30 @@
 +Source: rust-termproxy
 +Section: admin
 +Priority: optional
 +Build-Depends: debhelper (>= 12),
-+ dh-cargo (>= 24),
-+ cargo:native,
-+ rustc:native,
 + libzstd-dev
 +Maintainer: Proxmox Support Team <support@proxmox.com>
 +Standards-Version: 4.5.1
@@ -107,3 +103,28 @@ index 0000000..d59a66c
 +Description: HTML/JS Shell client for Proxmox projects
 + This package provides an xterm.js client/proxy for Proxmoxprojects'  Hosts,
 + Proxmox VE containers or Proxmox VE VM's serial-terminals.
+diff --git a/debian/rules b/debian/rules
+index 2b62edd..436684e 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -1,7 +1,7 @@
+ #!/usr/bin/make -f
+ 
+ %:
+-	dh $@ --buildsystem cargo
++	dh $@
+ 
+ override_dh_auto_build:
+ 	dh_auto_build
+diff --git a/debian/rules.debcargo.hint b/debian/rules.debcargo.hint
+index 92c239b..4aaf62a 100755
+--- a/debian/rules.debcargo.hint
++++ b/debian/rules.debcargo.hint
+@@ -1,6 +1,6 @@
+ #!/usr/bin/make -f
+ %:
+-	dh $@ --buildsystem cargo
++	dh $@
+ 
+ override_dh_auto_test:
+ 	dh_auto_test -- test --all

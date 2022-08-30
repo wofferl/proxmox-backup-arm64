@@ -77,12 +77,16 @@ index e946b9bb..908d5919 100644
  [features]
  default = []
 diff --git a/debian/control b/debian/control
-index 3f513cdf..f3298cbe 100644
+index 3f513cdf..dcafaf1e 100644
 --- a/debian/control
 +++ b/debian/control
-@@ -6,112 +6,6 @@ Build-Depends: debhelper (>= 12),
-  cargo:native,
-  rustc:native,
+@@ -2,116 +2,7 @@ Source: rust-proxmox-backup
+ Section: admin
+ Priority: optional
+ Build-Depends: debhelper (>= 12),
+- dh-cargo (>= 24),
+- cargo:native,
+- rustc:native,
   libstd-rust-dev,
 - librust-anyhow-1+default-dev,
 - librust-apt-pkg-native-0.3+default-dev (>= 0.3.2-~~),
@@ -237,3 +241,24 @@ index 6e2219b4..82954cdd 100644
  usr/sbin/proxmox-backup-debug
  usr/sbin/proxmox-backup-manager
  usr/bin/pmtx
+diff --git a/debian/rules b/debian/rules
+index b13ba334..271c1670 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -8,8 +8,6 @@ include /usr/share/rustc/architecture.mk
+ 
+ export BUILD_MODE=release
+ 
+-CARGO=/usr/share/cargo/bin/cargo
+-
+ export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+ export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
+ export CARGO_HOME = $(CURDIR)/debian/cargo_home
+@@ -21,7 +19,6 @@ export DEB_CARGO_PACKAGE=proxmox-backup
+ 	dh $@ --with=bash-completion
+ 
+ override_dh_auto_configure:
+-	$(CARGO) prepare-debian $(CURDIR)/debian/cargo_registry --link-from-system
+ 	dh_auto_configure
+ 
+ override_dh_auto_build:
