@@ -242,10 +242,14 @@ index 6e2219b4..82954cdd 100644
  usr/sbin/proxmox-backup-manager
  usr/bin/pmtx
 diff --git a/debian/rules b/debian/rules
-index b13ba334..271c1670 100755
+index b13ba334..323da5ed 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -8,8 +8,6 @@ include /usr/share/rustc/architecture.mk
+@@ -4,12 +4,9 @@
+ DH_VERBOSE = 1
+ 
+ include /usr/share/dpkg/pkg-info.mk
+-include /usr/share/rustc/architecture.mk
  
  export BUILD_MODE=release
  
@@ -254,7 +258,7 @@ index b13ba334..271c1670 100755
  export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
  export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
  export CARGO_HOME = $(CURDIR)/debian/cargo_home
-@@ -21,7 +19,6 @@ export DEB_CARGO_PACKAGE=proxmox-backup
+@@ -21,7 +18,6 @@ export DEB_CARGO_PACKAGE=proxmox-backup
  	dh $@ --with=bash-completion
  
  override_dh_auto_configure:
