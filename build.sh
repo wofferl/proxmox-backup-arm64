@@ -36,6 +36,11 @@ PACKAGES="${BASE}/packages"
 PATCHES="${BASE}/patches"
 SOURCES="${BASE}/sources"
 
+if [ ! -d "${PATCHES}" ]; then
+	echo "Directory ${PATCHES} is missing! Have you cloned the repository?"
+	exit 1
+fi
+
 [ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
 [ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
 
