@@ -46,8 +46,8 @@ fi
 
 cd "${SOURCES}"
 
-PVE_ESLINT_VER="8.4.0-3"
-PVE_ESLINT_GIT="0a9df8d6a9c8d765f2a2bd6b9f467341b5124188"
+PVE_ESLINT_VER="8.23.1-1"
+PVE_ESLINT_GIT="857347d600e0ba86451a25e350fbeeef27577b92"
 if ! dpkg-query -W -f='${Version}' pve-eslint | grep -q ${PVE_ESLINT_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-eslint.git
 	cd pve-eslint/
