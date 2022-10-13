@@ -60,8 +60,41 @@ else
 	echo "pve-eslint up-to-date"
 fi
 
-PVE_COMMON_VER="7.0-14"
-PVE_COMMON_GIT="3efa9ecd60825f2c95f3136bdaa3a258b13cdd38"
+PROXMOX_PERL_VER="0.2.1"
+PROXMOX_PERL_GIT="9488180f9ef3bf57e049b645c001c3df9b65e11c"
+PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05"
+PROXMOX_APT_GIT="6c0c48b97a29cac1519402e4a1c77010e8a5d216"
+PROXMOX_GIT="2ae95b5f4e9870113dab8fea1df631299559d4a4"
+PROXMOX_OPENID_GIT="ce6def219262b5c1f6dbe5440f9f90038bafb3d8"
+PROXMOX_PERLMOD_GIT="9488180f9ef3bf57e049b645c001c3df9b65e11c"
+if ! dpkg-query -W -f='${Version}' libproxmox-rs-perl | grep -q ${PROXMOX_PERL_VER}; then
+	git_clone_or_fetch https://git.proxmox.com/git/proxmox-perl-rs.git
+	git_clean_and_checkout ${PROXMOX_PERL_GIT} proxmox-perl-rs
+	cd proxmox-perl-rs
+	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
+	git_clean_and_checkout ${PROXMOX_GIT} proxmox
+	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme-rs.git
+	git_clean_and_checkout ${PROXMOX_ACME_RS_GIT} proxmox-acme-rs
+	git_clone_or_fetch https://git.proxmox.com/git/proxmox-apt.git
+	git_clean_and_checkout ${PROXMOX_APT_GIT} proxmox-apt
+	git_clone_or_fetch https://git.proxmox.com/git/proxmox-openid-rs.git
+	git_clean_and_checkout ${PROXMOX_OPENID_GIT} proxmox-openid-rs
+	git_clone_or_fetch https://git.proxmox.com/git/perlmod.git
+	git_clean_and_checkout ${PROXMOX_PERLMOD_GIT} perlmod
+	patch -p1 < "${PATCHES}/proxmox-perl-rs-dependencies.patch" || exit 0
+	cargo vendor || exit 0
+	make pve-deb pmg-deb common-deb || exit 0
+	${SUDO} dpkg -i --force-depends ./build/libproxmox-rs-perl_0.2.1_arm64.deb \
+					./build/libpve-rs-perl_0.7.2_arm64.deb \
+					./build/libpmg-rs-perl_0.6.2_arm64.deb || exit 0
+	cd ..
+else
+	echo "libproxmox-rs-perl up-to-date"
+fi
+
+
+PVE_COMMON_VER="7.2-3"
+PVE_COMMON_GIT="8949840eab24b9413495dccfbe65c22b33a146c6"
 if ! dpkg-query -W -f='${Version}' libpve-common-perl | grep -q ${PVE_COMMON_VER}; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-common.git
 	cd pve-common/
