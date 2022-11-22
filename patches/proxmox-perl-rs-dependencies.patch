@@ -13,10 +13,10 @@ index 3b5b6e4..93c8be0 100644
 +replace-with = "vendor"
 +
 diff --git a/Makefile b/Makefile
-index 0836c9d..aa31518 100644
+index 0836c9d..011b9bc 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -67,7 +67,7 @@ gen:
+@@ -67,12 +67,17 @@ gen:
  build:
  	rm -rf build
  	mkdir build
@@ -25,6 +25,16 @@ index 0836c9d..aa31518 100644
  	cp -a ./scripts ./build
  	cp -a ./common ./build
  	cp -a ./pve-rs ./build
+ 	cp -a ./pmg-rs ./build
+ 	cp -a ./Proxmox ./build
++	ln -s ../perlmod ./build/perlmod
++	ln -s ../proxmox ./build/proxmox
++	ln -s ../proxmox-apt ./build/proxmox-apt
++	ln -s ../proxmox-acme-rs ./build/proxmox-acme-rs
++	ln -s ../proxmox-openid-rs ./build/proxmox-openid-rs
+ 	$(MAKE) BUILD_MODE=release -C build -f ../Makefile gen
+ 	mkdir -p ./build/pve-rs/Proxmox/Lib
+ 	mv ./build/Proxmox/Lib/PVE.pm ./build/pve-rs/Proxmox/Lib/PVE.pm
 diff --git a/pmg-rs/Cargo.toml b/pmg-rs/Cargo.toml
 index 903ed3b..165b377 100644
 --- a/pmg-rs/Cargo.toml
@@ -51,14 +61,14 @@ index 903ed3b..165b377 100644
 +#proxmox-tfa = { version = "2.1", features = ["api"] }
 +#proxmox-time = "1.1.3"
 +
-+perlmod = { path = "../../perlmod/perlmod" }
-+proxmox-acme-rs = { features = ["client"], path = "../../proxmox-acme-rs" }
-+proxmox-apt = { path = "../../proxmox-apt" }
-+proxmox-http = { features = ["client-sync", "client-trait"], path = "../../proxmox/proxmox-http" }
-+proxmox-subscription = { path = "../../proxmox/proxmox-subscription" }
-+proxmox-sys = { path = "../../proxmox/proxmox-sys" }
-+proxmox-tfa = { features = ["api"], path = "../../proxmox/proxmox-tfa" }
-+proxmox-time = { path = "../../proxmox/proxmox-time" }
++perlmod = { path = "../perlmod/perlmod" }
++proxmox-acme-rs = { features = ["client"], path = "../proxmox-acme-rs" }
++proxmox-apt = { path = "../proxmox-apt" }
++proxmox-http = { features = ["client-sync", "client-trait"], path = "../proxmox/proxmox-http" }
++proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
++proxmox-sys = { path = "../proxmox/proxmox-sys" }
++proxmox-tfa = { features = ["api"], path = "../proxmox/proxmox-tfa" }
++proxmox-time = { path = "../proxmox/proxmox-time" }
 diff --git a/pmg-rs/debian/control b/pmg-rs/debian/control
 index 5af088b..6a18690 100644
 --- a/pmg-rs/debian/control
@@ -118,14 +128,14 @@ index 855c72d..1a982df 100644
 +#proxmox-tfa = { version = "2.1", features = ["api"] }
 +#proxmox-time = "1.1.3"
 +
-+perlmod = { path = "../../perlmod/perlmod" }
-+proxmox-apt = { path = "../../proxmox-apt" }
-+proxmox-http = { features = ["client-sync", "client-trait"], path = "../../proxmox/proxmox-http" }
-+proxmox-openid = { path = "../../proxmox-openid-rs" }
-+proxmox-subscription = { path = "../../proxmox/proxmox-subscription" }
-+proxmox-sys = { path = "../../proxmox/proxmox-sys" }
-+proxmox-tfa = { features = [ "api" ], path = "../../proxmox/proxmox-tfa" }
-+proxmox-time = { path = "../../proxmox/proxmox-time" }
++perlmod = { path = "../perlmod/perlmod" }
++proxmox-apt = { path = "../proxmox-apt" }
++proxmox-http = { features = ["client-sync", "client-trait"], path = "../proxmox/proxmox-http" }
++proxmox-openid = { path = "../proxmox-openid-rs" }
++proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
++proxmox-sys = { path = "../proxmox/proxmox-sys" }
++proxmox-tfa = { features = [ "api" ], path = "../proxmox/proxmox-tfa" }
++proxmox-time = { path = "../proxmox/proxmox-time" }
  
 -proxmox-apt = "0.9"
 -proxmox-http = { version = "0.7", features = ["client-sync", "client-trait"] }
