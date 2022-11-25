@@ -1,22 +1,44 @@
 diff --git a/.cargo/config b/.cargo/config
-index 3b5b6e4..93c8be0 100644
+index 3b5b6e4..e6d9429 100644
 --- a/.cargo/config
 +++ b/.cargo/config
-@@ -1,5 +1,6 @@
+@@ -1,5 +1,5 @@
  [source]
 -[source.debian-packages]
 -directory = "/usr/share/cargo/registry"
-+[source.vendor]
++[source.vendored-sources]
 +directory = "vendor"
  [source.crates-io]
 -replace-with = "debian-packages"
-+replace-with = "vendor"
-+
++replace-with = "vendored-sources"
+diff --git a/Cargo.toml b/Cargo.toml
+index b49a591..13147d6 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -6,7 +6,14 @@ members = [
+ ]
+ 
+ [patch.crates-io]
+-# proxmox-tfa requires -time and -uuid as well, so enable *all* or *none* of them
+-#proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
+-#proxmox-time = { path = "../proxmox/proxmox-time" }
+-#proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
++perlmod = { path = "perlmod/perlmod" }
++proxmox-acme-rs = { path = "proxmox-acme-rs" }
++proxmox-apt = { path = "proxmox-apt" }
++proxmox-http = { path = "proxmox/proxmox-http" }
++proxmox-openid = { path = "proxmox-openid-rs" }
++proxmox-resource-scheduling = { path = "proxmox-resource-scheduling" }
++proxmox-schema = { path = "proxmox/proxmox-schema" }
++proxmox-subscription = { path = "proxmox/proxmox-subscription" }
++proxmox-sys = { path = "proxmox/proxmox-sys" }
++proxmox-tfa = { path = "proxmox/proxmox-tfa" }
++proxmox-time = { path = "proxmox/proxmox-time" }
 diff --git a/Makefile b/Makefile
-index 0836c9d..011b9bc 100644
+index 3ddafd0..e6d5c04 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -67,12 +67,17 @@ gen:
+@@ -68,12 +68,18 @@ gen:
  build:
  	rm -rf build
  	mkdir build
@@ -32,57 +54,41 @@ index 0836c9d..011b9bc 100644
 +	ln -s ../proxmox-apt ./build/proxmox-apt
 +	ln -s ../proxmox-acme-rs ./build/proxmox-acme-rs
 +	ln -s ../proxmox-openid-rs ./build/proxmox-openid-rs
++	ln -s ../proxmox-resource-scheduling ./build/proxmox-resource-scheduling
  	$(MAKE) BUILD_MODE=release -C build -f ../Makefile gen
  	mkdir -p ./build/pve-rs/Proxmox/Lib
  	mv ./build/Proxmox/Lib/PVE.pm ./build/pve-rs/Proxmox/Lib/PVE.pm
 diff --git a/pmg-rs/Cargo.toml b/pmg-rs/Cargo.toml
-index 903ed3b..165b377 100644
+index 903ed3b..0ea6a12 100644
 --- a/pmg-rs/Cargo.toml
 +++ b/pmg-rs/Cargo.toml
-@@ -30,12 +30,21 @@ serde_bytes = "0.11.3"
- serde_json = "1.0"
- url = "2"
- 
--perlmod = { version = "0.13", features = [ "exporter" ] }
-+#perlmod = { version = "0.13", features = [ "exporter" ] }
- 
--proxmox-acme-rs = { version = "0.4", features = ["client"] }
--proxmox-apt = "0.9"
--proxmox-http = { version = "0.7", features = ["client-sync", "client-trait"] }
--proxmox-subscription = "0.3"
--proxmox-sys = "0.4"
--proxmox-tfa = { version = "2.1", features = ["api"] }
--proxmox-time = "1.1.3"
-+#proxmox-acme-rs = { version = "0.4", features = ["client"] }
-+#proxmox-apt = "0.9"
-+#proxmox-http = { version = "0.7", features = ["client-sync", "client-trait"] }
-+#proxmox-subscription = "0.3"
-+#proxmox-sys = "0.4"
-+#proxmox-tfa = { version = "2.1", features = ["api"] }
-+#proxmox-time = "1.1.3"
+@@ -39,3 +39,14 @@ proxmox-subscription = "0.3"
+ proxmox-sys = "0.4"
+ proxmox-tfa = { version = "2.1", features = ["api"] }
+ proxmox-time = "1.1.3"
 +
++[patch.crates-io]
 +perlmod = { path = "../perlmod/perlmod" }
-+proxmox-acme-rs = { features = ["client"], path = "../proxmox-acme-rs" }
++proxmox-acme-rs = { path = "../proxmox-acme-rs" }
 +proxmox-apt = { path = "../proxmox-apt" }
-+proxmox-http = { features = ["client-sync", "client-trait"], path = "../proxmox/proxmox-http" }
++proxmox-http = { path = "../proxmox/proxmox-http" }
++proxmox-schema = { path = "../proxmox/proxmox-schema" }
 +proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
 +proxmox-sys = { path = "../proxmox/proxmox-sys" }
-+proxmox-tfa = { features = ["api"], path = "../proxmox/proxmox-tfa" }
++proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
 +proxmox-time = { path = "../proxmox/proxmox-time" }
 diff --git a/pmg-rs/debian/control b/pmg-rs/debian/control
-index 5af088b..6a18690 100644
+index 5af088b..00df9d6 100644
 --- a/pmg-rs/debian/control
 +++ b/pmg-rs/debian/control
-@@ -2,35 +2,6 @@ Source: libpmg-rs-perl
- Section: perl
- Priority: optional
+@@ -4,33 +4,7 @@ Priority: optional
  Maintainer: Proxmox Support Team <support@proxmox.com>
--Build-Depends:
-- debhelper (>= 12),
+ Build-Depends:
+  debhelper (>= 12),
 - dh-cargo (>= 24),
 - cargo:native <!nocheck>,
 - rustc:native <!nocheck>,
-- libstd-rust-dev <!nocheck>,
+  libstd-rust-dev <!nocheck>,
 - librust-anyhow-1+default-dev,
 - librust-hex-0.4+default-dev,
 - librust-http-0.2+default-dev (>= 0.2.7-~~),
@@ -110,54 +116,37 @@ index 5af088b..6a18690 100644
  Homepage: https://www.proxmox.com
  
 diff --git a/pve-rs/Cargo.toml b/pve-rs/Cargo.toml
-index 855c72d..1a982df 100644
+index 6a56d3a..81aeddf 100644
 --- a/pve-rs/Cargo.toml
 +++ b/pve-rs/Cargo.toml
-@@ -28,12 +28,22 @@ serde_bytes = "0.11"
- serde_json = "1.0"
- url = "2"
- 
--perlmod = { version = "0.13", features = [ "exporter" ] }
-+#perlmod = { version = "0.13", features = [ "exporter" ] }
+@@ -38,3 +38,15 @@ proxmox-subscription = "0.3"
+ proxmox-sys = "0.4"
+ proxmox-tfa = { version = "2.1", features = ["api"] }
+ proxmox-time = "1.1.3"
 +
-+#proxmox-apt = "0.9"
-+#proxmox-http = { version = "0.7", features = ["client-sync", "client-trait"] }
-+#proxmox-openid = "0.9.5"
-+#proxmox-subscription = "0.3"
-+#proxmox-sys = "0.4"
-+#proxmox-tfa = { version = "2.1", features = ["api"] }
-+#proxmox-time = "1.1.3"
-+
++[patch.crates-io]
 +perlmod = { path = "../perlmod/perlmod" }
 +proxmox-apt = { path = "../proxmox-apt" }
-+proxmox-http = { features = ["client-sync", "client-trait"], path = "../proxmox/proxmox-http" }
++proxmox-http = { path = "../proxmox/proxmox-http" }
 +proxmox-openid = { path = "../proxmox-openid-rs" }
++proxmox-resource-scheduling = { path = "../proxmox-resource-scheduling" }
++proxmox-schema = { path = "../proxmox/proxmox-schema" }
 +proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
 +proxmox-sys = { path = "../proxmox/proxmox-sys" }
-+proxmox-tfa = { features = [ "api" ], path = "../proxmox/proxmox-tfa" }
++proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
 +proxmox-time = { path = "../proxmox/proxmox-time" }
- 
--proxmox-apt = "0.9"
--proxmox-http = { version = "0.7", features = ["client-sync", "client-trait"] }
--proxmox-openid = "0.9.5"
--proxmox-subscription = "0.3"
--proxmox-sys = "0.4"
--proxmox-tfa = { version = "2.1", features = ["api"] }
--proxmox-time = "1.1.3"
 diff --git a/pve-rs/debian/control b/pve-rs/debian/control
-index a0c785b..4ca09ea 100644
+index 6120116..fa38b10 100644
 --- a/pve-rs/debian/control
 +++ b/pve-rs/debian/control
-@@ -1,36 +1,6 @@
- Source: libpve-rs-perl
- Section: perl
+@@ -3,35 +3,7 @@ Section: perl
  Priority: optional
--Build-Depends:
-- debhelper (>= 12),
+ Build-Depends:
+  debhelper (>= 12),
 - dh-cargo (>= 24),
 - cargo:native <!nocheck>,
 - rustc:native <!nocheck>,
-- libstd-rust-dev <!nocheck>,
+  libstd-rust-dev <!nocheck>,
 - librust-anyhow-1+default-dev,
 - librust-base32-0.4+default-dev,
 - librust-base64-0.13+default-dev,
@@ -173,6 +162,7 @@ index a0c785b..4ca09ea 100644
 - librust-proxmox-http-0.7+client-trait-dev,
 - librust-proxmox-http-0.7+default-dev,
 - librust-proxmox-openid-0.9+default-dev (>= 0.9.5-~~),
+- librust-proxmox-resource-scheduling-0.1+default-dev,
 - librust-proxmox-subscription-0.3+default-dev,
 - librust-proxmox-sys-0.4+default-dev,
 - librust-proxmox-tfa-2+api-dev (>= 2.1-~~),
@@ -185,28 +175,3 @@ index a0c785b..4ca09ea 100644
  Maintainer: Proxmox Support Team <support@proxmox.com>
  Standards-Version: 4.5.1
  Vcs-Git: git://git.proxmox.com/git/proxmox-perl-rs.git
-diff --git a/proxmox-apt/Cargo.toml b/proxmox-apt/Cargo.toml
-index 1045070..a6e2834 100644
---- a/proxmox-apt/Cargo.toml
-+++ b/proxmox-apt/Cargo.toml
-@@ -25,4 +25,5 @@ rfc822-like = "0.2.1"
- serde = { version = "1.0", features = ["derive"] }
- serde_json = "1.0.41"
- 
--proxmox-schema = { version = "1", features = [ "api-macro" ] }
-+#proxmox-schema = { version = "1", features = [ "api-macro" ] }
-+proxmox-schema = { features = [ "api-macro" ], path = "../proxmox/proxmox-schema" }
-diff --git a/proxmox-openid-rs/Cargo.toml b/proxmox-openid-rs/Cargo.toml
-index e42f495..c6dbef7 100644
---- a/proxmox-openid-rs/Cargo.toml
-+++ b/proxmox-openid-rs/Cargo.toml
-@@ -25,5 +25,7 @@ ureq = { version = "2.4", default-features = false, features = ["native-tls", "g
- native-tls = "0.2"
- url = "2.1"
- 
--proxmox-time = "1"
--proxmox-sys = { version = "0.4", features = ["timer"] }
-+#proxmox-time = "1"
-+#proxmox-sys = { version = "0.4", features = ["timer"] }
-+proxmox-time = { path = "../proxmox/proxmox-time" }
-+proxmox-sys = { features = ["timer"], path = "../proxmox/proxmox-sys" }
