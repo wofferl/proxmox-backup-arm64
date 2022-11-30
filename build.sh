@@ -216,8 +216,8 @@ else
 fi
 
 
-PBS_I18N_VER="2.7-2"
-PBS_I18N_GIT="bd8a9ba2cc34872d3dd9579e412a19a3b5a05f21"
+PBS_I18N_VER="2.8-1"
+PBS_I18N_GIT="b7ff45c1f2265708d619bb9ec4a8b9e7c3e1be98"
 if [ ! -e "${PACKAGES}/pbs-i18n_${PBS_I18N_VER}_all.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-i18n.git
 	git_clean_and_checkout ${PBS_I18N_GIT} proxmox-i18n
