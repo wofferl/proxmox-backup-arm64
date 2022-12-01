@@ -60,68 +60,6 @@ else
 	echo "pve-eslint up-to-date"
 fi
 
-PROXMOX_PERL_VER="0.2.1"
-PROXMOX_PERL_GIT="9488180f9ef3bf57e049b645c001c3df9b65e11c"
-PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05"
-PROXMOX_APT_GIT="6c0c48b97a29cac1519402e4a1c77010e8a5d216"
-PROXMOX_GIT="2ae95b5f4e9870113dab8fea1df631299559d4a4"
-PROXMOX_OPENID_GIT="ce6def219262b5c1f6dbe5440f9f90038bafb3d8"
-PROXMOX_PERLMOD_GIT="9488180f9ef3bf57e049b645c001c3df9b65e11c"
-if ! dpkg-query -W -f='${Version}' libproxmox-rs-perl | grep -q ${PROXMOX_PERL_VER}; then
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-perl-rs.git
-	git_clean_and_checkout ${PROXMOX_PERL_GIT} proxmox-perl-rs
-	cd proxmox-perl-rs
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
-	git_clean_and_checkout ${PROXMOX_GIT} proxmox
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme-rs.git
-	git_clean_and_checkout ${PROXMOX_ACME_RS_GIT} proxmox-acme-rs
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-apt.git
-	git_clean_and_checkout ${PROXMOX_APT_GIT} proxmox-apt
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-openid-rs.git
-	git_clean_and_checkout ${PROXMOX_OPENID_GIT} proxmox-openid-rs
-	git_clone_or_fetch https://git.proxmox.com/git/perlmod.git
-	git_clean_and_checkout ${PROXMOX_PERLMOD_GIT} perlmod
-	patch -p1 < "${PATCHES}/proxmox-perl-rs-dependencies.patch" || exit 0
-	cargo vendor || exit 0
-	make pve-deb pmg-deb common-deb || exit 0
-	${SUDO} dpkg -i --force-depends ./build/libproxmox-rs-perl_0.2.1_arm64.deb \
-					./build/libpve-rs-perl_0.7.2_arm64.deb \
-					./build/libpmg-rs-perl_0.6.2_arm64.deb || exit 0
-	cd ..
-else
-	echo "libproxmox-rs-perl up-to-date"
-fi
-
-
-PVE_COMMON_VER="7.2-3"
-PVE_COMMON_GIT="8949840eab24b9413495dccfbe65c22b33a146c6"
-if ! dpkg-query -W -f='${Version}' libpve-common-perl | grep -q ${PVE_COMMON_VER}; then
-	git_clone_or_fetch https://git.proxmox.com/git/pve-common.git
-	cd pve-common/
-	git_clean_and_checkout ${PVE_COMMON_GIT}
-	${SUDO} apt -y build-dep .
-	make deb || exit 0
-	${SUDO} dpkg -i --force-depends ./libpve-common-perl_${PVE_COMMON_VER}_all.deb || exit 0
-	cd ..
-else
-	echo "libpve-common-perl up-to-date"
-fi
-
-PROXMOX_ACME_VER="1.4.2"
-PROXMOX_ACME_GIT="831d879ba508c40835827852951be1d469208b13"
-if ! dpkg-query -W -f='${Version}' libproxmox-acme-perl | grep -q ${PROXMOX_ACME_VER}; then
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme.git
-	cd proxmox-acme/
-	git_clean_and_checkout ${PROXMOX_ACME_GIT}
-	#${SUDO} apt -y build-dep .  # don't install build-dep, because it will remove libpve-common-perl
-	make deb || exit 0
-	cp -a libproxmox-acme-plugins_${PROXMOX_ACME_VER}_all.deb "${PACKAGES}"
-	${SUDO} apt -y --fix-broken install ./libproxmox-acme-perl_${PROXMOX_ACME_VER}_all.deb ./libproxmox-acme-plugins_${PROXMOX_ACME_VER}_all.deb
-	cd ..
-else
-	echo "libproxmox-acme-perl up-to-date"
-fi
-
 PROXMOX_WIDGETTOOLKIT_VER="3.5.3"
 PROXMOX_WIDGETTOOLKIT_GIT="0bba4fc63f488d807c2f8410c49a7a051195a3fd"
 if ! dpkg-query -W -f='${Version}' proxmox-widget-toolkit-dev | grep -q ${PROXMOX_WIDGETTOOLKIT_VER}; then
@@ -180,6 +118,24 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 		"${PACKAGES}"
 else
 	echo "proxmox-backup up-to-date"
+fi
+
+PROXMOX_ACME_VER="1.4.2"
+PROXMOX_ACME_GIT="831d879ba508c40835827852951be1d469208b13" # Version 7.3-1
+PVE_COMMON_GIT="9d14c9ddcf24a2f20a5ded58d28c3e1657ed3728"
+if ! dpkg-query -W -f='${Version}' libproxmox-acme-perl | grep -q ${PROXMOX_ACME_VER}; then
+	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme.git
+	cd proxmox-acme/
+	git_clean_and_checkout ${PROXMOX_ACME_GIT}
+	git_clone_or_fetch https://git.proxmox.com/git/pve-common.git
+	git_clean_and_checkout ${PVE_COMMON_GIT} pve-common
+	${SUDO} apt -y build-dep .
+	export PERL5LIB=$PWD/pve-common/src
+	make deb || exit 0
+	cp -a libproxmox-acme-plugins_${PROXMOX_ACME_VER}_all.deb "${PACKAGES}"
+	cd ..
+else
+	echo "libproxmox-acme-perl up-to-date"
 fi
 
 PVE_XTERMJS_VER="4.16.0-1"
