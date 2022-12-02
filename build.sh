@@ -28,7 +28,7 @@ function git_clean_and_checkout() {
 	git "${path_args[@]}" checkout "${commit_id}"
 }
 
-SUDO="sudo"
+SUDO="sudo -E"
 
 SCRIPT=$(realpath "${0}")
 BASE=$(dirname "${SCRIPT}")
