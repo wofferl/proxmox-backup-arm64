@@ -129,6 +129,7 @@ if ! dpkg-query -W -f='${Version}' libproxmox-acme-perl | grep -q ${PROXMOX_ACME
 	git_clean_and_checkout ${PROXMOX_ACME_GIT}
 	git_clone_or_fetch https://git.proxmox.com/git/pve-common.git
 	git_clean_and_checkout ${PVE_COMMON_GIT} pve-common
+	(cd pve-common; ${SUDO} apt -y build-dep .)
 	${SUDO} apt -y build-dep .
 	export PERL5LIB=$PWD/pve-common/src
 	make deb || exit 0
