@@ -3,10 +3,10 @@ Script for building Proxmox Backup Server 2.x for Armbian64 based on Bullseye
 
 ## Install build essentials and dependencies
 ```
- apt-get -y install \
-	build-essential curl sudo git lintian \
+apt-get install -y --no-install-recommends \
+	build-essential curl ca-certificates sudo git lintian \
 	pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev \
-	libnetaddr-ip-perl libpam0g-dev libcurl4-openssl-dev
+	libpam0g-dev
 ```
 ## Install ``rustup``
 ```
