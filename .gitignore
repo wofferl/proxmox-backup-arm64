@@ -1,2 +1,3 @@
-packages
-sources
+/packages
+/packages_build
+/sources
