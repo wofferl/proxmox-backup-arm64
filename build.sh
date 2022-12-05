@@ -3,6 +3,8 @@
 # build script for proxmox backup server on arm64
 # https://github.com/wofferl/proxmox-backup-arm64
 
+set -eu
+
 function download_package() {
 	repo=${1}
 	package=${2}
@@ -173,12 +175,12 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
-	patch -p1 -d proxmox/ < "${PATCHES}/proxmox-no-ksm.patch" || exit 0
-	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch" || exit 0
+	patch -p1 -d proxmox/ < "${PATCHES}/proxmox-no-ksm.patch"
+	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
 	cd proxmox-backup/
-	cargo vendor || exit 0
+	cargo vendor
 	${SUDO} apt -y build-dep .
-	dpkg-buildpackage -b -us -uc || exit 0
+	dpkg-buildpackage -b -us -uc
 	cd ..
 	cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_arm64.deb \
 		proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
@@ -197,12 +199,12 @@ if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_arm64.deb" ]; then
 	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
-	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch" || exit 0
+	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
 	cd pve-xtermjs/
 	${SUDO} apt -y build-dep .
-	make deb || exit 0
+	make deb
 	cd ..
-	cp -a pve-xtermjs{,-dbgsym}_${PVE_XTERMJS_VER}_arm64.deb "${PACKAGES}"
+	cp -a pve-xtermjs_${PVE_XTERMJS_VER}_arm64.deb "${PACKAGES}"
 else
 	echo "pve-xtermjs up-to-date"
 fi
@@ -215,7 +217,7 @@ if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_a
 	patch -p1 -d proxmox-mini-journalreader/ < ${PATCHES}/proxmox-mini-journalreader.patch
 	cd proxmox-mini-journalreader/
 	${SUDO} apt -y build-dep .
-	make deb || exit 0
+	make deb
 	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_arm64.deb "${PACKAGES}"
 	cd ..
 else
