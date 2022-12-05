@@ -103,7 +103,7 @@ function select_package() {
 	echo "${url}"
 }
 
-SUDO="sudo -E"
+SUDO="${SUDO:-sudo -E}"
 
 SCRIPT=$(realpath "${0}")
 BASE=$(dirname "${SCRIPT}")
