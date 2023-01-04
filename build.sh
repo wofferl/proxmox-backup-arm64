@@ -20,14 +20,14 @@ function download_package() {
 
 	if [ -z "${url}" ]; then
 		echo "Error package ${package} in version " "${version_test[@]}" " not found"
-		return
+		return 1
 	fi
 
 	file="${dest}/${url##*/}"
 	if [ -e "${file}" ]; then
 		echo "${package} up-to-date" >&2
 		echo "${file}"
-		return
+		return 0
 	fi
 
 	echo "${package} downloading..." >&2
@@ -78,7 +78,7 @@ function select_package() {
 		packages_target=${PACKAGES_DEVEL}
 	else
 		echo "Unknown repo ${repo}" >&2
-		return
+		return 1
 	fi
 
 	version_target=0.0
@@ -99,7 +99,7 @@ function select_package() {
 	done <<<"${packages_target}"
 
 	if [ -z "${file_target}" ]; then
-		return
+		return 1
 	fi
 	url=${url_base}/${file_target}
 	echo "${url}"
@@ -148,13 +148,13 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="2.3.1-1"
-PROXMOX_BACKUP_GIT="2abb984b58aca4169fbf9a22ebf302d186f3e062"
+PROXMOX_BACKUP_VER="2.3.2-1"
+PROXMOX_BACKUP_GIT="e6120a8f6ff36f627a4da3a1a51a1e47231f5cc8"
 PATHPATTERNS_GIT="916e41c50e75a718ab7b1b95dc770eed9cd7a403"
 PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05"
 PROXMOX_APT_GIT="8a7a719aec23ad98a00bb452f0ced4cbf88ba591"
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708"
-PROXMOX_GIT="d513ef78361cbdb505b4e0e6dbf74b1a10ee987e"
+PROXMOX_GIT="7bc85c05c97ba3f2ecbdcf43ee83e8f24355311a"
 PROXMOX_OPENID_GIT="ce6def219262b5c1f6dbe5440f9f90038bafb3d8"
 PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5"
 if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ]; then
