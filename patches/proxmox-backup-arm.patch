@@ -25,10 +25,10 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index 38e9c1f2..7ac2ed4c 100644
+index 78ded46d..15580808 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -127,27 +127,29 @@ pbs-tape = { path = "pbs-tape" }
+@@ -238,27 +238,29 @@ proxmox-rrd.workspace = true
  # Local path overrides
  # NOTE: You must run `cargo update` after changing this for it to take effect!
  [patch.crates-io]
@@ -80,7 +80,7 @@ index 38e9c1f2..7ac2ed4c 100644
  [features]
  default = []
 diff --git a/debian/control b/debian/control
-index 6207d85e..114e1a7a 100644
+index 6878aba3..13d713ff 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -2,124 +2,7 @@ Source: rust-proxmox-backup
@@ -88,7 +88,7 @@ index 6207d85e..114e1a7a 100644
  Priority: optional
  Build-Depends: debhelper (>= 12),
 - dh-cargo (>= 24),
-- cargo:native,
+- cargo:native (>= 0.65.0-1),
 - rustc:native,
   libstd-rust-dev,
 - librust-anyhow-1+default-dev,
@@ -120,7 +120,7 @@ index 6207d85e..114e1a7a 100644
 - librust-nom-7+default-dev,
 - librust-num-traits-0.2+default-dev,
 - librust-once-cell-1+default-dev (>= 1.3.1-~~),
-- librust-openssl-0.10+default-dev (>= 0.10.38-~~),
+- librust-openssl-0.10+default-dev (>= 0.10.40-~~),
 - librust-pam-0.7+default-dev,
 - librust-pam-sys-0.5+default-dev,
 - librust-pathpatterns-0.1+default-dev (>= 0.1.2-~~),
@@ -168,7 +168,6 @@ index 6207d85e..114e1a7a 100644
 - librust-proxmox-uuid-1+default-dev,
 - librust-proxmox-uuid-1+serde-dev,
 - librust-pxar-0.10+default-dev (>= 0.10.2-~~),
-- librust-pxar-0.10+tokio-io-dev (>= 0.10.2-~~),
 - librust-regex-1+default-dev (>= 1.5.5-~~),
 - librust-rustyline-9+default-dev,
 - librust-serde-1+default-dev,
@@ -179,6 +178,7 @@ index 6207d85e..114e1a7a 100644
 - librust-siphasher-0.3+default-dev,
 - librust-syslog-4+default-dev,
 - librust-tar-0.4+default-dev,
+- librust-termcolor-1+default-dev (>= 1.1.2-~~),
 - librust-thiserror-1+default-dev,
 - librust-tokio-1+default-dev (>= 1.6-~~),
 - librust-tokio-1+fs-dev (>= 1.6-~~),
