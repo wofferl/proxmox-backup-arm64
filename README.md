@@ -58,7 +58,7 @@ proxmox-backup-manager user list
 
 to update root user pwd:
 ```
-proxmox-backup-manager user update root@pam -- password {pwd}
+proxmox-backup-manager user update root@pam --password {pwd}
 ```
 
 more info: https://pbs.proxmox.com/docs/user-management.html
