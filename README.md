@@ -22,7 +22,8 @@ source ~/.cargo/env
 ## Raspberry 3B help
 Using Raspberry PI OS Lite (64-bit), a port of Debian Bullseye with no desktop
 
-increase SWAP, I used 4G and success compilation:
+increase SWAP, I used 4G and success compilation
+from https://askubuntu.com/questions/178712/how-to-increase-swap-space/1263160#1263160
 ```
 swapon --show
 sudo swapoff /var/swap
