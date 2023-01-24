@@ -1,5 +1,6 @@
 # proxmox-backup-arm64
-Script for building Proxmox Backup Server 2.x for Armbian64 based on Bullseye
+Script for building Proxmox Backup Server 2.x for Armbian64 based on Bullseye<br />
+At least 4 GB are required for compiling. On devices with low memory, SWAP must be used (see help section).
 
 ## Install build essentials and dependencies
 ```
@@ -19,22 +20,11 @@ source ~/.cargo/env
 ./build.sh
 ```
 
-## Raspberry 3B help
-Using Raspberry PI OS Lite (64-bit), a port of Debian Bullseye with no desktop
+The compilation can take several hours.<br />
+After that you can find the finished packages in the folder packages/
 
-increase SWAP, I used 4G and success compilation
-from https://askubuntu.com/questions/178712/how-to-increase-swap-space/1263160#1263160
-```
-swapon --show
-sudo swapoff /var/swap
-sudo fallocate -l 4G /var/swap
-sudo mkswap /var/swap
-sudo swapon /var/swap
-swapon --show
-```
-
-## After packages compiled (inside "packages" folder) or downloaded, install with command:
-from https://github.com/wofferl/proxmox-backup-arm64/issues/8
+## Install all needed packages
+### Server
 ```
 sudo apt install \
   ./libjs-extjs_*_all.deb \
@@ -48,17 +38,43 @@ sudo apt install \
   ./pve-xtermjs_*_arm64.deb
 ```
 
-## first login user and password
-login to terminal
+### Client
+```
+sudo apt install \
+  ./proxmox-backup-client_*_arm64.deb \
+  # Optional: ./proxmox-backup-file-restore_*_arm64.deb
+```
+
+## Help section
+### Console commands
 
 to see PBS users:
+
 ```
 proxmox-backup-manager user list
 ```
 
 to update root user pwd:
+
 ```
 proxmox-backup-manager user update root@pam --password {pwd}
 ```
 
 more info: https://pbs.proxmox.com/docs/user-management.html
+
+### Create SWAP (at least 4G on low memory systems like Raspberry PI)
+from https://askubuntu.com/questions/178712/how-to-increase-swap-space/1263160#1263160
+
+Check swap memory:
+
+```
+swapon --show or free -h
+```
+
+Create and enable 4G swap file:
+
+```
+sudo fallocate -l 4G /var/swap
+sudo mkswap /var/swap
+sudo swapon /var/swap
+```
