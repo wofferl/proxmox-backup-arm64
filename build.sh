@@ -191,7 +191,7 @@ else
 	echo "proxmox-backup up-to-date"
 fi
 
-PVE_XTERMJS_VER="4.16.0-1"
+PVE_XTERMJS_VER="4.16.0-2"
 PVE_XTERMJS_GIT="8dcff86a32c3ba8754b84e8aabb01369ef3de407"
 PROXMOX_XTERMJS_GIT="41862eeb95b70201c47dfd27fca37879e23be3ff"
 if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_arm64.deb" ]; then
@@ -200,9 +200,10 @@ if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_arm64.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
 	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
+	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-fix_already_registered.patch"
 	cd pve-xtermjs/
 	${SUDO} apt -y build-dep .
-	make deb
+	BUILD_MODE=release make deb
 	cd ..
 	cp -a pve-xtermjs_${PVE_XTERMJS_VER}_arm64.deb "${PACKAGES}"
 else

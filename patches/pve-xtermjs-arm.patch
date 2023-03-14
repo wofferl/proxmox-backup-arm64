@@ -25,7 +25,7 @@ index 60c3ae0..8464181 100644
 +proxmox-io = { path = "../proxmox/proxmox-io" }
 +proxmox-sys = { path = "../proxmox/proxmox-sys" }
 diff --git a/Makefile b/Makefile
-index cd583fb..42d62fe 100644
+index cd583fb..6c15792 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -35,6 +35,14 @@ $(SUBDIRS):
@@ -60,6 +60,20 @@ index cd583fb..42d62fe 100644
 diff --git a/debian/cargo-checksum.json b/debian/cargo-checksum.json
 new file mode 100644
 index 0000000..e69de29
+diff --git a/debian/changelog b/debian/changelog
+index 19bc1d1..1bd362a 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,3 +1,9 @@
++rust-termproxy (4.16.0-2) bullseye; urgency=medium
++
++  * fix Connection closed (Code: 1000) error - WARN: I/O source already registered with a `Registry`
++
++ -- Wolfgang <pbs@linux-dude.de>  Tue, 14 Mar 2023 21:01:43 +0100
++
+ rust-termproxy (4.16.0-1) bullseye; urgency=medium
+ 
+   * upgrade xterm.js from 4.12.0 to 4.16.0
 diff --git a/debian/compat b/debian/compat
 new file mode 100644
 index 0000000..f599e28
@@ -103,6 +117,14 @@ index 0000000..d59a66c
 +Description: HTML/JS Shell client for Proxmox projects
 + This package provides an xterm.js client/proxy for Proxmoxprojects'  Hosts,
 + Proxmox VE containers or Proxmox VE VM's serial-terminals.
+diff --git a/debian/install b/debian/install
+index 04be689..0e69d82 100644
+--- a/debian/install
++++ b/debian/install
+@@ -1 +1,2 @@
+-src/www/*		/usr/share/pve-xtermjs/
++src/www/*			/usr/share/pve-xtermjs/
++target/release/termproxy	/usr/bin/
 diff --git a/debian/rules b/debian/rules
 index 2b62edd..436684e 100755
 --- a/debian/rules
