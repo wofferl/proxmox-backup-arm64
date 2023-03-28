@@ -148,13 +148,13 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="2.3.3-1"
-PROXMOX_BACKUP_GIT="bde9e3d74c86d1600409f81e2a72de91e717cd62"
-PATHPATTERNS_GIT="916e41c50e75a718ab7b1b95dc770eed9cd7a403" # 0.1.2-1
+PROXMOX_BACKUP_VER="2.4.1-1"
+PROXMOX_BACKUP_GIT="3da94f2e7429ea1653ed5e61a0f83e67ff02b8be"
+PATHPATTERNS_GIT="8a0dce93d535ef04bfa9c8317edc0ef0216e9042" # 0.1.3-1
 PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05" # 0.4.0
 PROXMOX_APT_GIT="8a7a719aec23ad98a00bb452f0ced4cbf88ba591" # 0.9.3-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
-PROXMOX_GIT="9c44e9b410a7eab21160d9588dcb8f5d88f1f979"
+PROXMOX_GIT="32e7d3ccdfd2702dcceea312a6caee7b1565030a"
 PROXMOX_OPENID_GIT="ecf59cbb74278ea0e9710466508158ed6a6828c4" # 0.9.9-1
 PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5" # 0.10.2-1
 if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ]; then
@@ -175,7 +175,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
-	patch -p1 -d proxmox/ < "${PATCHES}/proxmox-no-ksm.patch"
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
 	cd proxmox-backup/
 	cargo vendor
