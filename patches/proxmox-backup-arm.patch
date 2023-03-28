@@ -25,65 +25,72 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index 2bf9ae48..588de82f 100644
+index 032060e0..14ee5288 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -238,27 +238,29 @@ proxmox-rrd.workspace = true
+@@ -241,31 +241,34 @@ proxmox-rrd.workspace = true
  # Local path overrides
  # NOTE: You must run `cargo update` after changing this for it to take effect!
  [patch.crates-io]
 -#proxmox-acme-rs = { path = "../proxmox-acme-rs" }
--#proxmox-apt = { path = "../proxmox-apt" }
 -#proxmox-async = { path = "../proxmox/proxmox-async" }
--#proxmox-compression = { path = "../proxmox/proxmox-compression" }
+-#proxmox-auth-api = { path = "../proxmox/proxmox-auth-api" }
 -#proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
+-#proxmox-compression = { path = "../proxmox/proxmox-compression" }
 -#proxmox-fuse = { path = "../proxmox-fuse" }
 -#proxmox-http = { path = "../proxmox/proxmox-http" }
 -#proxmox-io = { path = "../proxmox/proxmox-io" }
 -#proxmox-lang = { path = "../proxmox/proxmox-lang" }
--#proxmox-openid = { path = "../proxmox-openid-rs" }
--#proxmox-router = { path = "../proxmox/proxmox-rest-server" }
+-#proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
 -#proxmox-router = { path = "../proxmox/proxmox-router" }
 -#proxmox-schema = { path = "../proxmox/proxmox-schema" }
 -#proxmox-section-config = { path = "../proxmox/proxmox-section-config" }
--#proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
--#proxmox-sys = { path = "../proxmox/proxmox-sys" }
 -#proxmox-serde = { path = "../proxmox/proxmox-serde" }
+-#proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
+-#proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
+-#proxmox-sys = { path = "../proxmox/proxmox-sys" }
 -#proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
 -#proxmox-time = { path = "../proxmox/proxmox-time" }
 -#proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
--#pxar = { path = "../pxar" }
 +proxmox-acme-rs = { path = "../proxmox-acme-rs" }
-+proxmox-apt = { path = "../proxmox-apt" }
 +proxmox-async = { path = "../proxmox/proxmox-async" }
-+proxmox-compression = { path = "../proxmox/proxmox-compression" }
++proxmox-auth-api = { path = "../proxmox/proxmox-auth-api" }
 +proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
++proxmox-compression = { path = "../proxmox/proxmox-compression" }
 +proxmox-fuse = { path = "../proxmox-fuse" }
 +proxmox-http = { path = "../proxmox/proxmox-http" }
 +proxmox-io = { path = "../proxmox/proxmox-io" }
 +proxmox-lang = { path = "../proxmox/proxmox-lang" }
++proxmox-ldap = { path = "../proxmox/proxmox-ldap" }
 +proxmox-metrics = { path = "../proxmox/proxmox-metrics" }
-+proxmox-openid = { path = "../proxmox-openid-rs" }
 +proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
 +proxmox-router = { path = "../proxmox/proxmox-router" }
 +proxmox-schema = { path = "../proxmox/proxmox-schema" }
 +proxmox-section-config = { path = "../proxmox/proxmox-section-config" }
++proxmox-serde = { path = "../proxmox/proxmox-serde" }
 +proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
++proxmox-sortable-macro = { path = "../proxmox/proxmox-sortable-macro" }
 +proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
 +proxmox-sys = { path = "../proxmox/proxmox-sys" }
-+proxmox-serde = { path = "../proxmox/proxmox-serde" }
 +proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
 +proxmox-time = { path = "../proxmox/proxmox-time" }
 +proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
+ 
+-#proxmox-apt = { path = "../proxmox-apt" }
+-#proxmox-openid = { path = "../proxmox-openid-rs" }
++proxmox-apt = { path = "../proxmox-apt" }
++proxmox-openid = { path = "../proxmox-openid-rs" }
+ 
+-#pxar = { path = "../pxar" }
 +pxar = { path = "../pxar" }
  
  [features]
  default = []
 diff --git a/debian/control b/debian/control
-index 02f32ef8..13d713ff 100644
+index 286922b5..13d713ff 100644
 --- a/debian/control
 +++ b/debian/control
-@@ -2,124 +2,7 @@ Source: rust-proxmox-backup
+@@ -2,133 +2,7 @@ Source: rust-proxmox-backup
  Section: admin
  Priority: optional
  Build-Depends: debhelper (>= 12),
@@ -129,21 +136,30 @@ index 02f32ef8..13d713ff 100644
 - librust-proxmox-acme-rs-0.4+default-dev,
 - librust-proxmox-apt-0.9+default-dev,
 - librust-proxmox-async-0.4+default-dev,
+- librust-proxmox-auth-api-0.1+api-dev,
+- librust-proxmox-auth-api-0.1+api-types-dev,
+- librust-proxmox-auth-api-0.1+default-dev,
+- librust-proxmox-auth-api-0.1+pam-authenticator-dev,
 - librust-proxmox-borrow-1+default-dev,
 - librust-proxmox-compression-0.1+default-dev (>= 0.1.1-~~),
 - librust-proxmox-fuse-0.1+default-dev (>= 0.1.3-~~),
-- librust-proxmox-http-0.7+client-dev,
-- librust-proxmox-http-0.7+client-trait-dev,
-- librust-proxmox-http-0.7+default-dev,
-- librust-proxmox-http-0.7+http-helpers-dev,
-- librust-proxmox-http-0.7+proxmox-async-dev,
-- librust-proxmox-http-0.7+websocket-dev,
+- librust-proxmox-http-0.8+client-dev,
+- librust-proxmox-http-0.8+client-trait-dev,
+- librust-proxmox-http-0.8+default-dev,
+- librust-proxmox-http-0.8+http-helpers-dev,
+- librust-proxmox-http-0.8+proxmox-async-dev,
+- librust-proxmox-http-0.8+rate-limited-stream-dev,
+- librust-proxmox-http-0.8+rate-limiter-dev,
+- librust-proxmox-http-0.8+websocket-dev,
 - librust-proxmox-io-1+default-dev (>= 1.0.1-~~),
 - librust-proxmox-io-1+tokio-dev (>= 1.0.1-~~),
 - librust-proxmox-lang-1+default-dev (>= 1.1-~~),
+- librust-proxmox-ldap-0.1+default-dev,
 - librust-proxmox-metrics-0.2+default-dev,
 - librust-proxmox-openid-0.9+default-dev (>= 0.9.9-~~),
-- librust-proxmox-rest-server-0.2+default-dev (>= 0.2.1-~~),
+- librust-proxmox-rest-server-0.3+default-dev,
+- librust-proxmox-rest-server-0.3+rate-limited-stream-dev,
+- librust-proxmox-rest-server-0.3+templates-dev,
 - librust-proxmox-router-1+cli-dev (>= 1.3.1-~~),
 - librust-proxmox-router-1+default-dev (>= 1.3.1-~~),
 - librust-proxmox-router-1+server-dev (>= 1.3.1-~~),
@@ -153,17 +169,17 @@ index 02f32ef8..13d713ff 100644
 - librust-proxmox-serde-0.1+default-dev (>= 0.1.1-~~),
 - librust-proxmox-serde-0.1+serde-json-dev (>= 0.1.1-~~),
 - librust-proxmox-shared-memory-0.2+default-dev (>= 0.2.3-~~),
+- librust-proxmox-sortable-macro-0.1+default-dev (>= 0.1.2-~~),
 - librust-proxmox-subscription-0.3+api-types-dev,
 - librust-proxmox-subscription-0.3+default-dev,
 - librust-proxmox-sys-0.4+acl-dev (>= 0.4.2-~~),
 - librust-proxmox-sys-0.4+crypt-dev (>= 0.4.2-~~),
 - librust-proxmox-sys-0.4+default-dev (>= 0.4.2-~~),
 - librust-proxmox-sys-0.4+logrotate-dev (>= 0.4.2-~~),
-- librust-proxmox-sys-0.4+sortable-macro-dev (>= 0.4.2-~~),
 - librust-proxmox-sys-0.4+timer-dev (>= 0.4.2-~~),
-- librust-proxmox-tfa-2+api-dev (>= 2.1-~~),
-- librust-proxmox-tfa-2+api-types-dev (>= 2.1-~~),
-- librust-proxmox-tfa-2+default-dev (>= 2.1-~~),
+- librust-proxmox-tfa-3+api-dev,
+- librust-proxmox-tfa-3+api-types-dev,
+- librust-proxmox-tfa-3+default-dev,
 - librust-proxmox-time-1+default-dev (>= 1.1.2-~~),
 - librust-proxmox-uuid-1+default-dev,
 - librust-proxmox-uuid-1+serde-dev,
@@ -232,7 +248,7 @@ index feb0557b..9501d29b 100755
      CACHE_PATH_DBG="/var/cache/proxmox-backup/file-restore-initramfs-debug.img"
  
 diff --git a/debian/proxmox-backup-server.install b/debian/proxmox-backup-server.install
-index 6e2219b4..82954cdd 100644
+index 76f50cd0..528a3cc5 100644
 --- a/debian/proxmox-backup-server.install
 +++ b/debian/proxmox-backup-server.install
 @@ -4,11 +4,11 @@ etc/proxmox-backup-banner.service /lib/systemd/system/
