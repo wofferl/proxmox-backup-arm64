@@ -269,7 +269,7 @@ index 76f50cd0..528a3cc5 100644
  usr/sbin/proxmox-backup-manager
  usr/bin/pmtx
 diff --git a/debian/rules b/debian/rules
-index b13ba334..323da5ed 100755
+index cf94692e..0f6bb703 100755
 --- a/debian/rules
 +++ b/debian/rules
 @@ -4,12 +4,9 @@
@@ -285,10 +285,10 @@ index b13ba334..323da5ed 100755
  export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
  export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
  export CARGO_HOME = $(CURDIR)/debian/cargo_home
-@@ -21,7 +18,6 @@ export DEB_CARGO_PACKAGE=proxmox-backup
- 	dh $@ --with=bash-completion
+@@ -22,7 +19,6 @@ export DEB_CARGO_PACKAGE=proxmox-backup
  
  override_dh_auto_configure:
+ 	@perl -ne 'if (/^version\s*=\s*"(\d+(?:\.\d+)+)"/) { my $$v_cargo = $$1; my $$v_deb = $$ENV{DEB_VERSION_UPSTREAM}; die "ERROR: d/changelog <-> Cargo.toml version mismatch: $$v_cargo != $$v_deb\n" if $$v_cargo ne $$v_deb; exit(0); }' Cargo.toml
 -	$(CARGO) prepare-debian $(CURDIR)/debian/cargo_registry --link-from-system
  	dh_auto_configure
  

@@ -148,8 +148,8 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="2.4.0-2"
-PROXMOX_BACKUP_GIT="743f83bc5a79e69e246d3a4ece57984270ee7869"
+PROXMOX_BACKUP_VER="2.4.1-1"
+PROXMOX_BACKUP_GIT="3da94f2e7429ea1653ed5e61a0f83e67ff02b8be"
 PATHPATTERNS_GIT="8a0dce93d535ef04bfa9c8317edc0ef0216e9042" # 0.1.3-1
 PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05" # 0.4.0
 PROXMOX_APT_GIT="8a7a719aec23ad98a00bb452f0ced4cbf88ba591" # 0.9.3-1
@@ -179,6 +179,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_arm64.deb" ];
 	cd proxmox-backup/
 	cargo vendor
 	${SUDO} apt -y build-dep .
+	export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
+	export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
 	dpkg-buildpackage -b -us -uc
 	cd ..
 	cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_arm64.deb \
