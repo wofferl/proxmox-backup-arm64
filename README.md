@@ -28,7 +28,7 @@ After that you can find the finished packages in the folder packages/
 
 You can build arm64 .deb packages using the provided Dockerfile and docker buildx:
 ```
-docker buildx build --platform linux/arm64 .
+docker buildx build -o packages --platform linux/arm64 .
 ```
 
 Once the docker build is completed, packages will be copied from the docker build image to a folder named `packages` in the root folder.

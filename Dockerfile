@@ -14,4 +14,4 @@ SHELL ["/bin/bash", "-c"]
 RUN source ~/.cargo/env && ./build.sh
 
 FROM scratch
-COPY --from=builder-stage /build/packages/* ./packages/
+COPY --from=builder-stage /build/packages/* /
