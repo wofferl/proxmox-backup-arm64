@@ -124,10 +124,13 @@ fi
 [ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
 
 
+echo "Download packages list from proxmox devel repository"
 PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/bullseye/main/binary-amd64/Packages.gz)
+echo "Download packages list from pbs-no-subscription repository"
 PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/bullseye/pbs-no-subscription/binary-amd64/Packages.gz)
 
 
+echo "Download dependencies"
 EXTJS_VER=(">=" "7~")
 PBS_I18N_VER=(">=" "0")
 PROXMOX_ACME_VER=(">=" "0")
@@ -143,6 +146,7 @@ packages_install=(
 	"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
 	"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
 )
+echo "Install build dependencies"
 ${SUDO} apt install -y "${packages_install[@]}"
 
 
