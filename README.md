@@ -2,21 +2,21 @@
 Script for building Proxmox Backup Server 2.x for Armbian64 based on Bullseye<br />
 At least 4 GB are required for compiling. On devices with low memory, SWAP must be used (see help section).
 
-## Manual Build
-### 1. Install build essentials and dependencies
+## Build manually
+### Install build essentials and dependencies
 ```
 apt-get install -y --no-install-recommends \
 	build-essential curl ca-certificates sudo git lintian \
 	pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev \
 	libpam0g-dev
 ```
-### 2. Install ``rustup``
+### Install ``rustup``
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s
 source ~/.cargo/env
 ```
 
-### 3. Start build script
+### Start build script
 ```
 ./build.sh
 ```
@@ -24,7 +24,7 @@ source ~/.cargo/env
 The compilation can take several hours.<br />
 After that you can find the finished packages in the folder packages/
 
-## Docker Build
+## Build using docker
 
 You can build arm64 .deb packages using the provided Dockerfile and docker buildx:
 ```
