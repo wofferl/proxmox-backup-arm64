@@ -62,7 +62,7 @@ function git_clean_and_checkout() {
 
 function load_packages() {
 	url=${1}
-	curl -sSf "${url}" \
+	curl -sSf -H 'Cache-Control: no-cache' "${url}" \
 		| gzip -d - \
 		| sed '/./{H;$!d} ; x ; s/^.*Package: \([^\n]*\).*Version: \([^\n]*\).*Filename: \([^\n]*\).*$/\1 \2 \3/p'
 }
