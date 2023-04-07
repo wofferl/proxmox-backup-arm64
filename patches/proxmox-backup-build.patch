@@ -1,0 +1,251 @@
+diff --git a/.cargo/config b/.cargo/config
+index 3b5b6e48..50908c05 100644
+--- a/.cargo/config
++++ b/.cargo/config
+@@ -1,5 +1,17 @@
+-[source]
+-[source.debian-packages]
+-directory = "/usr/share/cargo/registry"
+ [source.crates-io]
+-replace-with = "debian-packages"
++replace-with = "vendored-sources"
++
++[source."git://git.proxmox.com/git/pathpatterns.git"]
++git = "git://git.proxmox.com/git/pathpatterns.git"
++replace-with = "vendored-sources"
++
++[source."git://git.proxmox.com/git/proxmox-fuse.git"]
++git = "git://git.proxmox.com/git/proxmox-fuse.git"
++replace-with = "vendored-sources"
++
++[source."git://git.proxmox.com/git/pxar.git"]
++git = "git://git.proxmox.com/git/pxar.git"
++replace-with = "vendored-sources"
++
++[source.vendored-sources]
++directory = "vendor"
+diff --git a/Cargo.toml b/Cargo.toml
+index 032060e0..14ee5288 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -241,31 +241,34 @@ proxmox-rrd.workspace = true
+ # Local path overrides
+ # NOTE: You must run `cargo update` after changing this for it to take effect!
+ [patch.crates-io]
+-#proxmox-acme-rs = { path = "../proxmox-acme-rs" }
+-#proxmox-async = { path = "../proxmox/proxmox-async" }
+-#proxmox-auth-api = { path = "../proxmox/proxmox-auth-api" }
+-#proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
+-#proxmox-compression = { path = "../proxmox/proxmox-compression" }
+-#proxmox-fuse = { path = "../proxmox-fuse" }
+-#proxmox-http = { path = "../proxmox/proxmox-http" }
+-#proxmox-io = { path = "../proxmox/proxmox-io" }
+-#proxmox-lang = { path = "../proxmox/proxmox-lang" }
+-#proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
+-#proxmox-router = { path = "../proxmox/proxmox-router" }
+-#proxmox-schema = { path = "../proxmox/proxmox-schema" }
+-#proxmox-section-config = { path = "../proxmox/proxmox-section-config" }
+-#proxmox-serde = { path = "../proxmox/proxmox-serde" }
+-#proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
+-#proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
+-#proxmox-sys = { path = "../proxmox/proxmox-sys" }
+-#proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
+-#proxmox-time = { path = "../proxmox/proxmox-time" }
+-#proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
++proxmox-acme-rs = { path = "../proxmox-acme-rs" }
++proxmox-async = { path = "../proxmox/proxmox-async" }
++proxmox-auth-api = { path = "../proxmox/proxmox-auth-api" }
++proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
++proxmox-compression = { path = "../proxmox/proxmox-compression" }
++proxmox-fuse = { path = "../proxmox-fuse" }
++proxmox-http = { path = "../proxmox/proxmox-http" }
++proxmox-io = { path = "../proxmox/proxmox-io" }
++proxmox-lang = { path = "../proxmox/proxmox-lang" }
++proxmox-ldap = { path = "../proxmox/proxmox-ldap" }
++proxmox-metrics = { path = "../proxmox/proxmox-metrics" }
++proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
++proxmox-router = { path = "../proxmox/proxmox-router" }
++proxmox-schema = { path = "../proxmox/proxmox-schema" }
++proxmox-section-config = { path = "../proxmox/proxmox-section-config" }
++proxmox-serde = { path = "../proxmox/proxmox-serde" }
++proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
++proxmox-sortable-macro = { path = "../proxmox/proxmox-sortable-macro" }
++proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
++proxmox-sys = { path = "../proxmox/proxmox-sys" }
++proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
++proxmox-time = { path = "../proxmox/proxmox-time" }
++proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
+ 
+-#proxmox-apt = { path = "../proxmox-apt" }
+-#proxmox-openid = { path = "../proxmox-openid-rs" }
++proxmox-apt = { path = "../proxmox-apt" }
++proxmox-openid = { path = "../proxmox-openid-rs" }
+ 
+-#pxar = { path = "../pxar" }
++pxar = { path = "../pxar" }
+ 
+ [features]
+ default = []
+diff --git a/debian/control b/debian/control
+index 286922b5..13d713ff 100644
+--- a/debian/control
++++ b/debian/control
+@@ -2,133 +2,7 @@ Source: rust-proxmox-backup
+ Section: admin
+ Priority: optional
+ Build-Depends: debhelper (>= 12),
+- dh-cargo (>= 24),
+- cargo:native (>= 0.65.0-1),
+- rustc:native,
+  libstd-rust-dev,
+- librust-anyhow-1+default-dev,
+- librust-apt-pkg-native-0.3+default-dev (>= 0.3.2-~~),
+- librust-base64-0.13+default-dev,
+- librust-bitflags-1+default-dev (>= 1.2.1-~~),
+- librust-bytes-1+default-dev,
+- librust-cidr-0.2+default-dev (>= 0.2.1-~~),
+- librust-crc32fast-1+default-dev,
+- librust-crossbeam-channel-0.5+default-dev,
+- librust-endian-trait-0.6+arrays-dev,
+- librust-endian-trait-0.6+default-dev,
+- librust-env-logger-0.9+default-dev,
+- librust-flate2-1+default-dev,
+- librust-foreign-types-0.3+default-dev,
+- librust-futures-0.3+default-dev,
+- librust-h2-0.3+default-dev,
+- librust-h2-0.3+stream-dev,
+- librust-handlebars-3+default-dev,
+- librust-hex-0.4+default-dev (>= 0.4.3-~~),
+- librust-hex-0.4+serde-dev (>= 0.4.3-~~),
+- librust-http-0.2+default-dev,
+- librust-hyper-0.14+default-dev,
+- librust-hyper-0.14+full-dev,
+- librust-lazy-static-1+default-dev (>= 1.4-~~),
+- librust-libc-0.2+default-dev,
+- librust-log-0.4+default-dev (>= 0.4.17-~~),
+- librust-nix-0.26+default-dev (>= 0.26.1-~~),
+- librust-nom-7+default-dev,
+- librust-num-traits-0.2+default-dev,
+- librust-once-cell-1+default-dev (>= 1.3.1-~~),
+- librust-openssl-0.10+default-dev (>= 0.10.40-~~),
+- librust-pam-0.7+default-dev,
+- librust-pam-sys-0.5+default-dev,
+- librust-pathpatterns-0.1+default-dev (>= 0.1.2-~~),
+- librust-percent-encoding-2+default-dev (>= 2.1-~~),
+- librust-pin-project-lite-0.2+default-dev,
+- librust-proxmox-acme-rs-0.4+default-dev,
+- librust-proxmox-apt-0.9+default-dev,
+- librust-proxmox-async-0.4+default-dev,
+- librust-proxmox-auth-api-0.1+api-dev,
+- librust-proxmox-auth-api-0.1+api-types-dev,
+- librust-proxmox-auth-api-0.1+default-dev,
+- librust-proxmox-auth-api-0.1+pam-authenticator-dev,
+- librust-proxmox-borrow-1+default-dev,
+- librust-proxmox-compression-0.1+default-dev (>= 0.1.1-~~),
+- librust-proxmox-fuse-0.1+default-dev (>= 0.1.3-~~),
+- librust-proxmox-http-0.8+client-dev,
+- librust-proxmox-http-0.8+client-trait-dev,
+- librust-proxmox-http-0.8+default-dev,
+- librust-proxmox-http-0.8+http-helpers-dev,
+- librust-proxmox-http-0.8+proxmox-async-dev,
+- librust-proxmox-http-0.8+rate-limited-stream-dev,
+- librust-proxmox-http-0.8+rate-limiter-dev,
+- librust-proxmox-http-0.8+websocket-dev,
+- librust-proxmox-io-1+default-dev (>= 1.0.1-~~),
+- librust-proxmox-io-1+tokio-dev (>= 1.0.1-~~),
+- librust-proxmox-lang-1+default-dev (>= 1.1-~~),
+- librust-proxmox-ldap-0.1+default-dev,
+- librust-proxmox-metrics-0.2+default-dev,
+- librust-proxmox-openid-0.9+default-dev (>= 0.9.9-~~),
+- librust-proxmox-rest-server-0.3+default-dev,
+- librust-proxmox-rest-server-0.3+rate-limited-stream-dev,
+- librust-proxmox-rest-server-0.3+templates-dev,
+- librust-proxmox-router-1+cli-dev (>= 1.3.1-~~),
+- librust-proxmox-router-1+default-dev (>= 1.3.1-~~),
+- librust-proxmox-router-1+server-dev (>= 1.3.1-~~),
+- librust-proxmox-schema-1+api-macro-dev (>= 1.3.6-~~),
+- librust-proxmox-schema-1+default-dev (>= 1.3.6-~~),
+- librust-proxmox-section-config-1+default-dev,
+- librust-proxmox-serde-0.1+default-dev (>= 0.1.1-~~),
+- librust-proxmox-serde-0.1+serde-json-dev (>= 0.1.1-~~),
+- librust-proxmox-shared-memory-0.2+default-dev (>= 0.2.3-~~),
+- librust-proxmox-sortable-macro-0.1+default-dev (>= 0.1.2-~~),
+- librust-proxmox-subscription-0.3+api-types-dev,
+- librust-proxmox-subscription-0.3+default-dev,
+- librust-proxmox-sys-0.4+acl-dev (>= 0.4.2-~~),
+- librust-proxmox-sys-0.4+crypt-dev (>= 0.4.2-~~),
+- librust-proxmox-sys-0.4+default-dev (>= 0.4.2-~~),
+- librust-proxmox-sys-0.4+logrotate-dev (>= 0.4.2-~~),
+- librust-proxmox-sys-0.4+timer-dev (>= 0.4.2-~~),
+- librust-proxmox-tfa-3+api-dev,
+- librust-proxmox-tfa-3+api-types-dev,
+- librust-proxmox-tfa-3+default-dev,
+- librust-proxmox-time-1+default-dev (>= 1.1.2-~~),
+- librust-proxmox-uuid-1+default-dev,
+- librust-proxmox-uuid-1+serde-dev,
+- librust-pxar-0.10+default-dev (>= 0.10.2-~~),
+- librust-regex-1+default-dev (>= 1.5.5-~~),
+- librust-rustyline-9+default-dev,
+- librust-serde-1+default-dev,
+- librust-serde-1+derive-dev,
+- librust-serde-cbor-0.11+default-dev (>= 0.11.1-~~),
+- librust-serde-json-1+default-dev,
+- librust-serde-plain-1+default-dev,
+- librust-siphasher-0.3+default-dev,
+- librust-syslog-4+default-dev,
+- librust-tar-0.4+default-dev,
+- librust-termcolor-1+default-dev (>= 1.1.2-~~),
+- librust-thiserror-1+default-dev,
+- librust-tokio-1+default-dev (>= 1.6-~~),
+- librust-tokio-1+fs-dev (>= 1.6-~~),
+- librust-tokio-1+io-std-dev (>= 1.6-~~),
+- librust-tokio-1+io-util-dev (>= 1.6-~~),
+- librust-tokio-1+macros-dev (>= 1.6-~~),
+- librust-tokio-1+net-dev (>= 1.6-~~),
+- librust-tokio-1+parking-lot-dev (>= 1.6-~~),
+- librust-tokio-1+process-dev (>= 1.6-~~),
+- librust-tokio-1+rt-dev (>= 1.6-~~),
+- librust-tokio-1+rt-multi-thread-dev (>= 1.6-~~),
+- librust-tokio-1+signal-dev (>= 1.6-~~),
+- librust-tokio-1+sync-dev (>= 1.6-~~),
+- librust-tokio-1+time-dev (>= 1.6-~~),
+- librust-tokio-openssl-0.6+default-dev (>= 0.6.1-~~),
+- librust-tokio-stream-0.1+default-dev,
+- librust-tokio-util-0.7+codec-dev,
+- librust-tokio-util-0.7+default-dev,
+- librust-tokio-util-0.7+io-dev,
+- librust-tower-service-0.3+default-dev,
+- librust-udev-0.4+default-dev,
+- librust-url-2+default-dev (>= 2.1-~~),
+- librust-walkdir-2+default-dev,
+- librust-xdg-2+default-dev (>= 2.2-~~),
+- librust-zstd-0.6+bindgen-dev,
+- librust-zstd-0.6+default-dev,
+  libacl1-dev,
+  libfuse3-dev,
+  libsystemd-dev (>= 246-~~),
+diff --git a/debian/rules b/debian/rules
+index cf94692e..0f6bb703 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -4,12 +4,9 @@
+ DH_VERBOSE = 1
+ 
+ include /usr/share/dpkg/pkg-info.mk
+-include /usr/share/rustc/architecture.mk
+ 
+ export BUILD_MODE=release
+ 
+-CARGO=/usr/share/cargo/bin/cargo
+-
+ export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+ export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
+ export CARGO_HOME = $(CURDIR)/debian/cargo_home
+@@ -22,7 +19,6 @@ export DEB_CARGO_PACKAGE=proxmox-backup
+ 
+ override_dh_auto_configure:
+ 	@perl -ne 'if (/^version\s*=\s*"(\d+(?:\.\d+)+)"/) { my $$v_cargo = $$1; my $$v_deb = $$ENV{DEB_VERSION_UPSTREAM}; die "ERROR: d/changelog <-> Cargo.toml version mismatch: $$v_cargo != $$v_deb\n" if $$v_cargo ne $$v_deb; exit(0); }' Cargo.toml
+-	$(CARGO) prepare-debian $(CURDIR)/debian/cargo_registry --link-from-system
+ 	dh_auto_configure
+ 
+ override_dh_auto_build:
