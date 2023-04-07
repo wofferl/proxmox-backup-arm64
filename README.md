@@ -19,7 +19,9 @@ source ~/.cargo/env
 ### Start build script
 ```
 ./build.sh 
+```
 or 
+```
 ./build.sh client (build only proxmox-backup-client package)
 ```
 
