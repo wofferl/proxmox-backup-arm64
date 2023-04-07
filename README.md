@@ -6,7 +6,7 @@ At least 4 GB are required for compiling. On devices with low memory, SWAP must 
 ### Install build essentials and dependencies
 ```
 apt-get install -y --no-install-recommends \
-	build-essential curl ca-certificates sudo git lintian \
+	build-essential curl ca-certificates sudo git lintian fakeroot \
 	pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev \
 	libpam0g-dev
 ```
