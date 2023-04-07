@@ -114,6 +114,22 @@ PACKAGES_BUILD="${BASE}/packages_build"
 PATCHES="${BASE}/patches"
 SOURCES="${BASE}/sources"
 PACKAGE_ARCH=$(dpkg-architecture -q DEB_BUILD_ARCH)
+DEB_BUILD_OPTIONS=""
+
+while [ "$#" -ge 1 ]
+do
+	case "$1" in
+		nocheck)
+			DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS} nocheck"
+		;;
+		*)
+			echo "usage $0 [client] [nocheck]"
+			exit 1
+		;;
+	esac
+	shift
+done
+export DEB_BUILD_OPTIONS
 
 if [ ! -d "${PATCHES}" ]; then
 	echo "Directory ${PATCHES} is missing! Have you cloned the repository?"
