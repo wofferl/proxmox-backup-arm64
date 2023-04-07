@@ -114,11 +114,18 @@ PACKAGES_BUILD="${BASE}/packages_build"
 PATCHES="${BASE}/patches"
 SOURCES="${BASE}/sources"
 PACKAGE_ARCH=$(dpkg-architecture -q DEB_BUILD_ARCH)
+BUILD_PACKAGE="server"
 DEB_BUILD_OPTIONS=""
+DEB_BUILD_PROFILES=""
 
 while [ "$#" -ge 1 ]
 do
 	case "$1" in
+		client)
+			BUILD_PACKAGE="client"
+			DEB_BUILD_PROFILES="${DEB_BUILD_PROFILES} nodoc"
+			DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS} nocheck"
+		;;
 		nocheck)
 			DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS} nocheck"
 		;;
@@ -129,7 +136,7 @@ do
 	esac
 	shift
 done
-export DEB_BUILD_OPTIONS
+export DEB_BUILD_OPTIONS DEB_BUILD_PROFILES
 
 if [ ! -d "${PATCHES}" ]; then
 	echo "Directory ${PATCHES} is missing! Have you cloned the repository?"
@@ -178,7 +185,7 @@ PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
 PROXMOX_GIT="32e7d3ccdfd2702dcceea312a6caee7b1565030a"
 PROXMOX_OPENID_GIT="ecf59cbb74278ea0e9710466508158ed6a6828c4" # 0.9.9-1
 PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5" # 0.10.2-1
-if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
+if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
@@ -197,6 +204,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_${PACKAGE_ARC
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
+	[ "${BUILD_PACKAGE}" = "client" ] && \
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
 	[ "${PACKAGE_ARCH}" = "arm64" ] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
 	cd proxmox-backup/
@@ -206,11 +215,16 @@ if [ ! -e "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_${PACKAGE_ARC
 	export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
 	dpkg-buildpackage -b -us -uc
 	cd ..
-	cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
-		proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
-		proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
-		proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
-		"${PACKAGES}"
+	if [ "${BUILD_PACKAGE}" = "client" ]; then
+		cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+			"${PACKAGES}"
+	else
+		cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+			proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
+			proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+			proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+			"${PACKAGES}"
+	fi
 else
 	echo "proxmox-backup up-to-date"
 fi

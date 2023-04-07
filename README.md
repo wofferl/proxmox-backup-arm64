@@ -18,7 +18,9 @@ source ~/.cargo/env
 
 ### Start build script
 ```
-./build.sh
+./build.sh 
+or 
+./build.sh client (build only proxmox-backup-client package)
 ```
 
 The compilation can take several hours.<br />
