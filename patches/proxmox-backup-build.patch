@@ -87,7 +87,7 @@ index 032060e0..14ee5288 100644
  [features]
  default = []
 diff --git a/debian/control b/debian/control
-index 286922b5..13d713ff 100644
+index e1470752..13d713ff 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -2,133 +2,7 @@ Source: rust-proxmox-backup
@@ -177,9 +177,9 @@ index 286922b5..13d713ff 100644
 - librust-proxmox-sys-0.4+default-dev (>= 0.4.2-~~),
 - librust-proxmox-sys-0.4+logrotate-dev (>= 0.4.2-~~),
 - librust-proxmox-sys-0.4+timer-dev (>= 0.4.2-~~),
-- librust-proxmox-tfa-3+api-dev,
-- librust-proxmox-tfa-3+api-types-dev,
-- librust-proxmox-tfa-3+default-dev,
+- librust-proxmox-tfa-4+api-dev,
+- librust-proxmox-tfa-4+api-types-dev,
+- librust-proxmox-tfa-4+default-dev,
 - librust-proxmox-time-1+default-dev (>= 1.1.2-~~),
 - librust-proxmox-uuid-1+default-dev,
 - librust-proxmox-uuid-1+serde-dev,
@@ -192,7 +192,7 @@ index 286922b5..13d713ff 100644
 - librust-serde-json-1+default-dev,
 - librust-serde-plain-1+default-dev,
 - librust-siphasher-0.3+default-dev,
-- librust-syslog-4+default-dev,
+- librust-syslog-6+default-dev,
 - librust-tar-0.4+default-dev,
 - librust-termcolor-1+default-dev (>= 1.1.2-~~),
 - librust-thiserror-1+default-dev,
