@@ -1,17 +1,17 @@
 diff --git a/src/mini-journalreader.c b/src/mini-journalreader.c
-index 7ce7857..520fb1e 100644
+index 98bcaac..4fc5415 100644
 --- a/src/mini-journalreader.c
 +++ b/src/mini-journalreader.c
-@@ -174,7 +174,7 @@ static bool print_field(sd_journal *j, const char *field) {
+@@ -169,7 +169,7 @@ static bool print_field(sd_journal *j, const char *field) {
      if (json) {
- 	char tmp[7];
- 	for (size_t i = 0; i < l;i++) {
--	    if (d[i] == '"' || d[i] == '\\' || (d[i] >= 0 && d[i] <= 0x1F)) {
+         char tmp[7];
+         for (size_t i = 0; i < l;i++) {
+-            if (d[i] == '"' || d[i] == '\\' || (d[i] >= 0 && d[i] <= 0x1F)) {
 +	    if (d[i] == '"' || d[i] == '\\' || d[i] <= 0x1F) {
- 		sprintf(tmp, "\\u%04X", d[i]);
- 		print_to_buf(tmp, 6);
- 	    } else {
-@@ -263,10 +263,12 @@ int main(int argc, char *argv[]) {
+                 sprintf(tmp, "\\u%04X", d[i]);
+                 print_to_buf(tmp, 6);
+             } else {
+@@ -257,10 +257,12 @@ int main(int argc, char *argv[]) {
      uint64_t begin = 0;
      uint64_t end = 0;
      char c;
