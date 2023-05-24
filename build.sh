@@ -165,13 +165,15 @@ PROXMOX_ACME_VER=(">=" "0")
 PROXMOX_WIDGETTOOLKIT_VER=(">=" "3.5.2")
 PVE_ESLINT_VER=(">=" "7.18.0-1")
 QRCODEJS_VER=(">=" "1.20201119")
-download_package pbs pbs-i18n "${PBS_I18N_VER[@]}" "${PACKAGES}" >/dev/null
-download_package pbs libjs-extjs "${EXTJS_VER[@]}" "${PACKAGES}" >/dev/null
-download_package pbs libjs-qrcodejs "${QRCODEJS_VER[@]}" "${PACKAGES}" >/dev/null
-download_package pbs libproxmox-acme-plugins "${PROXMOX_ACME_VER[@]}" "${PACKAGES}" >/dev/null
-download_package pbs proxmox-widget-toolkit "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES}" >/dev/null
+if [ "${BUILD_PACKAGE}" = "server" ]; then
+	download_package pbs pbs-i18n "${PBS_I18N_VER[@]}" "${PACKAGES}" >/dev/null
+	download_package pbs libjs-extjs "${EXTJS_VER[@]}" "${PACKAGES}" >/dev/null
+	download_package pbs libjs-qrcodejs "${QRCODEJS_VER[@]}" "${PACKAGES}" >/dev/null
+	download_package pbs libproxmox-acme-plugins "${PROXMOX_ACME_VER[@]}" "${PACKAGES}" >/dev/null
+	download_package pbs proxmox-widget-toolkit "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES}" >/dev/null
+fi
 packages_install=(
-	"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
+	"$([ "${BUILD_PACKAGE}" = "server" ] && download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
 	"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
 )
 echo "Install build dependencies"
@@ -232,6 +234,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 else
 	echo "proxmox-backup up-to-date"
 fi
+
+[ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
 PVE_XTERMJS_VER="4.16.0-2"
 PVE_XTERMJS_GIT="8dcff86a32c3ba8754b84e8aabb01369ef3de407"
