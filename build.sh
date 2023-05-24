@@ -113,6 +113,7 @@ PACKAGES="${BASE}/packages"
 PACKAGES_BUILD="${BASE}/packages_build"
 PATCHES="${BASE}/patches"
 SOURCES="${BASE}/sources"
+LOGFILE="build.log"
 PACKAGE_ARCH=$(dpkg-architecture -q DEB_BUILD_ARCH)
 BUILD_PACKAGE="server"
 DEB_BUILD_OPTIONS=""
@@ -129,8 +130,11 @@ do
 		nocheck)
 			DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS} nocheck"
 		;;
+		debug)
+			exec &> >(tee "${LOGFILE}")
+		;;
 		*)
-			echo "usage $0 [client] [nocheck]"
+			echo "usage $0 [client] [nocheck] [debug]"
 			exit 1
 		;;
 	esac

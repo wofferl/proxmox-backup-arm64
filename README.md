@@ -60,6 +60,12 @@ sudo apt install \
 ```
 
 ## Help section
+### Debugging
+you can add the debug option to redirect the complete build process output also to a file (build.log)
+
+```
+./build.sh debug
+```
 ### Console commands
 
 to see PBS users:
