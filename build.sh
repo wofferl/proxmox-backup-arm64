@@ -65,14 +65,16 @@ function load_packages() {
 	curl -sSf -H 'Cache-Control: no-cache' "${url}" \
 		| gzip -d - \
 		| awk -F": " '/^(Package|Version|Depends|Filename)/ {
-				if($1 == "Package")
+				if($1 == "Package") {
+					version="";
+					depends="";
+					filename="";
 					package=$2;
+				}
 				else if($1 == "Version") {
 					version=$2;
 				}
 				else if($1 == "Depends") {
-					sub(", proxmox-offline-mirror-docs","");
-					sub(", proxmox-archive-keyring","");
 					depends=$2;
 				}
 				else if($1 == "Filename") {
@@ -110,19 +112,20 @@ function select_package() {
 			line=${line##*${file};}
 			depends=${line}
 			if dpkg --compare-versions "${version}" "${version_test[@]}" \
-				&& dpkg --compare-versions "${version}" '>>' "${version_target}" \
-				&& sudo apt satisfy -s "${depends}" >/dev/null 2>&1; then
+				&& dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+				if [ -n "$depends" ]; then
+					sudo apt satisfy -s "${depends}" >/dev/null 2>&1 || continue
+				fi
 				version_target=${version}
 				file_target=${file}
 			fi
 		fi
 	done <<<"${packages_target}"
 
-	if [ -z "${file_target}" ]; then
-		return 1
+	if [ -n "${file_target}" ]; then
+		url=${url_base}/${file_target}
+		echo "${url}"
 	fi
-	url=${url_base}/${file_target}
-	echo "${url}"
 }
 
 SUDO="${SUDO:-sudo -E}"
