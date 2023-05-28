@@ -116,19 +116,20 @@ SOURCES="${BASE}/sources"
 LOGFILE="build.log"
 PACKAGE_ARCH=$(dpkg-architecture -q DEB_BUILD_ARCH)
 BUILD_PACKAGE="server"
-DEB_BUILD_OPTIONS=""
-DEB_BUILD_PROFILES=""
+BUILD_PROFILES=""
 
 while [ "$#" -ge 1 ]
 do
 	case "$1" in
 		client)
 			BUILD_PACKAGE="client"
-			DEB_BUILD_PROFILES="${DEB_BUILD_PROFILES} nodoc"
-			DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS} nocheck"
+			BUILD_PROFILES=${BUILD_PROFILES}",nodoc"
+			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
+			export DEB_BUILD_OPTIONS="nocheck"
 		;;
 		nocheck)
-			DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS} nocheck"
+			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
+			export DEB_BUILD_OPTIONS="nocheck"
 		;;
 		debug)
 			exec &> >(tee "${LOGFILE}")
@@ -140,7 +141,7 @@ do
 	esac
 	shift
 done
-export DEB_BUILD_OPTIONS DEB_BUILD_PROFILES
+[ -n "${BUILD_PROFILES}" ] && BUILD_PROFILES="--build-profiles=${BUILD_PROFILES#,}"
 
 if [ ! -d "${PATCHES}" ]; then
 	echo "Directory ${PATCHES} is missing! Have you cloned the repository?"
@@ -172,10 +173,16 @@ if [ "${BUILD_PACKAGE}" = "server" ]; then
 	download_package pbs libproxmox-acme-plugins "${PROXMOX_ACME_VER[@]}" "${PACKAGES}" >/dev/null
 	download_package pbs proxmox-widget-toolkit "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES}" >/dev/null
 fi
-packages_install=(
-	"$([ "${BUILD_PACKAGE}" = "server" ] && download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
-	"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
-)
+if [ "${BUILD_PACKAGE}" = "server" ]; then
+	packages_install=(
+		"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
+		"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
+	)
+else
+	packages_install=(
+		"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
+	)
+fi
 echo "Install build dependencies"
 ${SUDO} apt install -y "${packages_install[@]}"
 
@@ -216,13 +223,13 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
 	cd proxmox-backup/
 	cargo vendor
-	${SUDO} apt -y build-dep .
+	${SUDO} apt -y build-dep ${BUILD_PROFILES} .
 	export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
 	export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
-	dpkg-buildpackage -b -us -uc
+	dpkg-buildpackage -b -us -uc ${BUILD_PROFILES}
 	cd ..
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
-		cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+		cp -a proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
 			"${PACKAGES}"
 	else
 		cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
