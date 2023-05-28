@@ -1,6 +1,7 @@
 FROM debian:bullseye-slim as builder-stage
 # workaround for memory bug https://github.com/rust-lang/cargo/issues/10583
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update && apt-get install -y --no-install-recommends \
 	build-essential curl ca-certificates sudo git lintian \
