@@ -121,7 +121,16 @@ diff --git a/debian/control b/debian/control
 index 286922b5..5ddeac2c 100644
 --- a/debian/control
 +++ b/debian/control
-@@ -160,34 +160,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -147,7 +21,7 @@ Build-Depends: debhelper (>= 12),
+  pve-eslint (>= 7.18.0-1),
+  python3-docutils,
+  python3-pygments,
+- python3-sphinx <!nodoc>,
++ python3-sphinx,
+  rsync,
+  texlive-fonts-extra <!nodoc>,
+  texlive-fonts-recommended <!nodoc>,
+@@ -160,34 +34,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
@@ -156,7 +165,7 @@ index 286922b5..5ddeac2c 100644
  Package: proxmox-backup-client
  Architecture: any
  Depends: qrencode,
-@@ -196,26 +168,3 @@ Depends: qrencode,
+@@ -196,26 +42,3 @@ Depends: qrencode,
  Description: Proxmox Backup Client tools
   This package contains the Proxmox Backup client, which provides a
   simple command line tool to create and restore backups.
