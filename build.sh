@@ -153,6 +153,11 @@ do
 		;;
 		debug)
 			exec &> >(tee "${LOGFILE}")
+			echo $@
+			cat /etc/os-release
+			rustc -V
+			cargo -V
+			set -x
 		;;
 		*)
 			echo "usage $0 [client] [nocheck] [debug]"
