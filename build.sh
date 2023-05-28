@@ -19,7 +19,7 @@ function download_package() {
 	url=$(select_package "${repo}" "${package}" "${version_test[@]}")
 
 	if [ -z "${url}" ]; then
-		echo "Error package ${package} in version " "${version_test[@]}" " not found"
+		echo "Error package ${package} in version " "${version_test[@]}" " not found" >&2
 		return 1
 	fi
 
@@ -30,7 +30,7 @@ function download_package() {
 		return 0
 	fi
 
-	echo "${package} downloading..." >&2
+	echo "${package} downloading...${url}" >&2
 	curl -sSfL "${url}" -o "${file}"
 	echo "${file}"
 }
@@ -64,7 +64,22 @@ function load_packages() {
 	url=${1}
 	curl -sSf -H 'Cache-Control: no-cache' "${url}" \
 		| gzip -d - \
-		| sed '/./{H;$!d} ; x ; s/^.*Package: \([^\n]*\).*Version: \([^\n]*\).*Filename: \([^\n]*\).*$/\1 \2 \3/p'
+		| awk -F": " '/^(Package|Version|Depends|Filename)/ {
+				if($1 == "Package")
+					package=$2;
+				else if($1 == "Version") {
+					version=$2;
+				}
+				else if($1 == "Depends") {
+					sub(", proxmox-offline-mirror-docs","");
+					sub(", proxmox-archive-keyring","");
+					depends=$2;
+				}
+				else if($1 == "Filename") {
+					filename=$2;
+					print package";"version";"filename";"depends;
+				}
+			}'
 }
 
 function select_package() {
@@ -85,13 +100,18 @@ function select_package() {
 	file_target=
 
 	while IFS= read -r line; do
-		name=${line%% *}
+		name=${line%%;*}
+		line=${line##*${name};}
+
 		if [[ "${name}" == "${package_name}" ]]; then
-			version=${line#* }
-			version=${version% *}
-			file=${line##* }
+			version=${line%%;*}
+			line=${line##*${version};}
+			file=${line%%;*}
+			line=${line##*${file};}
+			depends=${line}
 			if dpkg --compare-versions "${version}" "${version_test[@]}" \
-				&& dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+				&& dpkg --compare-versions "${version}" '>>' "${version_target}" \
+				&& sudo apt satisfy -s "${depends}" >/dev/null 2>&1; then
 				version_target=${version}
 				file_target=${file}
 			fi
