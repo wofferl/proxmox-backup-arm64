@@ -1,0 +1,24 @@
+name: Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Running compile script
+      run: |
+        source ${HOME}/.cargo/env
+        env
+        echo ./build.sh client
+  debug:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Running compile script
+      run: |
+        source ${HOME}/.cargo/env
+        env
+        echo ./build.sh client debug
