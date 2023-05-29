@@ -19,7 +19,7 @@ jobs:
       run: |
         source ${HOME}/.cargo/env
         if [ "${RUNNER_DEBUG}" = "1" ]; then
-          ./build.sh client debug
+          ./build.sh debug
         else
-          ./build.sh client
+          ./build.sh
         fi
