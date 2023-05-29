@@ -18,4 +18,8 @@ jobs:
     - name: Running compile script
       run: |
         source ${HOME}/.cargo/env
-        ./build.sh
+        if [ "${RUNNER_DEBUG}" = "1" ]; then
+          ./build.sh client debug
+        else
+          ./build.sh client
+        fi
