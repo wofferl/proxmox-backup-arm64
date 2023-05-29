@@ -11,8 +11,6 @@ jobs:
     - name: Installing dependencies
       run: |
         sudo apt-get install -y --no-install-recommends build-essential curl ca-certificates sudo git lintian fakeroot pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev libpam0g-dev
-        sudo apt-get install -y --no-install-recommends javascript-common libc-ares2  libuv1
-        sudo apt-get install -y --no-install-recommends tzdata uuid-dev x11-common xdg-utils
     - name: Installing rust
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
@@ -20,6 +18,7 @@ jobs:
     - name: Running compile script
       run: |
         source ${HOME}/.cargo/env
+        sed -i 's#^PVE_ESLINT.*#PVE_ESLINT_VER=(">=" "7.28.0-1")#' build.sh
         if [ "${RUNNER_DEBUG}" = "1" ]; then
           ./build.sh debug
         else
