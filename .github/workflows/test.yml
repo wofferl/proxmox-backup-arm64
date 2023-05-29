@@ -12,13 +12,8 @@ jobs:
       run: |
         source ${HOME}/.cargo/env
         env
-        echo ./build.sh client
-  debug:
-    runs-on: ubuntu-22.04
-
-    steps:
-    - name: Running compile script
-      run: |
-        source ${HOME}/.cargo/env
-        env
-        echo ./build.sh client debug
+        if [ "${RUNNER_DEBUG}" = "1" ]; then
+          echo ./build.sh client debug
+        else
+          echo ./build.sh client
+        fi
