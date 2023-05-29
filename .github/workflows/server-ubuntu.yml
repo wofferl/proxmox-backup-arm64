@@ -1,0 +1,21 @@
+name: Server build ubuntu 22.04
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Installing dependencies
+      run: |
+        sudo apt-get install -y --no-install-recommends build-essential curl ca-certificates sudo git lintian fakeroot pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev libpam0g-dev
+    - name: Installing rust
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
+    - uses: actions/checkout@v3
+    - name: Running compile script
+      run: |
+        source ${HOME}/.cargo/env
+        ./build.sh
