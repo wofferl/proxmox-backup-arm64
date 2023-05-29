@@ -260,10 +260,10 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		cp -a proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
 			"${PACKAGES}"
 	else
-		cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+		cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
 			proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
-			proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
-			proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+			proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
+			proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
 			"${PACKAGES}"
 	fi
 else
@@ -300,7 +300,7 @@ if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_$
 	cd proxmox-mini-journalreader/
 	${SUDO} apt -y build-dep .
 	make deb
-	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.* "${PACKAGES}"
 	cd ..
 else
 	echo "proxmox-mini-journalreader up-to-date"
