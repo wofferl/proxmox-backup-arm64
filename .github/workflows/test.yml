@@ -17,5 +17,7 @@ jobs:
         ls -l /usr/share/nodejs
         ls -l /usr/share/nodejs/colors
         cat /usr/share/nodejs/colors/package.json
+        env
+        sudo ln -s /usr/share/nodejs /usr/share/nodejs/node_modules
         sudo -E apt install -y strace
         strace eslint
