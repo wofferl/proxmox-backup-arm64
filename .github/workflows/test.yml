@@ -8,26 +8,13 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Installing dependencies
+    - name: Install pve-eslint
       run: |
-        sudo apt-get install -y --no-install-recommends build-essential curl ca-certificates sudo git lintian fakeroot pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev libpam0g-dev
-    - name: Installing rust
-      run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
-    - uses: actions/checkout@v3
-    - name: Running compile script
-      run: |
-        source ${HOME}/.cargo/env
-        git clone https://git.proxmox.com/git/pve-eslint.git
-        cd pve-eslint
-        git checkout ef0a5638b025ec9b9e3aa4df61a5b3b6bd471439
-        sudo apt-get -y build-dep .
-        make deb
-        sudo apt-get install -y ./pve-eslint_7.28.0-1_all.deb
-        cd ..
-        sed -i 's#^PVE_ESLINT.*#PVE_ESLINT_VER=("=" "7.28.0-1")#' build.sh
-        if [ "${RUNNER_DEBUG}" = "1" ]; then
-          ./build.sh debug
-        else
-          ./build.sh
-        fi
+        curl -sSfL http://download.proxmox.com/debian/devel/dists/bullseye/main/binary-amd64/pve-eslint_8.4.0-3_all.deb -o pve-eslint_8.4.0-3_all.deb
+        sudo -E apt install -y ./pve-eslint_8.4.0-3_all.deb
+        dpkg -l node-colors
+        dpkg -L node-colors
+        ls -l /usr/share/nodejs
+        ls -l /usr/share/nodejs/colors
+        cat /usr/share/nodejs/colors/package.json
+        eslint
