@@ -19,6 +19,7 @@ jobs:
       run: |
         source ${HOME}/.cargo/env
         # eslint don't search in /usr/share/nodejs on github action ubuntu
+        sudo mkdir -p /usr/share/nodejs
         sudo ln -s /usr/share/nodejs /usr/share/nodejs/node_modules
         if [ "${RUNNER_DEBUG}" = "1" ]; then
           ./build.sh debug
