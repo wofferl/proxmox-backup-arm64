@@ -35,6 +35,12 @@ You can build arm64 .deb packages using the provided Dockerfile and docker build
 docker buildx build -o packages --platform linux/arm64 .
 ```
 
+You can also set build arguments for base image and build.sh options:
+
+```
+docker buildx build -o packages --build-arg buildoptions="client debug" --build-arg baseimage=ubuntu:jammy --platform linux/arm64 .
+```
+
 Once the docker build is completed, packages will be copied from the docker build image to a folder named `packages` in the root folder.
 
 ## Install all needed packages

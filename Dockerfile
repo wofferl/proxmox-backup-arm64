@@ -1,4 +1,6 @@
-FROM debian:bullseye-slim as builder-stage
+ARG baseimage=debian:bullseye-slim
+FROM ${baseimage} as builder-stage
+ARG buildoptions
 # workaround for memory bug https://github.com/rust-lang/cargo/issues/10583
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 ENV DEBIAN_FRONTEND=noninteractive
@@ -14,7 +16,7 @@ COPY . /build/
 WORKDIR /build
 
 SHELL ["/bin/bash", "-c"]
-RUN source ~/.cargo/env && ./build.sh
+RUN source ~/.cargo/env && ./build.sh ${buildoptions}
 
 FROM scratch
-COPY --from=builder-stage /build/packages/* /
+COPY --from=builder-stage /build/*.log /build/packages/* /
