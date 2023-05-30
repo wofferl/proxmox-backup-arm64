@@ -1,4 +1,4 @@
-name: Client build ubuntu 22.04
+name: Client Ubuntu/Jammy (amd64)
 
 on:
   workflow_dispatch:

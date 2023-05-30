@@ -1,4 +1,4 @@
-name: Server build ubuntu 22.04
+name: Server Ubuntu/Jammy (amd64)
 
 on:
   workflow_dispatch:
