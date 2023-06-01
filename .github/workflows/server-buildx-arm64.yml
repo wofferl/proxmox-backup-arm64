@@ -1,11 +1,11 @@
-name: Server Debian/Bullseye (buildx/arm64)
+name: Buildtest Server Debian/Bullseye (buildx/arm64)
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.08
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -16,10 +16,26 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Running compile script
+    - name: Build packages
       run: |
         if [ "${RUNNER_DEBUG}" = "1" ]; then
           docker buildx build -o packages --build-arg buildoptions="debug" --platform linux/arm64 .
         else
           docker buildx build -o packages --platform linux/arm64 .
         fi
+    - name: Test packages
+      run: |
+        sudo apt install -y \
+                ./packages/libjs-extjs_*_all.deb \
+                ./packages/libjs-qrcodejs_*_all.deb \
+                ./packages/libproxmox-acme-plugins_*_all.deb \
+                ./packages/pbs-i18n_*_all.deb \
+                ./packages/proxmox-backup-docs_*_all.deb \
+                ./packages/proxmox-backup-server_*.deb \
+                ./packages/proxmox-mini-journalreader_*.deb \
+                ./packages/proxmox-widget-toolkit_*_all.deb \
+                ./packages/pve-xtermjs_*.deb
+        sudo apt install -y \
+                ./packages/proxmox-backup-client_*.deb
+        sudo apt install -y \
+                ./packages/proxmox-backup-file-restore_*.deb

@@ -1,4 +1,4 @@
-name: Client Ubuntu/Jammy (amd64)
+name: Buildtest Client Ubuntu/Jammy (amd64)
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
     - uses: actions/checkout@v3
-    - name: Running compile script
+    - name: Build packages
       run: |
         source ${HOME}/.cargo/env
         if [ "${RUNNER_DEBUG}" = "1" ]; then
@@ -23,3 +23,7 @@ jobs:
         else
           ./build.sh client
         fi
+    - name: Test packages
+      run: |
+        sudo apt install -y \
+                ./packages/proxmox-backup-client_*.deb
