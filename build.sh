@@ -128,6 +128,15 @@ function select_package() {
 	fi
 }
 
+function set_package_info() {
+	if [ "$GITHUB_ACTION" ]; then
+		sed -i "s#^Maintainer:.*#Maintainer: Github Action <github@linux-dude.de>#" debian/control
+		sed -i "s#^Homepage:.*#Homepage: https://github.com/wofferl/proxmox-backup-arm64#" debian/control
+	else
+		sed -i "s#^\(Maintainer.*\)\$#\1\nOrigin: https://github.com/wofferl/proxmox-backup-arm64#" debian/control
+	fi
+}
+
 SUDO="${SUDO:-sudo -E}"
 
 SCRIPT=$(realpath "${0}")
@@ -140,6 +149,7 @@ LOGFILE="build.log"
 PACKAGE_ARCH=$(dpkg-architecture -q DEB_BUILD_ARCH)
 BUILD_PACKAGE="server"
 BUILD_PROFILES=""
+GITHUB_ACTION=""
 
 while [ "$#" -ge 1 ]
 do
@@ -149,6 +159,9 @@ do
 			BUILD_PROFILES=${BUILD_PROFILES}",nodoc"
 			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
 			export DEB_BUILD_OPTIONS="nocheck"
+		;;
+		github)
+			GITHUB_ACTION="true"
 		;;
 		nocheck)
 			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
@@ -250,6 +263,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	[ "${PACKAGE_ARCH}" = "arm64" ] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
 	cd proxmox-backup/
+	set_package_info
 	cargo vendor
 	${SUDO} apt -y build-dep ${BUILD_PROFILES} .
 	export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
@@ -283,6 +297,7 @@ if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb" ]; th
 	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
 	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-fix_already_registered.patch"
 	cd pve-xtermjs/
+	set_package_info
 	${SUDO} apt -y build-dep .
 	BUILD_MODE=release make deb
 	cd ..
@@ -298,6 +313,7 @@ if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_$
 	git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
 	patch -p1 -d proxmox-mini-journalreader/ < ${PATCHES}/proxmox-mini-journalreader.patch
 	cd proxmox-mini-journalreader/
+	set_package_info
 	${SUDO} apt -y build-dep .
 	make deb
 	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.* "${PACKAGES}"
