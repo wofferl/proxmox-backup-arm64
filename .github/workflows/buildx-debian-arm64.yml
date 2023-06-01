@@ -34,3 +34,4 @@ jobs:
         bodyFile: "PREBUILD.md"
         tag:  ${{ env.DEB_VERSION_UPSTREAM }}
         name: Version ${{ env.DEB_VERSION }}
+        draft: true
