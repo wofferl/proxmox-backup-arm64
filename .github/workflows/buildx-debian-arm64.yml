@@ -25,24 +25,8 @@ jobs:
         else
           docker buildx build -o packages --build-arg buildoptions="github" --platform linux/arm64 .
         fi
-    - name: Test packages
-      run: |
-        sudo apt install -y \
-                ./packages/libjs-extjs_*_all.deb \
-                ./packages/libjs-qrcodejs_*_all.deb \
-                ./packages/libproxmox-acme-plugins_*_all.deb \
-                ./packages/pbs-i18n_*_all.deb \
-                ./packages/proxmox-backup-docs_*_all.deb \
-                ./packages/proxmox-backup-server_*.deb \
-                ./packages/proxmox-mini-journalreader_*.deb \
-                ./packages/proxmox-widget-toolkit_*_all.deb \
-                ./packages/pve-xtermjs_*.deb
-        sudo apt install -y \
-                ./packages/proxmox-backup-client_*.deb
-        sudo apt install -y \
-                ./packages/proxmox-backup-file-restore_*.deb
-        echo "DEB_VERSION=$(dpkg -s proxmox-backup-server | sed -n '/Version/ s/[^ ]\+ //p')" >> $GITHUB_ENV
-        echo "DEB_VERSION_UPSTREAM=$(dpkg -s proxmox-backup-server | sed -n '/Version/ s/[^ ]\+ \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
+        echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
+        echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Release packages
       uses: ncipollo/release-action@v1
       with:

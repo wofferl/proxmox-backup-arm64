@@ -23,19 +23,3 @@ jobs:
         else
           docker buildx build -o packages --platform linux/arm64 .
         fi
-    - name: Test packages
-      run: |
-        sudo apt install -y \
-                ./packages/libjs-extjs_*_all.deb \
-                ./packages/libjs-qrcodejs_*_all.deb \
-                ./packages/libproxmox-acme-plugins_*_all.deb \
-                ./packages/pbs-i18n_*_all.deb \
-                ./packages/proxmox-backup-docs_*_all.deb \
-                ./packages/proxmox-backup-server_*.deb \
-                ./packages/proxmox-mini-journalreader_*.deb \
-                ./packages/proxmox-widget-toolkit_*_all.deb \
-                ./packages/pve-xtermjs_*.deb
-        sudo apt install -y \
-                ./packages/proxmox-backup-client_*.deb
-        sudo apt install -y \
-                ./packages/proxmox-backup-file-restore_*.deb

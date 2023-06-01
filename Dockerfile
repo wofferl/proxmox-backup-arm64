@@ -18,5 +18,24 @@ WORKDIR /build
 SHELL ["/bin/bash", "-c"]
 RUN source ~/.cargo/env && ./build.sh ${buildoptions}
 
+RUN if [[ "${buildoptions}" =~ github ]]; then \
+	apt-get -y install \
+		/build/packages/proxmox-backup-client_*.deb; \
+	if [[ ! "${buildoptions}" =~ "client" ]]; then \
+		apt-get -y install \
+			/build/packages/proxmox-backup-file-restore_*.deb; \
+		apt-get -y install \
+			/build/packages/libjs-extjs_*_all.deb \
+			/build/packages/libjs-qrcodejs_*_all.deb \
+			/build/packages/libproxmox-acme-plugins_*_all.deb \
+			/build/packages/pbs-i18n_*_all.deb \
+			/build/packages/proxmox-backup-docs_*_all.deb \
+			/build/packages/proxmox-backup-server_*.deb \
+			/build/packages/proxmox-mini-journalreader_*.deb \
+			/build/packages/proxmox-widget-toolkit_*_all.deb \
+			/build/packages/pve-xtermjs_*.deb; \
+        fi \
+    fi
+
 FROM scratch
 COPY --from=builder-stage /build/*.log /build/packages/* /

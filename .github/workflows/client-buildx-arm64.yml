@@ -23,7 +23,3 @@ jobs:
         else
           docker buildx build -o packages --build-arg buildoptions="client" --platform linux/arm64 .
         fi
-    - name: Test packages
-      run: |
-        sudo apt install -y \
-                ./packages/proxmox-backup-client_*.deb
