@@ -230,14 +230,12 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="2.4.2-1"
-PROXMOX_BACKUP_GIT="e5b6a0b38dd0da736292fb696f6c7d0ec2563c36"
+PROXMOX_BACKUP_VER="3.0.0-1"
+PROXMOX_BACKUP_GIT="44f9f8dec664864c9eea6d591eb790775dc2469c"
 PATHPATTERNS_GIT="8a0dce93d535ef04bfa9c8317edc0ef0216e9042" # 0.1.3-1
 PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05" # 0.4.0
-PROXMOX_APT_GIT="8a7a719aec23ad98a00bb452f0ced4cbf88ba591" # 0.9.3-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
-PROXMOX_GIT="76ac1a3903a1f29e718fefd69a845be2f48df64b"
-PROXMOX_OPENID_GIT="ecf59cbb74278ea0e9710466508158ed6a6828c4" # 0.9.9-1
+PROXMOX_GIT="54cb9be8edba5e78071275df892516742fa26a75"
 PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5" # 0.10.2-1
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
@@ -250,10 +248,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clean_and_checkout ${PATHPATTERNS_GIT} pathpatterns
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme-rs.git
 	git_clean_and_checkout ${PROXMOX_ACME_RS_GIT} proxmox-acme-rs
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-apt.git
-	git_clean_and_checkout ${PROXMOX_APT_GIT} proxmox-apt
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-openid-rs.git
-	git_clean_and_checkout ${PROXMOX_OPENID_GIT} proxmox-openid-rs
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
