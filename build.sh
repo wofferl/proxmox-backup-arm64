@@ -252,12 +252,13 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
-	[ "${BUILD_PACKAGE}" = "client" ] && \
+	if [ "${BUILD_PACKAGE}" = "client" ]; then \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
+	elif [[ $(lsb_release -sc) =~ bullseye|jammy ]]; then \
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-bullseye.patch"
+	fi
 	[ "${PACKAGE_ARCH}" = "arm64" ] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
-	[ $(lsb_release -sc) = "bullseye" ] && \
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-bullseye.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
