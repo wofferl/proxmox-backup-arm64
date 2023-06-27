@@ -160,6 +160,17 @@ do
 			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
 			export DEB_BUILD_OPTIONS="nocheck"
 		;;
+		cross)
+			PACKAGE_ARCH=arm64
+			BUILD_PROFILES=${BUILD_PROFILES}",cross"
+			export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
+			export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
+			export TARGET=aarch64-unknown-linux-gnu
+			export PKG_CONFIG=/usr/bin/aarch64-linux-gnu-pkg-config
+			export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig/
+			export CC=/usr/bin/aarch64-linux-gnu-gcc
+			export DEB_HOST_MULTIARCH=aarch64-unknown-linux-gnu-gcc
+		;;
 		github)
 			GITHUB_ACTION="true"
 		;;
@@ -262,13 +273,15 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
 	[ "${PACKAGE_ARCH}" = "arm64" ] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
+	[[ "${BUILD_PROFILES}" =~ cross ]] && \
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-cross.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
-	${SUDO} apt -y build-dep ${BUILD_PROFILES} .
+	${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
 	export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
 	export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
-	dpkg-buildpackage -b -us -uc ${BUILD_PROFILES}
+	dpkg-buildpackage -a${PACKAGE_ARCH} -b -us -uc ${BUILD_PROFILES}
 	cd ..
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		cp -a proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
@@ -296,9 +309,11 @@ if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb" ]; th
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
 	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
 	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-fix_already_registered.patch"
+	[[ "${BUILD_PROFILES}" =~ cross ]] && \
+		patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-cross.patch"
 	cd pve-xtermjs/
 	set_package_info
-	${SUDO} apt -y build-dep .
+	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
 	BUILD_MODE=release make deb
 	cd ..
 	cp -a pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
@@ -312,9 +327,11 @@ if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_$
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-mini-journalreader.git
 	git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
 	patch -p1 -d proxmox-mini-journalreader/ < ${PATCHES}/proxmox-mini-journalreader.patch
+	[[ "${BUILD_PROFILES}" =~ cross ]] && \
+		patch -p1 -d proxmox-mini-journalreader/ < "${PATCHES}/proxmox-mini-journalreader-cross.patch"
 	cd proxmox-mini-journalreader/
 	set_package_info
-	${SUDO} apt -y build-dep .
+	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
 	make deb
 	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.* "${PACKAGES}"
 	cd ..
