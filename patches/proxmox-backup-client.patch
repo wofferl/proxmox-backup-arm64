@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 83ab59bd..4a1e499b 100644
+index b307009d..3473103a 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,32 +4,21 @@ include defines.mk
@@ -38,28 +38,19 @@ index 83ab59bd..4a1e499b 100644
 -	proxmox-restore-daemon
 +RESTORE_BIN :=
  
- SUBCRATES != cargo metadata --format-version=1 | jq -r .workspace_members'[]' | awk '{ print $$1 }' | grep -v '^proxmox-backup$$' | tr '\n' ' '
+ SUBCRATES != cargo metadata --no-deps --format-version=1 \
+ 	| jq -r .workspace_members'[]' \
+@@ -61,8 +50,7 @@ RESTORE_DEB=proxmox-backup-file-restore_$(DEB_VERSION)_$(ARCH).deb
+ RESTORE_DBG_DEB=proxmox-backup-file-restore-dbgsym_$(DEB_VERSION)_$(ARCH).deb
+ DOC_DEB=$(PACKAGE)-docs_$(DEB_VERSION)_all.deb
  
-@@ -59,8 +48,7 @@ RESTORE_DEB=proxmox-backup-file-restore_${DEB_VERSION}_${ARCH}.deb
- RESTORE_DBG_DEB=proxmox-backup-file-restore-dbgsym_${DEB_VERSION}_${ARCH}.deb
- DOC_DEB=${PACKAGE}-docs_${DEB_VERSION}_all.deb
- 
--DEBS=${SERVER_DEB} ${SERVER_DBG_DEB} ${CLIENT_DEB} ${CLIENT_DBG_DEB} \
--     ${RESTORE_DEB} ${RESTORE_DBG_DEB} ${DEBUG_DEB} ${DEBUG_DBG_DEB}
+-DEBS=$(SERVER_DEB) $(SERVER_DBG_DEB) $(CLIENT_DEB) $(CLIENT_DBG_DEB) \
+-     $(RESTORE_DEB) $(RESTORE_DBG_DEB) $(DEBUG_DEB) $(DEBUG_DBG_DEB)
 +DEBS=${CLIENT_DEB} ${CLIENT_DBG_DEB}
  
- DSC = rust-${PACKAGE}_${DEB_VERSION}.dsc
+ DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
  
-@@ -77,7 +65,7 @@ $(SUBDIRS):
- test:
- 	#cargo test test_broadcast_future
- 	#cargo test $(CARGO_BUILD_ARGS)
--	$(CARGO) test $(tests) $(CARGO_BUILD_ARGS)
-+	$(CARGO) test $(tests) $(CARGO_BUILD_ARGS)
- 
- doc:
- 	$(CARGO) doc --workspace --no-deps $(CARGO_BUILD_ARGS)
-@@ -152,30 +140,11 @@ cargo-build:
+@@ -154,30 +142,11 @@ cargo-build:
  $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-cargo-build
  .do-cargo-build:
  	$(CARGO) build $(CARGO_BUILD_ARGS) \
@@ -91,7 +82,7 @@ index 83ab59bd..4a1e499b 100644
  	touch "$@"
  
  
-@@ -184,10 +153,11 @@ lint:
+@@ -186,10 +155,11 @@ lint:
  	cargo clippy -- -A clippy::all -D clippy::correctness
  
  install: $(COMPILED_BINS)
@@ -104,7 +95,7 @@ index 83ab59bd..4a1e499b 100644
  	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
  	install -dm755 $(DESTDIR)$(SBINDIR)
  	$(foreach i,$(USR_SBIN), \
-@@ -198,10 +168,10 @@ install: $(COMPILED_BINS)
+@@ -200,10 +170,10 @@ install: $(COMPILED_BINS)
  	$(foreach i,$(RESTORE_BIN), \
  	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
  	# install sg-tape-cmd as setuid binary
@@ -118,11 +109,11 @@ index 83ab59bd..4a1e499b 100644
  
  .PHONY: upload
 diff --git a/debian/control b/debian/control
-index 286922b5..5ddeac2c 100644
+index 8c1712fa..aee8f489 100644
 --- a/debian/control
 +++ b/debian/control
-@@ -147,7 +21,7 @@ Build-Depends: debhelper (>= 12),
-  pve-eslint (>= 7.18.0-1),
+@@ -21,7 +21,7 @@ Build-Depends: debhelper (>= 12),
+  pve-eslint (>= 7.18.0~),
   python3-docutils,
   python3-pygments,
 - python3-sphinx <!nodoc>,
@@ -130,7 +121,7 @@ index 286922b5..5ddeac2c 100644
   rsync,
   texlive-fonts-extra <!nodoc>,
   texlive-fonts-recommended <!nodoc>,
-@@ -160,34 +34,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -34,34 +34,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
@@ -165,7 +156,7 @@ index 286922b5..5ddeac2c 100644
  Package: proxmox-backup-client
  Architecture: any
  Depends: qrencode,
-@@ -196,26 +42,3 @@ Depends: qrencode,
+@@ -70,26 +42,3 @@ Depends: qrencode,
  Description: Proxmox Backup Client tools
   This package contains the Proxmox Backup client, which provides a
   simple command line tool to create and restore backups.
@@ -193,10 +184,10 @@ index 286922b5..5ddeac2c 100644
 - restoring individual files and folders from both host/container and VM/block
 - device backups. It includes a block device restore driver using QEMU.
 diff --git a/debian/rules b/debian/rules
-index cf94692e..1309ea1f 100755
+index 1ebd7460..c72dcd50 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -36,12 +36,13 @@ override_dh_missing:
+@@ -37,12 +37,13 @@ override_dh_missing:
  override_dh_auto_install:
  	dh_auto_install -- \
  	    PROXY_USER=backup \

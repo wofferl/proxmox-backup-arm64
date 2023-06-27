@@ -25,7 +25,7 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index 032060e0..14ee5288 100644
+index 20c1e9c8..c0e13abe 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -241,31 +241,34 @@ proxmox-rrd.workspace = true
@@ -87,7 +87,7 @@ index 032060e0..14ee5288 100644
  [features]
  default = []
 diff --git a/debian/control b/debian/control
-index e1470752..13d713ff 100644
+index 1b0c36f8..8c1712fa 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -2,133 +2,7 @@ Source: rust-proxmox-backup
@@ -95,7 +95,7 @@ index e1470752..13d713ff 100644
  Priority: optional
  Build-Depends: debhelper (>= 12),
 - dh-cargo (>= 24),
-- cargo:native (>= 0.65.0-1),
+- cargo:native (>= 0.65.0~),
 - rustc:native,
   libstd-rust-dev,
 - librust-anyhow-1+default-dev,
@@ -225,7 +225,7 @@ index e1470752..13d713ff 100644
   libfuse3-dev,
   libsystemd-dev (>= 246-~~),
 diff --git a/debian/rules b/debian/rules
-index cf94692e..0f6bb703 100755
+index 79366229..1ebd7460 100755
 --- a/debian/rules
 +++ b/debian/rules
 @@ -4,12 +4,9 @@
@@ -241,10 +241,10 @@ index cf94692e..0f6bb703 100755
  export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
  export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
  export CARGO_HOME = $(CURDIR)/debian/cargo_home
-@@ -22,7 +19,6 @@ export DEB_CARGO_PACKAGE=proxmox-backup
- 
+@@ -27,7 +24,6 @@ endif
  override_dh_auto_configure:
- 	@perl -ne 'if (/^version\s*=\s*"(\d+(?:\.\d+)+)"/) { my $$v_cargo = $$1; my $$v_deb = $$ENV{DEB_VERSION_UPSTREAM}; die "ERROR: d/changelog <-> Cargo.toml version mismatch: $$v_cargo != $$v_deb\n" if $$v_cargo ne $$v_deb; exit(0); }' Cargo.toml
+ 	@perl -ne 'if (/^version\s*=\s*"(\d+(?:\.\d+)+)"/) { my $$v_cargo = $$1; my $$v_deb = "$(DEB_VERSION_UPSTREAM)"; \
+ 	    die "ERROR: d/changelog <-> Cargo.toml version mismatch: $$v_cargo != $$v_deb\n" if $$v_cargo ne $$v_deb; exit(0); }' Cargo.toml
 -	$(CARGO) prepare-debian $(CURDIR)/debian/cargo_registry --link-from-system
  	dh_auto_configure
  
