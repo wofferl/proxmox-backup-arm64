@@ -256,6 +256,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
 	[ "${PACKAGE_ARCH}" = "arm64" ] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
+	[ $(lsb_release -sc) = "bullseye" ] && \
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-bullseye.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor

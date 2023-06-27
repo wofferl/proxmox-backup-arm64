@@ -1,0 +1,13 @@
+diff --git a/debian/control b/debian/control
+index bf49f1e3..7f34284b 100644
+--- a/debian/control
++++ b/debian/control
+@@ -165,7 +41,7 @@ Depends: fonts-font-awesome,
+          libjs-extjs (>= 7~),
+          libjs-qrcodejs (>= 1.20201119),
+          libproxmox-acme-plugins,
+-         libsgutils2-1.46-2,
++         libsgutils2-2,
+          libzstd1 (>= 1.3.8),
+          lvm2,
+          openssh-server,
