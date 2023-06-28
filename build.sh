@@ -164,6 +164,7 @@ do
 			PACKAGE_ARCH=arm64
 			BUILD_PROFILES=${BUILD_PROFILES}",cross"
 			export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
+			export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER=qemu-aarch64
 			export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
 			export TARGET=aarch64-unknown-linux-gnu
 			export PKG_CONFIG=/usr/bin/aarch64-linux-gnu-pkg-config

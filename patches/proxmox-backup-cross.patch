@@ -24,11 +24,41 @@ index b06badff..a5eb4ce2 100644
  SPHINXOPTS    += -t release
  else
  COMPILEDIR := ../target/debug
+@@ -98,16 +98,16 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
+ all: ${MAN1_PAGES} ${MAN5_PAGES}
+ 
+ config/%/config.rst: ${COMPILEDIR}/docgen
+-	${COMPILEDIR}/docgen $*.cfg >$@
++	qemu-aarch64 ${COMPILEDIR}/docgen $*.cfg >$@
+ 
+ config/acl/roles.rst: ${COMPILEDIR}/docgen
+-	${COMPILEDIR}/docgen "config::acl::Role" >$@
++	qemu-aarch64 ${COMPILEDIR}/docgen "config::acl::Role" >$@
+ 
+ %/synopsis.rst: ${COMPILEDIR}/%
+-	$< printdoc > $@
++	qemu-aarch64 $< printdoc > $@
+ 
+ proxmox-backup-client/catalog-shell-synopsis.rst: ${COMPILEDIR}/dump-catalog-shell-cli
+-	${COMPILEDIR}/dump-catalog-shell-cli > proxmox-backup-client/catalog-shell-synopsis.rst
++	qemu-aarch64 ${COMPILEDIR}/dump-catalog-shell-cli > proxmox-backup-client/catalog-shell-synopsis.rst
+ 
+ ${MAN1_PAGES} ${MAN5_PAGES}: man-pages
+ 
+@@ -122,7 +122,7 @@ onlinehelpinfo:
+ 	@echo "Build finished. OnlineHelpInfo.js is in $(BUILDDIR)/scanrefs."
+ 
+ api-viewer/apidata.js: ${COMPILEDIR}/docgen
+-	${COMPILEDIR}/docgen apidata.js >$@
++	qemu-aarch64 ${COMPILEDIR}/docgen apidata.js >$@
+ 
+ api-viewer/apidoc.js: ${API_VIEWER_FILES}
+ 	cat ${API_VIEWER_FILES} >$@.tmp
 diff --git a/pxar-bin/tests/pxar.rs b/pxar-bin/tests/pxar.rs
-index f2748598..7cbdcc7a 100644
+index f2748598..0c31ee4f 100644
 --- a/pxar-bin/tests/pxar.rs
 +++ b/pxar-bin/tests/pxar.rs
-@@ -8,9 +8,9 @@ fn pxar_create_and_extract() {
+@@ -8,14 +8,15 @@ fn pxar_create_and_extract() {
      let dest_dir = "../tests/catar_data/test_xattrs_dest/";
  
      let exec_path = if cfg!(debug_assertions) {
@@ -40,3 +70,20 @@ index f2748598..7cbdcc7a 100644
      };
  
      println!("run '{} create archive.pxar {}'", exec_path, src_dir);
+ 
+-    Command::new(exec_path)
++    Command::new("qemu-aarch64")
++        .arg(exec_path)
+         .arg("create")
+         .arg("./tests/archive.pxar")
+         .arg(src_dir)
+@@ -24,7 +25,8 @@ fn pxar_create_and_extract() {
+ 
+     println!("run '{} extract archive.pxar {}'", exec_path, dest_dir);
+ 
+-    Command::new(exec_path)
++    Command::new("qemu-aarch64")
++        .arg(exec_path)
+         .arg("extract")
+         .arg("./tests/archive.pxar")
+         .arg("--target")
