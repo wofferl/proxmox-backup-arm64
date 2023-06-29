@@ -151,6 +151,8 @@ BUILD_PACKAGE="server"
 BUILD_PROFILES=""
 GITHUB_ACTION=""
 
+. /etc/os-release
+
 while [ "$#" -ge 1 ]
 do
 	case "$1" in
@@ -266,7 +268,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
-	elif [[ $(lsb_release -sc) =~ bullseye|jammy ]]; then \
+	elif [ ${VERSION_CODENAME} = "bullseye" -o ${VERSION_CODENAME} = "jammy" ]; then \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-bullseye.patch"
 	fi
 	[ "${PACKAGE_ARCH}" = "arm64" ] && \
