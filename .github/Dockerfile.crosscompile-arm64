@@ -19,7 +19,7 @@ RUN source ~/.cargo/env && rustup target add aarch64-unknown-linux-gnu
 COPY . /build/
 WORKDIR /build
 
-RUN source ~/.cargo/env && ./build.sh cross ${buildoptions}
+RUN source ~/.cargo/env && ./build.sh ${buildoptions}
 
 FROM scratch
 COPY --from=builder-stage /build/*.log /build/packages/* /
