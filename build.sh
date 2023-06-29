@@ -170,7 +170,7 @@ do
 			export PKG_CONFIG=/usr/bin/aarch64-linux-gnu-pkg-config
 			export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig/
 			export CC=/usr/bin/aarch64-linux-gnu-gcc
-			export DEB_HOST_MULTIARCH=aarch64-unknown-linux-gnu-gcc
+			export DEB_HOST_MULTIARCH=aarch64-linux-gnu
 		;;
 		github)
 			GITHUB_ACTION="true"
