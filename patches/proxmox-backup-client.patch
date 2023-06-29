@@ -114,11 +114,11 @@ index 0b51f697..5b41f130 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
-                pve-eslint (>= 7.18.0~),
+                pve-eslint:all (>= 7.18.0~),
                 python3-docutils,
                 python3-pygments,
--               python3-sphinx <!nodoc>,
-+               python3-sphinx,
+-               python3-sphinx:all <!nodoc>,
++               python3-sphinx:all,
                 rsync,
                 texlive-fonts-extra <!nodoc>,
                 texlive-fonts-recommended <!nodoc>,

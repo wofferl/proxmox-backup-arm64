@@ -1,0 +1,35 @@
+diff --git a/Makefile b/Makefile
+index 1a32c86..b1a4e0a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -7,7 +7,7 @@ GITVERSION:=$(shell git rev-parse HEAD)
+ 
+ BUILDDIR ?= $(PACKAGE)-$(DEB_VERSION_UPSTREAM)
+ 
+-DEB=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_BUILD_ARCH).deb
++DEB=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_HOST_ARCH).deb
+ DBGDEB=$(PACKAGE)-dbgsym_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_BUILD_ARCH).deb
+ DEBS=$(DEB) $(DBGDEB)
+ 
+@@ -24,7 +24,7 @@ $(BUILDDIR): src debian
+ deb: $(DEBS)
+ $(DEBS): $(DEB)
+ $(DEB): $(BUILDDIR)
+-	cd $(BUILDDIR); dpkg-buildpackage -b -us -uc
++	cd $(BUILDDIR); dpkg-buildpackage -aarm64 -b -us -uc
+ 	lintian $(DEB)
+ 
+ .PHONY: dsc
+diff --git a/src/Makefile b/src/Makefile
+index 449004f..f437733 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -13,7 +13,7 @@ LDFLAGS += $(shell pkg-config --libs $(LIBS))
+ all: $(PROGRAM)
+ 
+ $(PROGRAM): $(SOURCES)
+-	gcc $< -o $@ $(CFLAGS) $(LDFLAGS)
++	${CC} $< -o $@ $(CFLAGS) $(LDFLAGS)
+ 
+ .PHONY: install
+ install: $(PROGRAM) mini-journalreader.1

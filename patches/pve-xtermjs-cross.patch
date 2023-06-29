@@ -1,0 +1,27 @@
+diff --git a/Makefile b/Makefile
+index cd583fb..4f709be 100644
+--- a/Makefile
++++ b/Makefile
+@@ -15,12 +15,12 @@ FITADDONTGZ=xterm-addon-fit-${FITADDONVER}.tgz
+ SRCDIR=src
+ GITVERSION:=$(shell git rev-parse HEAD)
+ 
+-DEB=${PACKAGE}_${DEB_VERSION_UPSTREAM_REVISION}_${DEB_BUILD_ARCH}.deb
++DEB=${PACKAGE}_${DEB_VERSION_UPSTREAM_REVISION}_${DEB_HOST_ARCH}.deb
+ DSC=rust-${CRATENAME}_${DEB_VERSION_UPSTREAM_REVISION}.dsc
+ 
+ ifeq ($(BUILD_MODE), release)
+ CARGO_BUILD_ARGS += --release
+-COMPILEDIR := target/release
++COMPILEDIR := target/aarch64-unknown-linux-gnu/release
+ else
+ COMPILEDIR := target/debug
+ endif
+diff --git a/debian/install b/debian/install
+index 0e69d82..bb555a8 100644
+--- a/debian/install
++++ b/debian/install
+@@ -1,2 +1,2 @@
+ src/www/*			/usr/share/pve-xtermjs/
+-target/release/termproxy	/usr/bin/
++target/aarch64-unknown-linux-gnu/release/termproxy	/usr/bin/

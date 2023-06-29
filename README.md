@@ -43,6 +43,34 @@ docker buildx build -o packages --build-arg buildoptions="client debug" --build-
 
 Once the docker build is completed, packages will be copied from the docker build image to a folder named `packages` in the root folder.
 
+## Build using cross compiler (experimental)
+### Enable multi arch and install build essentials and dependencies
+For cross compiling you need to enable multiarch and install the needed build dependencies for the target architecture. For the tests to work qemu-user-binfmt is needed.
+
+```
+dpkg --add-architecture arm64
+```
+```
+apt update && apt-get install -y --no-install-recommends \
+                build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
+                pkg-config libudev-dev:arm64 libssl-dev:arm64 libapt-pkg-dev:arm64 apt:amd64 \
+                libclang-dev libpam0g-dev:arm64 \
+                qemu-user-binfmt 
+```
+(apt:amd64 is necessary because libapt-pkg-dev:arm64 would break the dependencies without it)
+
+### Install ``rustup`` and add target arch
+```
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s
+source ~/.cargo/env
+rustup target add aarch64-unknown-linux-gnu
+```
+
+### Start build script
+```
+./build.sh cross
+```
+
 ## Install all needed packages
 ### Server
 ```
