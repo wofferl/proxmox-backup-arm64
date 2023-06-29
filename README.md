@@ -1,6 +1,6 @@
 # TESTING proxmox-backup-arm64
-<b>This is the experimental branch for Proxmox Backup 3.0.0 based on Debian/Bookworm<br />
-it also compiles 3.0.0 on Debian/Bullseye.
+<b>This is the experimental branch for Proxmox Backup 3.x based on Debian/Bookworm<br />
+it also compiles 3.x on Debian/Bullseye.
 Both Versions are not used in production yet, so not really tested.</b>
 
 Script for building Proxmox Backup Server 3.x for Armbian64 based on Bullseye<br />

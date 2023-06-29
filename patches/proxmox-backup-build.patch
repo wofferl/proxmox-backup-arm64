@@ -25,7 +25,7 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index ea2d0cef..3e97f410 100644
+index 3662cf84..9e2a4a3a 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -239,31 +239,35 @@ proxmox-rrd.workspace = true
@@ -88,7 +88,7 @@ index ea2d0cef..3e97f410 100644
  [features]
  default = []
 diff --git a/debian/control b/debian/control
-index bf49f1e3..208cc769 100644
+index 402c52ae..208cc769 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -2,156 +2,31 @@ Source: rust-proxmox-backup
@@ -142,7 +142,7 @@ index bf49f1e3..208cc769 100644
 -               librust-percent-encoding-2+default-dev (>= 2.1-~~),
 -               librust-pin-project-lite-0.2+default-dev,
 -               librust-proxmox-acme-rs-0.4+default-dev,
--               librust-proxmox-apt-0.10+default-dev,
+-               librust-proxmox-apt-0.10+default-dev (>= 0.10.2~~),
 -               librust-proxmox-async-0.4+default-dev,
 -               librust-proxmox-auth-api-0.3+api-dev,
 -               librust-proxmox-auth-api-0.3+api-types-dev,
@@ -166,7 +166,7 @@ index bf49f1e3..208cc769 100644
 -               librust-proxmox-ldap-0.2+default-dev,
 -               librust-proxmox-metrics-0.3+default-dev,
 -               librust-proxmox-openid-0.10+default-dev (>= 0.10.0-~~),
--               librust-proxmox-rest-server-0.4+default-dev,
+-               librust-proxmox-rest-server-0.4+default-dev (>= 0.4.1~~),
 -               librust-proxmox-rest-server-0.4+rate-limited-stream-dev,
 -               librust-proxmox-rest-server-0.4+templates-dev,
 -               librust-proxmox-router-1+cli-dev (>= 1.3.1-~~),
