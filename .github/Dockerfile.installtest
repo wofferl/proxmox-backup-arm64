@@ -1,0 +1,9 @@
+ARG baseimage=debian:bullseye-slim
+FROM ${baseimage} as builder-stage
+ENV DEBIAN_FRONTEND=noninteractive
+
+COPY . /build/
+WORKDIR /build/packages
+
+RUN ls -l
+RUN apt update && apt-get -y install /build/packages/*deb
