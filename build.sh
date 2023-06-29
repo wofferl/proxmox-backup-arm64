@@ -241,6 +241,11 @@ fi
 echo "Install build dependencies"
 ${SUDO} apt install -y "${packages_install[@]}"
 
+cat <<EOF >rust-toolchain.toml
+[toolchain]
+channel="stable"
+targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host/ { print $2 }')}" ]
+EOF
 
 cd "${SOURCES}"
 
