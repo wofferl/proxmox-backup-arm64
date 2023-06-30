@@ -355,16 +355,15 @@ fi
 
 [ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
-PVE_XTERMJS_VER="4.16.0-2"
-PVE_XTERMJS_GIT="8dcff86a32c3ba8754b84e8aabb01369ef3de407"
-PROXMOX_XTERMJS_GIT="41862eeb95b70201c47dfd27fca37879e23be3ff"
+PVE_XTERMJS_VER="4.16.0-3"
+PVE_XTERMJS_GIT="99c9d214258a496227e15f0803fb163925be65c8"
+PROXMOX_XTERMJS_GIT="2a070da0651677411a245f1714895235b1caf584"
 if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
 	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
-	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-fix_already_registered.patch"
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
 		patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-cross.patch"
 	cd pve-xtermjs/
