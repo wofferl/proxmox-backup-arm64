@@ -153,6 +153,12 @@ GITHUB_ACTION=""
 
 . /etc/os-release
 
+if [ "${VERSION_CODENAME}" = "bookworm" ]; then
+	DISTNAME="bookworm"
+else
+	DISTNAME="bullseye"
+fi
+
 while [ "$#" -ge 1 ]
 do
 	case "$1" in
@@ -209,9 +215,9 @@ fi
 
 
 echo "Download packages list from proxmox devel repository"
-PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/bullseye/main/binary-amd64/Packages.gz)
+PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/${DISTNAME}/main/binary-amd64/Packages.gz)
 echo "Download packages list from pbs-no-subscription repository"
-PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/bullseye/pbs-no-subscription/binary-amd64/Packages.gz)
+PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/${DISTNAME}/pbs-no-subscription/binary-amd64/Packages.gz)
 
 
 echo "Download dependencies"
@@ -271,9 +277,9 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
-	if [ "${BUILD_PACKAGE}" = "client" ]; then \
+	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
-	elif [ ${VERSION_CODENAME} = "bullseye" -o ${VERSION_CODENAME} = "jammy" ]; then \
+	elif [ "${DISTNAME}" = "bullseye" ]; then
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-bullseye.patch"
 	fi
 	[ "${PACKAGE_ARCH}" = "arm64" ] && \
