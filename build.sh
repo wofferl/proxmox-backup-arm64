@@ -269,6 +269,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
+	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
 	[ "${BUILD_PACKAGE}" = "client" ] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
