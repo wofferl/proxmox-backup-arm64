@@ -78,7 +78,7 @@ index 20c1e9c8..c0e13abe 100644
  
 -#proxmox-apt = { path = "../proxmox-apt" }
 -#proxmox-openid = { path = "../proxmox-openid-rs" }
-+proxmox-apt = { path = "../proxmox-apt" }
++proxmox-apt = { path = "../proxmox/proxmox-apt" }
 +proxmox-openid = { path = "../proxmox-openid-rs" }
  
 -#pxar = { path = "../pxar" }

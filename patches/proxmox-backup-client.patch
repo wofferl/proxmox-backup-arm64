@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index b307009d..3473103a 100644
+index 06928be7..00751f1c 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,32 +4,21 @@ include defines.mk
@@ -82,20 +82,14 @@ index b307009d..3473103a 100644
  	touch "$@"
  
  
-@@ -186,10 +155,11 @@ lint:
- 	cargo clippy -- -A clippy::all -D clippy::correctness
- 
- install: $(COMPILED_BINS)
-+	@echo "$(DESTDIR)"
- 	install -dm755 $(DESTDIR)$(BINDIR)
- 	install -dm755 $(DESTDIR)$(ZSH_COMPL_DEST)
- 	$(foreach i,$(USR_BIN), \
--	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(BINDIR)/ ; \
-+	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)/$(BINDIR)/ ; \
- 	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
- 	install -dm755 $(DESTDIR)$(SBINDIR)
+@@ -195,16 +164,16 @@ install: $(COMPILED_BINS)
  	$(foreach i,$(USR_SBIN), \
-@@ -200,10 +170,10 @@ install: $(COMPILED_BINS)
+ 	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(SBINDIR)/ ; \
+ 	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
+-	install -m755 $(COMPILEDIR)/pbs2to3 $(DESTDIR)$(SBINDIR)/
++	#install -m755 $(COMPILEDIR)/pbs2to3 $(DESTDIR)$(SBINDIR)/
+ 	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup
+ 	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore
  	$(foreach i,$(RESTORE_BIN), \
  	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
  	# install sg-tape-cmd as setuid binary
@@ -206,10 +200,10 @@ index 1ebd7460..c72dcd50 100755
  override_dh_fixperms:
  	dh_fixperms --exclude sg-tape-cmd
 diff --git a/docs/Makefile b/docs/Makefile
-index b06badff..32b51556 100644
+index 0d0963f3..32b51556 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
-@@ -1,48 +1,15 @@
+@@ -1,49 +1,15 @@
  include ../defines.mk
  
  GENERATED_SYNOPSIS := 						\
@@ -243,7 +237,8 @@ index b06badff..32b51556 100644
 -	proxmox-backup-client.1		\
 -	proxmox-backup-manager.1	\
 -	proxmox-file-restore.1		\
--	proxmox-backup-debug.1
+-	proxmox-backup-debug.1		\
+-	pbs2to3.1			\
 -
 -MAN5_PAGES :=				\
 -	media-pool.cfg.5		\
