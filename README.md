@@ -2,6 +2,14 @@
 Script for building Proxmox Backup Server 2.x for Armbian64 based on Bullseye<br />
 At least 4 GB are required for compiling. On devices with low memory, SWAP must be used (see help section).
 
+## Download pre-built packages
+You can find unoffical debian packages for bullseye that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
+
+With the script you can also download all files of the latest release at once.
+```
+./build.sh download
+```
+
 ## Build manually
 ### Install build essentials and dependencies
 ```
