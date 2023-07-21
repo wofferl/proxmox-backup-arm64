@@ -137,6 +137,20 @@ function set_package_info() {
 	fi
 }
 
+function download_release() {
+	release_url="https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/latest"
+	echo "Downloading latest released files to "${PACKAGES}
+	for download_url in $(curl -sSf ${release_url} | sed -n '/browser_download_url/ s/.*\(https.*\)"/\1/p'); do
+		file=$(basename ${download_url})
+		if [ -e ${PACKAGES}/${file} ]; then
+			echo "${file} already exist"
+		else
+			echo "Downloading ${file}"
+			curl -sSfLO ${download_url} --output-dir ${PACKAGES}
+		fi
+	done
+}
+
 SUDO="${SUDO:-sudo -E}"
 
 SCRIPT=$(realpath "${0}")
@@ -180,6 +194,10 @@ do
 			export CC=/usr/bin/aarch64-linux-gnu-gcc
 			export DEB_HOST_MULTIARCH=aarch64-linux-gnu
 		;;
+		download)
+			download_release
+			exit 0
+		;;
 		github)
 			GITHUB_ACTION="true"
 		;;
@@ -196,7 +214,7 @@ do
 			set -x
 		;;
 		*)
-			echo "usage $0 [client] [nocheck] [debug]"
+			echo "usage $0 [client] [nocheck] [debug] [download]"
 			exit 1
 		;;
 	esac
