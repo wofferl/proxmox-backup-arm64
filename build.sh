@@ -165,6 +165,8 @@ BUILD_PACKAGE="server"
 BUILD_PROFILES=""
 GITHUB_ACTION=""
 
+[ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
+
 while [ "$#" -ge 1 ]
 do
 	case "$1" in
@@ -219,7 +221,6 @@ if [ ! -d "${PATCHES}" ]; then
 	exit 1
 fi
 
-[ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
 [ ! -d "${PACKAGES_BUILD}" ] && mkdir -p "${PACKAGES_BUILD}"
 [ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
 
