@@ -1,4 +1,5 @@
 name: Buildtest Client Debian/Bullseye (buildx/arm64)
+run-name: Buildtest ${{ github.ref_name }} Client Debian/Bullseye (buildx/arm64)
 
 on:
   workflow_dispatch:
