@@ -1,4 +1,5 @@
 name: Buildtest Server Ubuntu/Jammy (amd64)
+run-name: Buildtest ${{ github.ref_name }} Server Ubuntu/Jammy (amd64)
 
 on:
   workflow_dispatch:
