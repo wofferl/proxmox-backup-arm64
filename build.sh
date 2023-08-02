@@ -289,8 +289,11 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
 	[ "${BUILD_PACKAGE}" = "client" ] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
-	[ "${PACKAGE_ARCH}" = "arm64" ] && \
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-arm.patch"
+	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
+		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.install
+		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.postinst
+		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-server.install
+	fi
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-cross.patch"
 	cd proxmox-backup/
