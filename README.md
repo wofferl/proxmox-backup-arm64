@@ -5,9 +5,14 @@ At least 4 GB are required for compiling. On devices with low memory, SWAP must 
 ## Download pre-built packages
 You can find unoffical debian packages for bullseye that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
 
-With the script you can also download all files of the latest release at once.
+With the script you can also download all files of the latest release at once
 ```
 ./build.sh download
+```
+
+or of a specific version
+```
+./build.sh download=2.4.3-1
 ```
 
 ## Build manually

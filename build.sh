@@ -138,8 +138,9 @@ function set_package_info() {
 }
 
 function download_release() {
-	release_url="https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/latest"
-	echo "Downloading latest released files to "${PACKAGES}
+	version=${1:-latest}
+	release_url="https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/${version}"
+	echo "Downloading ${version} released files to "${PACKAGES}
 	for download_url in $(curl -sSf ${release_url} | sed -n '/browser_download_url/ s/.*\(https.*\)"/\1/p'); do
 		file=$(basename ${download_url})
 		if [ -e ${PACKAGES}/${file} ]; then
@@ -188,8 +189,12 @@ do
 			export CC=/usr/bin/aarch64-linux-gnu-gcc
 			export DEB_HOST_MULTIARCH=aarch64-linux-gnu
 		;;
-		download)
-			download_release
+		download*)
+			if [[ "$1" =~ download=[0-9.-]+ ]]; then
+				download_release tags/${1/*=}
+			else
+				download_release
+			fi
 			exit 0
 		;;
 		github)
