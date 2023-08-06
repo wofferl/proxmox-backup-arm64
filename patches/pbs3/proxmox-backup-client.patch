@@ -1,0 +1,265 @@
+diff --git a/Makefile b/Makefile
+index 92eed8a1..f3d632dc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -4,32 +4,21 @@ include defines.mk
+ PACKAGE := proxmox-backup
+ ARCH := $(DEB_BUILD_ARCH)
+ 
+-SUBDIRS := etc www docs
++SUBDIRS := docs
+ 
+ # Binaries usable by users
+ USR_BIN := \
+ 	proxmox-backup-client 	\
+-	proxmox-file-restore	\
+-	pxar			\
+-	proxmox-tape		\
+-	pmtx			\
+-	pmt
++	pxar			
+ 
+ # Binaries usable by admins
+-USR_SBIN := \
+-	proxmox-backup-manager \
+-	proxmox-backup-debug
++USR_SBIN :=
+ 
+ # Binaries for services:
+-SERVICE_BIN := \
+-	proxmox-backup-api \
+-	proxmox-backup-banner \
+-	proxmox-backup-proxy \
+-	proxmox-daily-update
++SERVICE_BIN :=
+ 
+ # Single file restore daemon
+-RESTORE_BIN := \
+-	proxmox-restore-daemon
++RESTORE_BIN :=
+ 
+ SUBCRATES != cargo metadata --no-deps --format-version=1 \
+ 	| jq -r .workspace_members'[]' \
+@@ -61,8 +50,8 @@ RESTORE_DEB=proxmox-backup-file-restore_$(DEB_VERSION)_$(ARCH).deb
+ RESTORE_DBG_DEB=proxmox-backup-file-restore-dbgsym_$(DEB_VERSION)_$(ARCH).deb
+ DOC_DEB=$(PACKAGE)-docs_$(DEB_VERSION)_all.deb
+ 
+-DEBS=$(SERVER_DEB) $(SERVER_DBG_DEB) $(CLIENT_DEB) $(CLIENT_DBG_DEB) \
+-     $(RESTORE_DEB) $(RESTORE_DBG_DEB) $(DEBUG_DEB) $(DEBUG_DBG_DEB)
++DEBS=${CLIENT_DEB} ${CLIENT_DBG_DEB}
++
+ 
+ DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
+ 
+@@ -160,30 +149,11 @@ cargo-build:
+ $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-cargo-build
+ .do-cargo-build:
+ 	$(CARGO) build $(CARGO_BUILD_ARGS) \
+-	    --package proxmox-backup-banner \
+-	    --bin proxmox-backup-banner \
+ 	    --package proxmox-backup-client \
+ 	    --bin proxmox-backup-client \
+ 	    --bin dump-catalog-shell-cli \
+-	    --bin proxmox-backup-debug \
+-	    --package proxmox-file-restore \
+-	    --bin proxmox-file-restore \
+ 	    --package pxar-bin \
+-	    --bin pxar \
+-	    --package pbs-tape \
+-	    --bin pmt \
+-	    --bin pmtx \
+-	    --package proxmox-restore-daemon \
+-	    --bin proxmox-restore-daemon \
+-	    --package proxmox-backup \
+-	    --bin docgen \
+-	    --bin proxmox-backup-api \
+-	    --bin proxmox-backup-manager \
+-	    --bin proxmox-backup-proxy \
+-	    --bin proxmox-daily-update \
+-	    --bin proxmox-file-restore \
+-	    --bin proxmox-tape \
+-	    --bin sg-tape-cmd
++	    --bin pxar
+ 	touch "$@"
+ 
+ 
+@@ -192,25 +162,26 @@ lint:
+ 	cargo clippy -- -A clippy::all -D clippy::correctness
+ 
+ install: $(COMPILED_BINS)
++	@echo "$(DESTDIR)"
+ 	install -dm755 $(DESTDIR)$(BINDIR)
+ 	install -dm755 $(DESTDIR)$(ZSH_COMPL_DEST)
+ 	$(foreach i,$(USR_BIN), \
+-	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(BINDIR)/ ; \
++	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)/$(BINDIR)/ ; \
+ 	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
+ 	install -dm755 $(DESTDIR)$(SBINDIR)
+ 	$(foreach i,$(USR_SBIN), \
+ 	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(SBINDIR)/ ; \
+ 	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
+-	install -m755 $(COMPILEDIR)/pbs2to3 $(DESTDIR)$(SBINDIR)/
++	#install -m755 $(COMPILEDIR)/pbs2to3 $(DESTDIR)$(SBINDIR)/
+ 	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup
+ 	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore
+ 	$(foreach i,$(RESTORE_BIN), \
+ 	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
+ 	# install sg-tape-cmd as setuid binary
+-	install -m4755 -o root -g root $(COMPILEDIR)/sg-tape-cmd $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/sg-tape-cmd
++	#install -m4755 -o root -g root $(COMPILEDIR)/sg-tape-cmd $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/sg-tape-cmd
+ 	$(foreach i,$(SERVICE_BIN), \
+ 	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/ ;)
+-	$(MAKE) -C www install
++	#$(MAKE) -C www install
+ 	$(MAKE) -C docs install
+ 
+ .PHONY: upload
+diff --git a/debian/control b/debian/control
+index 0b51f697..5b41f130 100644
+--- a/debian/control
++++ b/debian/control
+@@ -20,7 +20,7 @@ Build-Depends: bash-completion,
+                pve-eslint:all (>= 7.18.0~),
+                python3-docutils,
+                python3-pygments,
+-               python3-sphinx:all <!nodoc>,
++               python3-sphinx:all,
+                rsync,
+                texlive-fonts-extra <!nodoc>,
+                texlive-fonts-recommended <!nodoc>,
+@@ -34,55 +34,9 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+ Homepage: https://www.proxmox.com
+ Rules-Requires-Root: binary-targets
+ 
+-Package: proxmox-backup-server
+-Architecture: any
+-Depends: fonts-font-awesome,
+-         libjs-extjs (>= 7~),
+-         libjs-qrcodejs (>= 1.20201119),
+-         libproxmox-acme-plugins,
+-         libsgutils2-1.46-2,
+-         libzstd1 (>= 1.3.8),
+-         lvm2,
+-         openssh-server,
+-         pbs-i18n,
+-         postfix | mail-transport-agent,
+-         proxmox-backup-docs,
+-         proxmox-mini-journalreader,
+-         proxmox-widget-toolkit (>= 3.5.2),
+-         pve-xtermjs (>= 4.7.0-1),
+-         sg3-utils,
+-         smartmontools,
+-         ${misc:Depends},
+-         ${shlibs:Depends},
+-Recommends: ifupdown2,
+-            proxmox-mail-forward,
+-            proxmox-offline-mirror-helper,
+-            zfsutils-linux,
+-Description: Proxmox Backup Server daemon with tools and GUI
+- This package contains the Proxmox Backup Server daemons and related
+- tools. This includes a web-based graphical user interface.
+-
+ Package: proxmox-backup-client
+ Architecture: any
+ Depends: qrencode, ${misc:Depends}, ${shlibs:Depends},
+ Description: Proxmox Backup Client tools
+  This package contains the Proxmox Backup client, which provides a
+  simple command line tool to create and restore backups.
+-
+-Package: proxmox-backup-docs
+-Build-Profiles: <!nodoc>
+-Section: doc
+-Depends: fonts-font-awesome, libjs-extjs, libjs-mathjax, ${misc:Depends},
+-Architecture: all
+-Description: Proxmox Backup Documentation
+- This package contains the Proxmox Backup Documentation files.
+-
+-Package: proxmox-backup-file-restore
+-Architecture: any
+-Depends: ${misc:Depends}, ${shlibs:Depends},
+-Recommends: proxmox-backup-restore-image, pve-qemu-kvm (>= 5.0.0-9),
+-Breaks: proxmox-backup-restore-image (<< 0.3.1),
+-Description: Proxmox Backup single file restore tools for pxar and block device backups
+- This package contains the Proxmox Backup single file restore client for
+- restoring individual files and folders from both host/container and VM/block
+- device backups. It includes a block device restore driver using QEMU.
+diff --git a/debian/rules b/debian/rules
+index 79c1ad76..95b1b1bf 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -37,12 +37,13 @@ override_dh_missing:
+ override_dh_auto_install:
+ 	dh_auto_install -- \
+ 	    PROXY_USER=backup \
+-	    LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH)
++	    LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) \
++	    DESTDIR=$(PWD)/debian/tmp
+ 
+-override_dh_installsystemd:
+-	dh_installsystemd -pproxmox-backup-server  proxmox-backup-daily-update.timer
++#override_dh_installsystemd:
++#	dh_installsystemd -pproxmox-backup-server  proxmox-backup-daily-update.timer
+ 	# note: we start/try-reload-restart services manually in postinst
+-	dh_installsystemd --no-start --no-restart-after-upgrade --no-stop-on-upgrade
++#	dh_installsystemd --no-start --no-restart-after-upgrade --no-stop-on-upgrade
+ 
+ override_dh_fixperms:
+ 	dh_fixperms --exclude sg-tape-cmd
+diff --git a/docs/Makefile b/docs/Makefile
+index b06badff..32b51556 100644
+--- a/docs/Makefile
++++ b/docs/Makefile
+@@ -1,49 +1,15 @@
+ include ../defines.mk
+ 
+ GENERATED_SYNOPSIS := 						\
+-	proxmox-tape/synopsis.rst				\
+ 	proxmox-backup-client/synopsis.rst			\
+ 	proxmox-backup-client/catalog-shell-synopsis.rst 	\
+-	proxmox-backup-manager/synopsis.rst			\
+-	proxmox-backup-debug/synopsis.rst			\
+-	proxmox-file-restore/synopsis.rst			\
+-	pxar/synopsis.rst					\
+-	pmtx/synopsis.rst					\
+-	pmt/synopsis.rst					\
+-	config/media-pool/config.rst				\
+-	config/tape/config.rst					\
+-	config/tape-job/config.rst				\
+-	config/user/config.rst					\
+-	config/remote/config.rst				\
+-	config/sync/config.rst					\
+-	config/verification/config.rst				\
+-	config/acl/roles.rst					\
+-	config/datastore/config.rst				\
+-	config/domains/config.rst
++	pxar/synopsis.rst
+ 
+ MAN1_PAGES := 				\
+ 	pxar.1				\
+-	pmtx.1				\
+-	pmt.1				\
+-	proxmox-tape.1			\
+-	proxmox-backup-proxy.1		\
+-	proxmox-backup-client.1		\
+-	proxmox-backup-manager.1	\
+-	proxmox-file-restore.1		\
+-	proxmox-backup-debug.1		\
+-	pbs2to3.1			\
+-
+-MAN5_PAGES :=				\
+-	media-pool.cfg.5		\
+-	tape.cfg.5			\
+-	tape-job.cfg.5			\
+-	acl.cfg.5			\
+-	user.cfg.5			\
+-	remote.cfg.5			\
+-	sync.cfg.5			\
+-	verification.cfg.5		\
+-	datastore.cfg.5			\
+-	domains.cfg.5
++	proxmox-backup-client.1
++
++MAN5_PAGES :=
+ 
+ PRUNE_SIMULATOR_FILES := 					\
+ 	prune-simulator/index.html				\

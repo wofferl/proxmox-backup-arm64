@@ -166,6 +166,16 @@ BUILD_PACKAGE="server"
 BUILD_PROFILES=""
 GITHUB_ACTION=""
 
+. /etc/os-release
+
+if [ "${VERSION_CODENAME}" = "bookworm" ]; then
+	DISTNAME="bookworm"
+	PBSVERSION="pbs3"
+else
+	DISTNAME="bullseye"
+	PBSVERSION="pbs2"
+fi
+
 [ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
 
 while [ "$#" -ge 1 ]
@@ -204,6 +214,9 @@ do
 			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
 			export DEB_BUILD_OPTIONS="nocheck"
 		;;
+		pbs*)
+			PBSVERSION=${1}
+		;;
 		debug)
 			exec &> >(tee "${LOGFILE}")
 			echo $@
@@ -231,9 +244,9 @@ fi
 
 
 echo "Download packages list from proxmox devel repository"
-PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/bullseye/main/binary-amd64/Packages.gz)
+PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/${DISTNAME}/main/binary-amd64/Packages.gz)
 echo "Download packages list from pbs-no-subscription repository"
-PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/bullseye/pbs-no-subscription/binary-amd64/Packages.gz)
+PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/${DISTNAME}/pbs-no-subscription/binary-amd64/Packages.gz)
 
 
 echo "Download dependencies"
@@ -263,16 +276,27 @@ fi
 echo "Install build dependencies"
 ${SUDO} apt install -y "${packages_install[@]}"
 
+cat <<EOF >rust-toolchain.toml
+[toolchain]
+channel="stable"
+targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host/ { print $2 }')}" ]
+EOF
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="2.4.3-1"
-PROXMOX_BACKUP_GIT="682bb42edd01c9ebe6595f2aeef6c56dee6f91cf"
+if [ "${PBSVERSION}" = "pbs3" ]; then
+	PROXMOX_BACKUP_VER="3.0.2-1"
+	PROXMOX_BACKUP_GIT="a13b3d7e1c9b93fbb54691074b5008ccd9c8f1f3"
+	PROXMOX_GIT="5859017061e7e722c601aab47016a445e776740e"
+else
+	PROXMOX_BACKUP_VER="2.4.3-1"
+	PROXMOX_BACKUP_GIT="682bb42edd01c9ebe6595f2aeef6c56dee6f91cf"
+	PROXMOX_GIT="286c55d5b493a1e76fa3e70ae1c874cf82ca39aa"
+	PROXMOX_OPENID_GIT="ecf59cbb74278ea0e9710466508158ed6a6828c4" # 0.9.9-1
+fi
 PATHPATTERNS_GIT="8a0dce93d535ef04bfa9c8317edc0ef0216e9042" # 0.1.3-1
 PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05" # 0.4.0
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
-PROXMOX_GIT="286c55d5b493a1e76fa3e70ae1c874cf82ca39aa"
-PROXMOX_OPENID_GIT="ecf59cbb74278ea0e9710466508158ed6a6828c4" # 0.9.9-1
 PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5" # 0.10.2-1
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
@@ -285,22 +309,28 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clean_and_checkout ${PATHPATTERNS_GIT} pathpatterns
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme-rs.git
 	git_clean_and_checkout ${PROXMOX_ACME_RS_GIT} proxmox-acme-rs
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-openid-rs.git
-	git_clean_and_checkout ${PROXMOX_OPENID_GIT} proxmox-openid-rs
+	if [ "${PBSVERSION}" = "pbs2" ]; then
+		git_clone_or_fetch https://git.proxmox.com/git/proxmox-openid-rs.git
+		git_clean_and_checkout ${PROXMOX_OPENID_GIT} proxmox-openid-rs
+	fi
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
-	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
-	[ "${BUILD_PACKAGE}" = "client" ] && \
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
+	if [ "${PBSVERSION}" = "pbs3" -a "${DISTNAME}" = "bullseye" ]; then
+		sed -i 's/libsgutils2-.*-2/libsgutils2-2/' proxmox-backup/debian/control
+	fi
+	patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-build.patch"
+	if [ "${BUILD_PACKAGE}" = "client" ]; then
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-client.patch"
+	fi
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.install
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.postinst
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-server.install
 	fi
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-cross.patch"
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-cross.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
