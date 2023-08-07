@@ -317,12 +317,12 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
-	if [ "${PBSVERSION}" = "pbs3" -a "${DISTNAME}" = "bullseye" ]; then
-		sed -i 's/libsgutils2-.*-2/libsgutils2-2/' proxmox-backup/debian/control
-	fi
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-client.patch"
+	fi
+	if [ "${PBSVERSION}" = "pbs3" -a "${DISTNAME}" = "bullseye" ]; then
+		sed -i 's/libsgutils2-.*-2/libsgutils2-2/' proxmox-backup/debian/control
 	fi
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.install
