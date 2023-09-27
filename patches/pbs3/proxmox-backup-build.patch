@@ -87,41 +87,6 @@ index 3662cf84..9e2a4a3a 100644
  
  [features]
  default = []
-diff --git a/debian/control b/debian/control
-index 0b51f697..fcf0759a 100644
---- a/debian/control
-+++ b/debian/control
-@@ -9,24 +9,24 @@ Build-Depends: bash-completion,
-                fonts-open-sans <!nodoc>,
-                graphviz <!nodoc>,
-                jq,
--               latexmk <!nodoc>,
-+               latexmk:all <!nodoc>,
-                libacl1-dev,
-                libfuse3-dev,
-                libsgutils2-dev,
-                libstd-rust-dev,
-                libsystemd-dev (>= 246-~~),
--               patchelf,
--               proxmox-widget-toolkit-dev <!nodoc>,
--               pve-eslint (>= 7.18.0~),
-+               patchelf:native,
-+               proxmox-widget-toolkit-dev:all <!nodoc>,
-+               pve-eslint:all (>= 7.18.0~),
-                python3-docutils,
-                python3-pygments,
--               python3-sphinx <!nodoc>,
-+               python3-sphinx:all <!nodoc>,
-                rsync,
-                texlive-fonts-extra <!nodoc>,
-                texlive-fonts-recommended <!nodoc>,
-                texlive-xetex <!nodoc>,
-                uuid-dev,
--               xindy <!nodoc>,
-+               xindy:native <!nodoc>,
- Maintainer: Proxmox Support Team <support@proxmox.com>
- Standards-Version: 4.5.1
- Vcs-Git: git://git.proxmox.com/git/proxmox-backup.git
 diff --git a/debian/rules b/debian/rules
 index 54a3c22b..79c1ad76 100755
 --- a/debian/rules
