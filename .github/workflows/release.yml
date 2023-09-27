@@ -1,5 +1,5 @@
-name: Release Debian/Bullseye (crossbuild/arm64)
-run-name: Release ${{ github.ref_name }} Debian/Bullseye (crossbuild/arm64)
+name: Release
+run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian/Bullseye (crossbuild/arm64)
 
 on:
   workflow_dispatch:
