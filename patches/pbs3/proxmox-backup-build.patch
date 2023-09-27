@@ -25,34 +25,39 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index 3662cf84..9e2a4a3a 100644
+index 6e848843..6f1434b5 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -239,31 +239,35 @@ proxmox-rrd.workspace = true
- # Local path overrides
+@@ -243,35 +243,35 @@ proxmox-rrd.workspace = true
  # NOTE: You must run `cargo update` after changing this for it to take effect!
  [patch.crates-io]
--#proxmox-acme-rs = { path = "../proxmox-acme-rs" }
+ 
+-#proxmox-apt = { path = "../proxmox/proxmox-apt" }
 -#proxmox-async = { path = "../proxmox/proxmox-async" }
 -#proxmox-auth-api = { path = "../proxmox/proxmox-auth-api" }
 -#proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
 -#proxmox-compression = { path = "../proxmox/proxmox-compression" }
 -#proxmox-fuse = { path = "../proxmox-fuse" }
 -#proxmox-http = { path = "../proxmox/proxmox-http" }
+-#proxmox-human-byte = { path = "../proxmox/proxmox-human-byte" }
 -#proxmox-io = { path = "../proxmox/proxmox-io" }
 -#proxmox-lang = { path = "../proxmox/proxmox-lang" }
+-#proxmox-ldap = { path = "../proxmox/proxmox-ldap" }
+-#proxmox-metrics = { path = "../proxmox/proxmox-metrics" }
+-#proxmox-openid = { path = "../proxmox/proxmox-openid" }
 -#proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
 -#proxmox-router = { path = "../proxmox/proxmox-router" }
 -#proxmox-schema = { path = "../proxmox/proxmox-schema" }
 -#proxmox-section-config = { path = "../proxmox/proxmox-section-config" }
 -#proxmox-serde = { path = "../proxmox/proxmox-serde" }
 -#proxmox-shared-memory = { path = "../proxmox/proxmox-shared-memory" }
+-#proxmox-sortable-macro = { path = "../proxmox/proxmox-sortable-macro" }
 -#proxmox-subscription = { path = "../proxmox/proxmox-subscription" }
 -#proxmox-sys = { path = "../proxmox/proxmox-sys" }
 -#proxmox-tfa = { path = "../proxmox/proxmox-tfa" }
 -#proxmox-time = { path = "../proxmox/proxmox-time" }
 -#proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
-+proxmox-acme-rs = { path = "../proxmox-acme-rs" }
++proxmox-apt = { path = "../proxmox/proxmox-apt" }
 +proxmox-async = { path = "../proxmox/proxmox-async" }
 +proxmox-auth-api = { path = "../proxmox/proxmox-auth-api" }
 +proxmox-borrow = { path = "../proxmox/proxmox-borrow" }
@@ -64,6 +69,7 @@ index 3662cf84..9e2a4a3a 100644
 +proxmox-lang = { path = "../proxmox/proxmox-lang" }
 +proxmox-ldap = { path = "../proxmox/proxmox-ldap" }
 +proxmox-metrics = { path = "../proxmox/proxmox-metrics" }
++proxmox-openid = { path = "../proxmox/proxmox-openid" }
 +proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
 +proxmox-router = { path = "../proxmox/proxmox-router" }
 +proxmox-schema = { path = "../proxmox/proxmox-schema" }
@@ -77,12 +83,11 @@ index 3662cf84..9e2a4a3a 100644
 +proxmox-time = { path = "../proxmox/proxmox-time" }
 +proxmox-uuid = { path = "../proxmox/proxmox-uuid" }
  
--#proxmox-apt = { path = "../proxmox-apt" }
--#proxmox-openid = { path = "../proxmox-openid-rs" }
-+proxmox-apt = { path = "../proxmox/proxmox-apt" }
-+proxmox-openid = { path = "../proxmox/proxmox-openid" }
- 
+-#proxmox-acme-rs = { path = "../proxmox-acme-rs" }
+-#pathpatterns = {path = "../pathpatterns" }
 -#pxar = { path = "../pxar" }
++proxmox-acme-rs = { path = "../proxmox-acme-rs" }
++pathpatterns = {path = "../pathpatterns" }
 +pxar = { path = "../pxar" }
  
  [features]
