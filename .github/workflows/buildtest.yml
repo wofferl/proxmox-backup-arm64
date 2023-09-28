@@ -48,17 +48,18 @@ jobs:
         if [[ "${{ github.event.inputs.version }}" =~ ^3. ]] || [[ "${GITHUB_REF_NAME}" =~ ^3. ]]; then
           pbsversion="pbs3"
         fi
+        [ "${{ github.event.inputs.package }}" = "client" ] && package="client"
         if [ "${{ github.event.inputs.arch }}" = "arm64" ]; then
           if [ "${RUNNER_DEBUG}" = "1" ]; then
-            docker buildx build -o packages --build-arg buildoptions="cross github debug ${pbsversion} ${{ github.event.inputs.package }}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+            docker buildx build -o packages --build-arg buildoptions="cross github debug ${pbsversion} ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
           else
-            docker buildx build -o packages --build-arg buildoptions="cross github ${pbsversion} ${{ github.event.inputs.package }}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+            docker buildx build -o packages --build-arg buildoptions="cross github ${pbsversion} ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
           fi
         else
           if [ "${RUNNER_DEBUG}" = "1" ]; then
-            docker buildx build -o packages --build-arg buildoptions="github debug ${pbsversion} ${{ github.event.inputs.package }}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
+            docker buildx build -o packages --build-arg buildoptions="github debug ${pbsversion} ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
           else
-            docker buildx build -o packages --build-arg buildoptions="github ${pbsversion} ${{ github.event.inputs.package }}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
+            docker buildx build -o packages --build-arg buildoptions="github ${pbsversion} ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
           fi
         fi
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
