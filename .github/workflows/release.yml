@@ -53,3 +53,4 @@ jobs:
         tag:  ${{ env.DEB_VERSION }}
         name: Version ${{ env.DEB_VERSION }} (Debian/Bullseye)
         draft: true
+        makeLatest: false
