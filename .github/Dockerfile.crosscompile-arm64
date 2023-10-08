@@ -12,7 +12,7 @@ RUN apt update && apt-get install -y --no-install-recommends \
 	pkg-config libudev-dev:arm64 libssl-dev:arm64 libapt-pkg-dev:arm64 apt:amd64 \
 	libclang-dev libpam0g-dev:arm64 \
 	qemu-user-binfmt
-RUN grep -qi bookworm /etc/os-release && apt-get install -y pkg-config:arm64
+RUN grep -qi bookworm /etc/os-release && apt-get install -y pkg-config:arm64 || true
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
 RUN source ~/.cargo/env && rustup target add aarch64-unknown-linux-gnu
