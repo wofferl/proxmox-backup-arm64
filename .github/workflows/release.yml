@@ -33,12 +33,14 @@ jobs:
     - name: Build packages
       run: |
         if [[ "${{ github.event.inputs.version }}" =~ ^3. ]] || [[ "${GITHUB_REF_NAME}" =~ ^3. ]]; then
-          pbsversion="pbs3"
+          baseimage="debian:bookworm-slim"
+        else
+          baseimage="debian:bullseye-slim"
         fi
         if [ "${RUNNER_DEBUG}" = "1" ]; then
-          docker buildx build -o packages --build-arg buildoptions="cross github debug ${pbsversion}" --build-arg baseimage=debian:bullseye-slim --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+          docker buildx build -o packages --build-arg buildoptions="cross github debug" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
         else
-          docker buildx build -o packages --build-arg buildoptions="cross github ${pbsversion}" --build-arg baseimage=debian:bullseye-slim --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+          docker buildx build -o packages --build-arg buildoptions="cross github" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
         fi
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
