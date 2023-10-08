@@ -1,5 +1,5 @@
 name: Release
-run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian/Bullseye (crossbuild/arm64)
+run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian (crossbuild/arm64)
 
 on:
   workflow_dispatch:
@@ -34,8 +34,10 @@ jobs:
       run: |
         if [[ "${{ github.event.inputs.version }}" =~ ^3. ]] || [[ "${GITHUB_REF_NAME}" =~ ^3. ]]; then
           baseimage="debian:bookworm-slim"
+          echo "DEB_DIST=Debian/Bookworm" >> $GITHUB_ENV
         else
           baseimage="debian:bullseye-slim"
+          echo "DEB_DIST=Debian/Bullseye" >> $GITHUB_ENV
         fi
         if [ "${RUNNER_DEBUG}" = "1" ]; then
           docker buildx build -o packages --build-arg buildoptions="cross github debug" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
@@ -53,6 +55,6 @@ jobs:
         artifacts: "packages/*.deb"
         bodyFile: "PREBUILD.md"
         tag:  ${{ env.DEB_VERSION }}
-        name: Version ${{ env.DEB_VERSION }} (Debian/Bullseye)
+        name: Version ${{ env.DEB_VERSION }} (${{ env.DEB_DIST }})
         draft: true
         makeLatest: false
