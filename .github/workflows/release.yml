@@ -48,7 +48,12 @@ jobs:
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
       run: |
-          docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
+        if [[ "${{ github.event.inputs.version }}" =~ ^3. ]] || [[ "${GITHUB_REF_NAME}" =~ ^3. ]]; then
+          baseimage="debian:bookworm-slim"
+        else
+          baseimage="debian:bullseye-slim"
+        fi
+        docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
     - name: Release packages
       uses: ncipollo/release-action@v1
       with:
