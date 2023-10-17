@@ -22,9 +22,9 @@ index b9479be..0d417f4 100644
 +
 +
 +[patch.crates-io]
-+proxmox-io = { path = "../proxmox/proxmox-io" }
-+proxmox-lang = { path = "../proxmox/proxmox-lang" }
-+proxmox-sys = { path = "../proxmox/proxmox-sys" }
++proxmox-io = { path = "./proxmox/proxmox-io" }
++proxmox-lang = { path = "./proxmox/proxmox-lang" }
++proxmox-sys = { path = "./proxmox/proxmox-sys" }
 diff --git a/Makefile b/Makefile
 index 01488d1..cb0ceb7 100644
 --- a/Makefile

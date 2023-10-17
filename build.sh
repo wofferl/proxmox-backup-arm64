@@ -357,23 +357,39 @@ fi
 
 [ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
-PVE_XTERMJS_VER="4.16.0-3"
-PVE_XTERMJS_GIT="99c9d214258a496227e15f0803fb163925be65c8"
-PROXMOX_XTERMJS_GIT="2a070da0651677411a245f1714895235b1caf584"
-if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb" ]; then
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
-	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
+if [ "${PBSVERSION}" = "pbs2" ]; then
+	PVE_XTERMJS_VER="4.16.0-3"
+	PVE_XTERMJS_GIT="99c9d214258a496227e15f0803fb163925be65c8"
+	PROXMOX_XTERMJS_GIT="2a070da0651677411a245f1714895235b1caf584"
+else
+	PVE_XTERMJS_VER="5.3.0-1"
+	PVE_XTERMJS_GIT="f451fe27686b21ef43d7521cb8136e683612422e"
+	PROXMOX_XTERMJS_GIT="04e2d0e5c329b59c4ece59d77079443e39029883"
+	PROXMOX_TERMPROXY_VER="1.0.0"
+fi
+if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_"*".deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
-	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
+	patch -p1 -d pve-xtermjs/ < "${PATCHES}/${PBSVERSION}/pve-xtermjs-arm.patch"
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
-		patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-cross.patch"
+		patch -p1 -d pve-xtermjs/ < "${PATCHES}/${PBSVERSION}/pve-xtermjs-cross.patch"
 	cd pve-xtermjs/
+	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
+	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
+	[ "${PBSVERSION}" = "pbs3" ] && cd termproxy
 	set_package_info
 	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
 	BUILD_MODE=release make deb
 	cd ..
-	cp -a pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	if [ "${PBSVERSION}" = "pbs3" ]; then
+		cd xterm.js
+		make deb
+		cp -a pve-xtermjs_${PVE_XTERMJS_VER}_all.deb "${PACKAGES}"
+		cd ..
+		cp -a proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	else
+		cp -a pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	fi
 else
 	echo "pve-xtermjs up-to-date"
 fi

@@ -1,0 +1,127 @@
+diff --git a/.cargo/config b/.cargo/config
+index 3b5b6e4..4df5be2 100644
+--- a/.cargo/config
++++ b/.cargo/config
+@@ -1,5 +1,5 @@
+ [source]
+-[source.debian-packages]
+-directory = "/usr/share/cargo/registry"
++[source.vendor]
++directory = "termproxy/vendor"
+ [source.crates-io]
+-replace-with = "debian-packages"
++replace-with = "vendor"
+diff --git a/termproxy/Cargo.toml b/termproxy/Cargo.toml
+index dba3fbd..a67aacd 100644
+--- a/termproxy/Cargo.toml
++++ b/termproxy/Cargo.toml
+@@ -22,3 +22,9 @@ clap = "4"
+ proxmox-io = "1"
+ proxmox-lang = "1.1"
+ proxmox-sys = "0.5"
++
++
++[patch.crates-io]
++proxmox-io = { path = "../proxmox/proxmox-io" }
++proxmox-lang = { path = "../proxmox/proxmox-lang" }
++proxmox-sys = { path = "../proxmox/proxmox-sys" }
+diff --git a/termproxy/Makefile b/termproxy/Makefile
+index d7655b9..b351396 100644
+--- a/termproxy/Makefile
++++ b/termproxy/Makefile
+@@ -35,6 +35,13 @@ $(TERMPROXY_BIN): .do-cargo-build
+ 	$(CARGO) build $(CARGO_BUILD_ARGS)
+ 	touch .do-cargo-build
+ 
++.PHONY: cargo-vendor
++cargo-vendor:
++	cargo vendor
++	rm -f vendor/endian_trait/rust-toolchain
++	rm -f vendor/endian_trait_derive/rust-toolchain
++	sed -i "s#\"rust-toolchain[^,]\+,##"  vendor/endian_trait/.cargo-checksum.json
++	sed -i "s#\"rust-toolchain[^,]\+,##"  vendor/endian_trait_derive/.cargo-checksum.json
+ 
+ .PHONY: cargo-build
+ cargo-build: .do-cargo-build
+@@ -54,9 +61,10 @@ $(ORIG_SRC_TAR): $(BUILDDIR)
+ .PHONY: deb
+ deb: $(DEB)
+ $(DBG_DEB): $(DEB)
+-$(DEB): $(BUILDDIR)
+-	cd $(BUILDDIR); dpkg-buildpackage -b -uc -us
+-	lintian $(DEB)
++$(DEB): cargo-vendor
++	echo "git clone git://git.proxmox.com/git/pve-xtermjs.git\\ngit checkout ${GITVERSION}" > debian/SOURCE
++	DEB_CARGO_PACKAGE=$(PACKAGE) dpkg-buildpackage -b -uc -us --no-pre-clean
++	lintian ../$(DEB)
+ 	@echo $(DEB)
+ 
+ .PHONY: dsc
+diff --git a/termproxy/debian/control b/termproxy/debian/control
+index 383bdbe..583a584 100644
+--- a/termproxy/debian/control
++++ b/termproxy/debian/control
+@@ -1,20 +1,8 @@
+ Source: proxmox-termproxy
+ Section: admin
+ Priority: optional
+-Build-Depends: cargo:native,
+-               debhelper-compat (= 13),
+-               dh-cargo (>= 25),
+-               librust-anyhow-1+default-dev,
+-               librust-clap-4+default-dev,
+-               librust-mio-0.8+default-dev,
+-               librust-mio-0.8+net-dev,
+-               librust-mio-0.8+os-ext-dev,
+-               librust-proxmox-io-1+default-dev,
+-               librust-proxmox-lang-1+default-dev (>= 1.1-~~),
+-               librust-proxmox-sys-0.5+default-dev,
+-               librust-ureq-2+gzip-dev (>= 2.4-~~),
++Build-Depends: debhelper-compat (= 13),
+                libstd-rust-dev,
+-               rustc:native,
+ Maintainer: Proxmox Support Team <support@proxmox.com>
+ Standards-Version: 4.6.1
+ Vcs-Git: git://git.proxmox.com/git/pve-xtermjs.git
+@@ -26,7 +14,7 @@ Package: proxmox-termproxy
+ Architecture: any
+ Multi-Arch: allowed
+ Depends: ${misc:Depends}, ${shlibs:Depends},
+-Recommends: pve-xtermjs
++Recommends: pve-xtermjs:all
+ Breaks: pve-xtermjs (<< 5.3.0~)
+ Replaces: pve-xtermjs (<< 5.3.0~)
+ Description: Wrapper proxy for executing programs in the system terminal
+diff --git a/termproxy/debian/rules b/termproxy/debian/rules
+index add090b..7d25614 100755
+--- a/termproxy/debian/rules
++++ b/termproxy/debian/rules
+@@ -4,7 +4,6 @@
+ DH_VERBOSE = 1
+ 
+ include /usr/share/dpkg/pkg-info.mk
+-include /usr/share/rustc/architecture.mk
+ 
+ export BUILD_MODE=release
+ 
+@@ -23,7 +22,6 @@ export DEB_CARGO_PACKAGE=proxmox-termproxy
+ override_dh_auto_configure:
+ 	@perl -ne 'if (/^version\s*=\s*"(\d+(?:\.\d+)+)"/) { my $$v_cargo = $$1; my $$v_deb = "$(DEB_VERSION_UPSTREAM)"; \
+ 	    die "ERROR: d/changelog <-> Cargo.toml version mismatch: $$v_cargo != $$v_deb\n" if $$v_cargo ne $$v_deb; exit(0); }' Cargo.toml
+-	$(CARGO) prepare-debian $(CURDIR)/debian/cargo_registry --link-from-system
+ 	dh_auto_configure
+ 
+ override_dh_missing:
+diff --git a/xterm.js/debian/control b/xterm.js/debian/control
+index 71cf01f..2b5c2f5 100644
+--- a/xterm.js/debian/control
++++ b/xterm.js/debian/control
+@@ -11,7 +11,7 @@ Rules-Requires-Root: no
+ 
+ Package: pve-xtermjs
+ Architecture: all
+-Depends: ${misc:Depends}, proxmox-termproxy
++Depends: ${misc:Depends}, proxmox-termproxy:any
+ Description: HTML/TypeScript based fully-featured terminal for Proxmox projects
+  Provides the xterm.js frontend for the terminal feature in Proxmox projects'
+  web UI's, like for host administration or Proxmox VE containers shells.
