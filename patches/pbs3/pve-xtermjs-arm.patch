@@ -12,19 +12,17 @@ index 3b5b6e4..4df5be2 100644
 -replace-with = "debian-packages"
 +replace-with = "vendor"
 diff --git a/termproxy/Cargo.toml b/termproxy/Cargo.toml
-index dba3fbd..a67aacd 100644
+index a49d6b0..6f02e0a 100644
 --- a/termproxy/Cargo.toml
 +++ b/termproxy/Cargo.toml
-@@ -22,3 +22,9 @@ clap = "4"
+@@ -23,3 +23,7 @@ pico-args = "0.4"
  proxmox-io = "1"
  proxmox-lang = "1.1"
- proxmox-sys = "0.5"
-+
+ ureq = { version = "2.4", default-features = false, features = [ "gzip" ] }
 +
 +[patch.crates-io]
 +proxmox-io = { path = "../proxmox/proxmox-io" }
 +proxmox-lang = { path = "../proxmox/proxmox-lang" }
-+proxmox-sys = { path = "../proxmox/proxmox-sys" }
 diff --git a/termproxy/Makefile b/termproxy/Makefile
 index d7655b9..b351396 100644
 --- a/termproxy/Makefile
@@ -113,7 +111,7 @@ index add090b..7d25614 100755
  
  override_dh_missing:
 diff --git a/xterm.js/debian/control b/xterm.js/debian/control
-index 71cf01f..2b5c2f5 100644
+index 71cf01f..9c98b84 100644
 --- a/xterm.js/debian/control
 +++ b/xterm.js/debian/control
 @@ -11,7 +11,7 @@ Rules-Requires-Root: no
