@@ -1,0 +1,16 @@
+diff --git a/termproxy/Makefile b/termproxy/Makefile
+index d7655b9..dd84a23 100644
+--- a/termproxy/Makefile
++++ b/termproxy/Makefile
+@@ -13,9 +13,9 @@ DSC=$(PACKAGE)_$(DEB_VERSION).dsc
+ CARGO ?= cargo
+ ifeq ($(BUILD_MODE), release)
+ CARGO_BUILD_ARGS += --release
+-COMPILEDIR := target/release
++COMPILEDIR := target/aarch64-unknown-linux-gnu/release
+ else
+-COMPILEDIR := target/debug
++COMPILEDIR := target/aarch64-unknown-linux-gnu/debug
+ endif
+ 
+ PREFIX = /usr
