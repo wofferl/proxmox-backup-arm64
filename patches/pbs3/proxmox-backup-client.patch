@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 92eed8a1..f3d632dc 100644
+index 0317dd5e..ad2d1dfd 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,32 +4,21 @@ include defines.mk
@@ -17,7 +17,7 @@ index 92eed8a1..f3d632dc 100644
 -	proxmox-tape		\
 -	pmtx			\
 -	pmt
-+	pxar			
++	pxar
  
  # Binaries usable by admins
 -USR_SBIN := \
@@ -40,18 +40,17 @@ index 92eed8a1..f3d632dc 100644
  
  SUBCRATES != cargo metadata --no-deps --format-version=1 \
  	| jq -r .workspace_members'[]' \
-@@ -61,8 +50,8 @@ RESTORE_DEB=proxmox-backup-file-restore_$(DEB_VERSION)_$(ARCH).deb
+@@ -61,8 +50,7 @@ RESTORE_DEB=proxmox-backup-file-restore_$(DEB_VERSION)_$(ARCH).deb
  RESTORE_DBG_DEB=proxmox-backup-file-restore-dbgsym_$(DEB_VERSION)_$(ARCH).deb
  DOC_DEB=$(PACKAGE)-docs_$(DEB_VERSION)_all.deb
  
 -DEBS=$(SERVER_DEB) $(SERVER_DBG_DEB) $(CLIENT_DEB) $(CLIENT_DBG_DEB) \
--     $(RESTORE_DEB) $(RESTORE_DBG_DEB) $(DEBUG_DEB) $(DEBUG_DBG_DEB)
+-     $(RESTORE_DEB) $(RESTORE_DBG_DEB)
 +DEBS=${CLIENT_DEB} ${CLIENT_DBG_DEB}
-+
  
  DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
  
-@@ -160,30 +149,11 @@ cargo-build:
+@@ -159,30 +147,11 @@ cargo-build:
  $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-cargo-build
  .do-cargo-build:
  	$(CARGO) build $(CARGO_BUILD_ARGS) \
@@ -83,7 +82,7 @@ index 92eed8a1..f3d632dc 100644
  	touch "$@"
  
  
-@@ -192,25 +162,26 @@ lint:
+@@ -191,25 +160,26 @@ lint:
  	cargo clippy -- -A clippy::all -D clippy::correctness
  
  install: $(COMPILED_BINS)
