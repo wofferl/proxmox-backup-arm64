@@ -285,7 +285,7 @@ EOF
 cd "${SOURCES}"
 
 if [ "${PBSVERSION}" = "pbs3" ]; then
-	PROXMOX_BACKUP_VER="3.1.2-1"
+	PROXMOX_BACKUP_VER="3.1.2-2"
 	PROXMOX_BACKUP_GIT="d7e95d62e4a0bd07c1c78dd90097ffa7973179c3"
 	PROXMOX_GIT="50b79198f83659e77b810fe0eedaa79b140744db"
 	PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
@@ -334,6 +334,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	fi
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-cross.patch"
+	[ "${PBSVERSION}" = "pbs3" ] && \
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-dashboard_fix.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
