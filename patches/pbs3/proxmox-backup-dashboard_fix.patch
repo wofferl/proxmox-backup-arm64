@@ -1,19 +1,21 @@
 diff --git a/www/panel/NodeInfo.js b/www/panel/NodeInfo.js
-index 72f97c7c..074bd15b 100644
+index 72f97c7c..7c623ca6 100644
 --- a/www/panel/NodeInfo.js
 +++ b/www/panel/NodeInfo.js
-@@ -151,7 +151,10 @@ Ext.define('PBS.NodeInfoPanel', {
+@@ -151,8 +151,11 @@ Ext.define('PBS.NodeInfoPanel', {
  		    return data.kversion;
  		}
  		let kernel = data['current-kernel'];
 -		let buildDate = kernel.version.match(/\((.+)\)\s*$/)[1] ?? 'unknown';
+-		return `${kernel.sysname} ${kernel.release} (${buildDate})`;
 +		let buildDate = kernel.version.match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z|[MTWFS]+[a-z]{2}.+\d{4}\b)\s*/);
 +		if (!buildDate) {
 +			buildDate=['unknown'];
 +		}
- 		return `${kernel.sysname} ${kernel.release} (${buildDate})`;
++		return `${kernel.sysname} ${kernel.release} (${buildDate[0]})`;
  	    },
  	    value: '',
+ 	},
 diff --git a/debian/changelog b/debian/changelog
 index dc4a04cb..862fd783 100644
 --- a/debian/changelog
