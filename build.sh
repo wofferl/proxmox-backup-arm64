@@ -334,8 +334,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	fi
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-cross.patch"
-	[ "${PBSVERSION}" = "pbs3" ] && \
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-dashboard_fix.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
