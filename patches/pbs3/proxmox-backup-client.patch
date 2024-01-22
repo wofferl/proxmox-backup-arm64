@@ -114,7 +114,7 @@ index 0317dd5e..ad2d1dfd 100644
  
  .PHONY: upload
 diff --git a/debian/control b/debian/control
-index 0b51f697..5b41f130 100644
+index 30d11db0..57cf3c25 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -126,13 +126,14 @@ index 0b51f697..5b41f130 100644
                 rsync,
                 texlive-fonts-extra <!nodoc>,
                 texlive-fonts-recommended <!nodoc>,
-@@ -34,55 +34,9 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -160,56 +34,9 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
 -Package: proxmox-backup-server
 -Architecture: any
 -Depends: fonts-font-awesome,
+-         gdisk,
 -         libjs-extjs (>= 7~),
 -         libjs-qrcodejs (>= 1.20201119),
 -         libproxmox-acme-plugins,

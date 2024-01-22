@@ -285,18 +285,18 @@ EOF
 cd "${SOURCES}"
 
 if [ "${PBSVERSION}" = "pbs3" ]; then
-	PROXMOX_BACKUP_VER="3.1.2-2"
-	PROXMOX_BACKUP_GIT="d7e95d62e4a0bd07c1c78dd90097ffa7973179c3"
-	PROXMOX_GIT="50b79198f83659e77b810fe0eedaa79b140744db"
+	PROXMOX_BACKUP_VER="3.1.3-1"
+	PROXMOX_BACKUP_GIT="6ab13287b643a0ec64ee0230db101825d5077e8f"
+	PROXMOX_GIT="fe8b11eeec277c8442fdb5b14cdc4ee6ac44d2bc"
 	PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 else
 	PROXMOX_BACKUP_VER="2.4.4-1"
 	PROXMOX_BACKUP_GIT="892d781dbcf31b7b1e0b9b83fc5fa0a737b5246b"
 	PROXMOX_GIT="286c55d5b493a1e76fa3e70ae1c874cf82ca39aa"
 	PROXMOX_OPENID_GIT="ecf59cbb74278ea0e9710466508158ed6a6828c4" # 0.9.9-1
+	PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05" # 0.4.0
 	PATHPATTERNS_GIT="13145f729d0a703c33d560367843f555cc799272" # 0.2.0-1
 fi
-PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05" # 0.4.0
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
 PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5" # 0.10.2-1
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
@@ -308,9 +308,9 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clean_and_checkout ${PXAR_GIT} pxar
 	git_clone_or_fetch https://git.proxmox.com/git/pathpatterns.git
 	git_clean_and_checkout ${PATHPATTERNS_GIT} pathpatterns
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme-rs.git
-	git_clean_and_checkout ${PROXMOX_ACME_RS_GIT} proxmox-acme-rs
 	if [ "${PBSVERSION}" = "pbs2" ]; then
+		git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme-rs.git
+		git_clean_and_checkout ${PROXMOX_ACME_RS_GIT} proxmox-acme-rs
 		git_clone_or_fetch https://git.proxmox.com/git/proxmox-openid-rs.git
 		git_clean_and_checkout ${PROXMOX_OPENID_GIT} proxmox-openid-rs
 	fi
