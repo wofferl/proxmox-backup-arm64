@@ -1,9 +1,9 @@
 # proxmox-backup-arm64
-Script for building Proxmox Backup Server 2.x on Debian/Bullseye or 3.x on Debian/Bookworm (add pbs3 as option to build 3.x on Bullseye)<br />
+Script for building Proxmox Backup Server 2.x (Debian/Bullseye) or 3.x (Debian/Bookworm) (add pbs3 as option to build 3.x on Bullseye)<br />
 At least 4 GB are required for compiling. On devices with low memory, SWAP must be used (see help section).
 
 ## Download pre-built packages
-You can find unoffical debian packages for bullseye that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
+You can find unoffical debian packages for bookworm that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
 
 With the script you can also download all files of the latest release at once
 ```
