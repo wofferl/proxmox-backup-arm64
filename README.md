@@ -96,7 +96,8 @@ sudo apt install \
   ./proxmox-backup-server_*_arm64.deb \
   ./proxmox-mini-journalreader_*_arm64.deb \
   ./proxmox-widget-toolkit_*_all.deb \
-  ./pve-xtermjs_*_arm64.deb
+  ./proxmox-termproxy_*_arm64.deb \
+  ./pve-xtermjs_*_all.deb
 ```
 
 ### Client
