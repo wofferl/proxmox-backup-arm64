@@ -146,3 +146,7 @@ sudo fallocate -l 4G /var/swap
 sudo mkswap /var/swap
 sudo swapon /var/swap
 ```
+### 400 Bad Request on Raspberry Pi 5 (https://github.com/wofferl/proxmox-backup-arm64/issues/40)
+
+The Raspberry Pi 5 uses a kernel with 16k page-size, which is incompatible with Proxmox Backup Server (jemalloc/Rust).
+So you need to a 4k kernel on the RPi5 for Proxmox Backup Server to work.
