@@ -139,13 +139,23 @@ Check swap memory:
 swapon --show or free -h
 ```
 
-Create and enable 4G swap file:
+Change swapsize on systems with fstab enabled swap:
 
 ```
+sudo swapoff /var/swap
 sudo fallocate -l 4G /var/swap
 sudo mkswap /var/swap
 sudo swapon /var/swap
 ```
+
+Change swapsize on systems with dphys-swapfile service:
+
+```
+sudo sed -i "s#.*CONF_\(SWAPSIZE\|MAXSWAP\)=.*#CONF_\1=4096#" /etc/dphys-swapfile
+sudo service dphys-swapfile restart
+```
+
+
 ### 400 Bad Request on Raspberry Pi 5 (https://github.com/wofferl/proxmox-backup-arm64/issues/40)
 
 The Raspberry Pi 5 uses a kernel with 16k page-size, which is incompatible with Proxmox Backup Server (jemalloc/Rust).
