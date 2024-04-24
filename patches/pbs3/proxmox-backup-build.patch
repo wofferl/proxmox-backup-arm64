@@ -25,10 +25,10 @@ index 3b5b6e48..50908c05 100644
 +[source.vendored-sources]
 +directory = "vendor"
 diff --git a/Cargo.toml b/Cargo.toml
-index 0642273a..400ff76d 100644
+index 1a82e975..b73aa13c 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -243,36 +243,36 @@ proxmox-rrd.workspace = true
+@@ -247,37 +247,37 @@ proxmox-rrd.workspace = true
  # NOTE: You must run `cargo update` after changing this for it to take effect!
  [patch.crates-io]
  
@@ -44,6 +44,7 @@ index 0642273a..400ff76d 100644
 -#proxmox-lang = { path = "../proxmox/proxmox-lang" }
 -#proxmox-ldap = { path = "../proxmox/proxmox-ldap" }
 -#proxmox-metrics = { path = "../proxmox/proxmox-metrics" }
+-#proxmox-notify = { path = "../proxmox/proxmox-notify" }
 -#proxmox-openid = { path = "../proxmox/proxmox-openid" }
 -#proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
 -#proxmox-router = { path = "../proxmox/proxmox-router" }
@@ -70,6 +71,7 @@ index 0642273a..400ff76d 100644
 +proxmox-lang = { path = "../proxmox/proxmox-lang" }
 +proxmox-ldap = { path = "../proxmox/proxmox-ldap" }
 +proxmox-metrics = { path = "../proxmox/proxmox-metrics" }
++proxmox-notify = { path = "../proxmox/proxmox-notify" }
 +proxmox-openid = { path = "../proxmox/proxmox-openid" }
 +proxmox-rest-server = { path = "../proxmox/proxmox-rest-server" }
 +proxmox-router = { path = "../proxmox/proxmox-router" }
