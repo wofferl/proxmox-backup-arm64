@@ -285,9 +285,9 @@ EOF
 cd "${SOURCES}"
 
 if [ "${PBSVERSION}" = "pbs3" ]; then
-	PROXMOX_BACKUP_VER="3.2.2-1"
-	PROXMOX_BACKUP_GIT="630be1a577119a5f9438c9cb0fcebd47c93d25c8"
-	PROXMOX_GIT="0af0bad74226e3b829327432f7bbf65da6ba453f"
+	PROXMOX_BACKUP_VER="3.2.3-1"
+	PROXMOX_BACKUP_GIT="1d4afdccea36781a0441e32f538414b24df0c7e2"
+	PROXMOX_GIT="aae8a03dc4e119b5930ef36a68fb7e50f446eeca"
 	PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 else
 	PROXMOX_BACKUP_VER="2.4.6-1"
@@ -302,6 +302,9 @@ PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5" # 0.10.2-1
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
+	if [ "${PBSVERSION}" = "pbs3" -a "${PACKAGE_ARCH}" = "arm64" ]; then
+		patch -p1 -d proxmox/ < "${PATCHES}/${PBSVERSION}/proxmox-arm64.patch"
+	fi
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
 	git_clean_and_checkout ${PROMXOX_FUSE_GIT} proxmox-fuse
 	git_clone_or_fetch https://git.proxmox.com/git/pxar.git
@@ -321,6 +324,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i 's/\(patchelf\|xindy\)\b/\1:native/' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|pve-eslint\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-build.patch"
+	[ "${PBSVERSION}" = "pbs3" ] && patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-acme.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-client.patch"
 	fi

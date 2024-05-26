@@ -1,12 +1,12 @@
 diff --git a/Makefile b/Makefile
-index 0317dd5e..ad2d1dfd 100644
+index 03e93876..aab32c74 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,32 +4,21 @@ include defines.mk
  PACKAGE := proxmox-backup
  ARCH := $(DEB_BUILD_ARCH)
  
--SUBDIRS := etc www docs
+-SUBDIRS := etc www docs templates
 +SUBDIRS := docs
  
  # Binaries usable by users
@@ -82,7 +82,7 @@ index 0317dd5e..ad2d1dfd 100644
  	touch "$@"
  
  
-@@ -191,25 +160,26 @@ lint:
+@@ -191,27 +160,28 @@ lint:
  	cargo clippy -- -A clippy::all -D clippy::correctness
  
  install: $(COMPILED_BINS)
@@ -111,10 +111,13 @@ index 0317dd5e..ad2d1dfd 100644
 -	$(MAKE) -C www install
 +	#$(MAKE) -C www install
  	$(MAKE) -C docs install
+-	$(MAKE) -C templates install
++	#$(MAKE) -C templates install
  
  .PHONY: upload
+ upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index 30d11db0..57cf3c25 100644
+index 51cd9899..57cf3c25 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -126,7 +129,7 @@ index 30d11db0..57cf3c25 100644
                 rsync,
                 texlive-fonts-extra <!nodoc>,
                 texlive-fonts-recommended <!nodoc>,
-@@ -160,56 +34,9 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -34,56 +34,9 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
@@ -206,10 +209,10 @@ index 79c1ad76..95b1b1bf 100755
  override_dh_fixperms:
  	dh_fixperms --exclude sg-tape-cmd
 diff --git a/docs/Makefile b/docs/Makefile
-index b06badff..32b51556 100644
+index d6c61c86..245badbd 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
-@@ -1,49 +1,15 @@
+@@ -1,53 +1,15 @@
  include ../defines.mk
  
  GENERATED_SYNOPSIS := 						\
@@ -223,6 +226,8 @@ index b06badff..32b51556 100644
 -	pmtx/synopsis.rst					\
 -	pmt/synopsis.rst					\
 -	config/media-pool/config.rst				\
+-	config/notifications/config.rst				\
+-	config/notifications-priv/config.rst				\
 -	config/tape/config.rst					\
 -	config/tape-job/config.rst				\
 -	config/user/config.rst					\
@@ -256,7 +261,9 @@ index b06badff..32b51556 100644
 -	sync.cfg.5			\
 -	verification.cfg.5		\
 -	datastore.cfg.5			\
--	domains.cfg.5
+-	domains.cfg.5			\
+-	notifications.cfg.5		\
+-	notifications-priv.cfg.5	\
 +	proxmox-backup-client.1
 +
 +MAN5_PAGES :=
