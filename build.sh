@@ -285,8 +285,8 @@ EOF
 cd "${SOURCES}"
 
 if [ "${PBSVERSION}" = "pbs3" ]; then
-	PROXMOX_BACKUP_VER="3.2.3-1"
-	PROXMOX_BACKUP_GIT="1d4afdccea36781a0441e32f538414b24df0c7e2"
+	PROXMOX_BACKUP_VER="3.2.4-1"
+	PROXMOX_BACKUP_GIT="4940514b0f05d6cd6a5f711edfdd47c1fa41b537"
 	PROXMOX_GIT="aae8a03dc4e119b5930ef36a68fb7e50f446eeca"
 	PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 else
@@ -324,7 +324,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i 's/\(patchelf\|xindy\)\b/\1:native/' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|pve-eslint\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-build.patch"
-	[ "${PBSVERSION}" = "pbs3" ] && patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-acme.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-client.patch"
 	fi

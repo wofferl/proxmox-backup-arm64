@@ -148,7 +148,7 @@ index 51cd9899..57cf3c25 100644
 -         postfix | mail-transport-agent,
 -         proxmox-backup-docs,
 -         proxmox-mini-journalreader,
--         proxmox-widget-toolkit (>= 3.5.2),
+-         proxmox-widget-toolkit (>= 4.1.4),
 -         pve-xtermjs (>= 4.7.0-1),
 -         sg3-utils,
 -         smartmontools,
