@@ -170,10 +170,8 @@ GITHUB_ACTION=""
 
 if [ "${VERSION_CODENAME}" = "bookworm" ]; then
 	DISTNAME="bookworm"
-	PBSVERSION="pbs3"
 else
 	DISTNAME="bullseye"
-	PBSVERSION="pbs2"
 fi
 
 [ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
@@ -213,9 +211,6 @@ do
 		nocheck)
 			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
 			export DEB_BUILD_OPTIONS="nocheck"
-		;;
-		pbs*)
-			PBSVERSION=${1}
 		;;
 		debug)
 			exec &> >(tee "${LOGFILE}")
@@ -284,27 +279,17 @@ EOF
 
 cd "${SOURCES}"
 
-if [ "${PBSVERSION}" = "pbs3" ]; then
-	PROXMOX_BACKUP_VER="3.2.6-1"
-	PROXMOX_BACKUP_GIT="472b52f54c4db176eb408ebd0de209323879eb5e"
-	PROXMOX_GIT="aae8a03dc4e119b5930ef36a68fb7e50f446eeca"
-	PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
-	PXAR_GIT="ebe402c01c736eb6b822d984cda48538c0b7bf87" # 0.12.0-1
-else
-	PROXMOX_BACKUP_VER="2.4.6-1"
-	PROXMOX_BACKUP_GIT="6751d3787e3f45d1692d2a245ebb099288f65afc"
-	PROXMOX_GIT="286c55d5b493a1e76fa3e70ae1c874cf82ca39aa"
-	PROXMOX_OPENID_GIT="ecf59cbb74278ea0e9710466508158ed6a6828c4" # 0.9.9-1
-	PROXMOX_ACME_RS_GIT="abc0bdd09d5c3501534510d49da0ae8fa5c05c05" # 0.4.0
-	PATHPATTERNS_GIT="13145f729d0a703c33d560367843f555cc799272" # 0.2.0-1
-	PXAR_GIT="29cbeed3e1b52f5eef455cdfa8b5e93f4e3e88f5" # 0.10.2-1
-fi
+PROXMOX_BACKUP_VER="3.2.6-1"
+PROXMOX_BACKUP_GIT="472b52f54c4db176eb408ebd0de209323879eb5e"
+PROXMOX_GIT="aae8a03dc4e119b5930ef36a68fb7e50f446eeca"
+PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
+PXAR_GIT="ebe402c01c736eb6b822d984cda48538c0b7bf87" # 0.12.0-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
-	if [ "${PBSVERSION}" = "pbs3" -a "${PACKAGE_ARCH}" = "arm64" ]; then
-		patch -p1 -d proxmox/ < "${PATCHES}/${PBSVERSION}/proxmox-arm64.patch"
+	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
+		patch -p1 -d proxmox/ < "${PATCHES}/proxmox-arm64.patch"
 	fi
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
 	git_clean_and_checkout ${PROMXOX_FUSE_GIT} proxmox-fuse
@@ -312,23 +297,17 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clean_and_checkout ${PXAR_GIT} pxar
 	git_clone_or_fetch https://git.proxmox.com/git/pathpatterns.git
 	git_clean_and_checkout ${PATHPATTERNS_GIT} pathpatterns
-	if [ "${PBSVERSION}" = "pbs2" ]; then
-		git_clone_or_fetch https://git.proxmox.com/git/proxmox-acme-rs.git
-		git_clean_and_checkout ${PROXMOX_ACME_RS_GIT} proxmox-acme-rs
-		git_clone_or_fetch https://git.proxmox.com/git/proxmox-openid-rs.git
-		git_clean_and_checkout ${PROXMOX_OPENID_GIT} proxmox-openid-rs
-	fi
 
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
 	sed -i 's/\(patchelf\|xindy\)\b/\1:native/' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|pve-eslint\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
-	patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-build.patch"
+	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-client.patch"
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
 	fi
-	if [ "${PBSVERSION}" = "pbs3" -a "${DISTNAME}" = "bullseye" ]; then
+	if [ "${DISTNAME}" = "bullseye" ]; then
 		sed -i 's/libsgutils2-.*-2/libsgutils2-2/' proxmox-backup/debian/control
 	fi
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
@@ -337,7 +316,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-server.install
 	fi
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/${PBSVERSION}/proxmox-backup-cross.patch"
+		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-cross.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
@@ -362,39 +341,29 @@ fi
 
 [ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
-if [ "${PBSVERSION}" = "pbs2" ]; then
-	PVE_XTERMJS_VER="4.16.0-3"
-	PVE_XTERMJS_GIT="99c9d214258a496227e15f0803fb163925be65c8"
-	PROXMOX_XTERMJS_GIT="2a070da0651677411a245f1714895235b1caf584"
-else
-	PVE_XTERMJS_VER="5.3.0-3"
-	PVE_XTERMJS_GIT="3301e28678e6a26187e8731d920b2b7686c35cad"
-	PROXMOX_XTERMJS_GIT="04e2d0e5c329b59c4ece59d77079443e39029883"
-	PROXMOX_TERMPROXY_VER="1.0.1"
-fi
+PVE_XTERMJS_VER="5.3.0-3"
+PVE_XTERMJS_GIT="3301e28678e6a26187e8731d920b2b7686c35cad"
+PROXMOX_XTERMJS_GIT="04e2d0e5c329b59c4ece59d77079443e39029883"
+PROXMOX_TERMPROXY_VER="1.0.1"
 if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_"*".deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
-	patch -p1 -d pve-xtermjs/ < "${PATCHES}/${PBSVERSION}/pve-xtermjs-arm.patch"
+	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
 	[[ "${BUILD_PROFILES}" =~ cross ]] && \
-		patch -p1 -d pve-xtermjs/ < "${PATCHES}/${PBSVERSION}/pve-xtermjs-cross.patch"
+		patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-cross.patch"
 	cd pve-xtermjs/
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
-	[ "${PBSVERSION}" = "pbs3" ] && cd termproxy
+	cd termproxy
 	set_package_info
 	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
 	BUILD_MODE=release make deb
 	cd ..
-	if [ "${PBSVERSION}" = "pbs3" ]; then
-		cd xterm.js
-		make deb
-		cp -a pve-xtermjs_${PVE_XTERMJS_VER}_all.deb "${PACKAGES}"
-		cd ..
-		cp -a proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
-	else
-		cp -a pve-xtermjs_${PVE_XTERMJS_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
-	fi
+	cd xterm.js
+	make deb
+	cp -a pve-xtermjs_${PVE_XTERMJS_VER}_all.deb "${PACKAGES}"
+	cd ..
+	cp -a proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
 else
 	echo "pve-xtermjs up-to-date"
 fi

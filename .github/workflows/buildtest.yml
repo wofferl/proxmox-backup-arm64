@@ -14,7 +14,6 @@ on:
         type: choice
         description: Version
         options:
-        - 2.x
         - 3.x
       arch:
         type: choice
