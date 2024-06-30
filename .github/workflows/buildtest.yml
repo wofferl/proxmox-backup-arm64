@@ -25,7 +25,6 @@ on:
         type: choice
         description: Base Image
         options:
-        - debian:bullseye-slim
         - debian:bookworm-slim
         - ubuntu:jammy
 

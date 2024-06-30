@@ -168,12 +168,6 @@ GITHUB_ACTION=""
 
 . /etc/os-release
 
-if [ "${VERSION_CODENAME}" = "bookworm" ]; then
-	DISTNAME="bookworm"
-else
-	DISTNAME="bullseye"
-fi
-
 [ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
 
 while [ "$#" -ge 1 ]
@@ -239,9 +233,9 @@ fi
 
 
 echo "Download packages list from proxmox devel repository"
-PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/${DISTNAME}/main/binary-amd64/Packages.gz)
+PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/bookworm/main/binary-amd64/Packages.gz)
 echo "Download packages list from pbs-no-subscription repository"
-PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/${DISTNAME}/pbs-no-subscription/binary-amd64/Packages.gz)
+PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/bookworm/pbs-no-subscription/binary-amd64/Packages.gz)
 
 
 echo "Download dependencies"
@@ -306,9 +300,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
-	fi
-	if [ "${DISTNAME}" = "bullseye" ]; then
-		sed -i 's/libsgutils2-.*-2/libsgutils2-2/' proxmox-backup/debian/control
 	fi
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.install

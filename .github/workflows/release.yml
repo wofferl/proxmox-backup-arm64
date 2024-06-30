@@ -30,13 +30,8 @@ jobs:
 
     - name: Build packages
       run: |
-        if [[ "${{ github.event.inputs.version }}" =~ ^3. ]] || [[ "${GITHUB_REF_NAME}" =~ ^3. ]]; then
-          baseimage="debian:bookworm-slim"
-          echo "DEB_DIST=Debian/Bookworm" >> $GITHUB_ENV
-        else
-          baseimage="debian:bullseye-slim"
-          echo "DEB_DIST=Debian/Bullseye" >> $GITHUB_ENV
-        fi
+        baseimage="debian:bookworm-slim"
+        echo "DEB_DIST=Debian/Bookworm" >> $GITHUB_ENV
         if [ "${RUNNER_DEBUG}" = "1" ]; then
           docker buildx build -o packages --build-arg buildoptions="cross github debug" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
         else
@@ -46,11 +41,7 @@ jobs:
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
       run: |
-        if [[ "${{ github.event.inputs.version }}" =~ ^3. ]] || [[ "${GITHUB_REF_NAME}" =~ ^3. ]]; then
-          baseimage="debian:bookworm-slim"
-        else
-          baseimage="debian:bullseye-slim"
-        fi
+        baseimage="debian:bookworm-slim"
         docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
     - name: Release packages
       uses: ncipollo/release-action@v1

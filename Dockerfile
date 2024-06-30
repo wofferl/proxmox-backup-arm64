@@ -1,4 +1,4 @@
-ARG baseimage=debian:bullseye-slim
+ARG baseimage=debian:bookworm-slim
 FROM ${baseimage} as builder-stage
 ARG buildoptions
 # workaround for memory bug https://github.com/rust-lang/cargo/issues/10583
