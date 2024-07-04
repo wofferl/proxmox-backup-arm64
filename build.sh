@@ -190,6 +190,7 @@ do
 			export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig/
 			export CC=/usr/bin/aarch64-linux-gnu-gcc
 			export DEB_HOST_MULTIARCH=aarch64-linux-gnu
+			export DEB_HOST_RUST_TYPE=aarch64-unknown-linux-gnu
 		;;
 		download*)
 			if [[ "$1" =~ download=[0-9.-]+ ]]; then
@@ -273,9 +274,9 @@ EOF
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="3.2.6-1"
-PROXMOX_BACKUP_GIT="472b52f54c4db176eb408ebd0de209323879eb5e"
-PROXMOX_GIT="aae8a03dc4e119b5930ef36a68fb7e50f446eeca"
+PROXMOX_BACKUP_VER="3.2.7-1"
+PROXMOX_BACKUP_GIT="cb3d41e838dec0e1002aaf5ee4c0e6cd28284c74"
+PROXMOX_GIT="0652d81977a3a35a6f1b046faf0768246a71a8bf"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 PXAR_GIT="ebe402c01c736eb6b822d984cda48538c0b7bf87" # 0.12.0-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4

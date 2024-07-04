@@ -1,30 +1,8 @@
-diff --git a/Makefile b/Makefile
-index b307009d..45b2ac3c 100644
---- a/Makefile
-+++ b/Makefile
-@@ -37,7 +37,7 @@ SUBCRATES != cargo metadata --no-deps --format-version=1 \
- 
- ifeq ($(BUILD_MODE), release)
- CARGO_BUILD_ARGS += --release
--COMPILEDIR := target/release
-+COMPILEDIR := target/aarch64-unknown-linux-gnu/release
- else
- COMPILEDIR := target/debug
- endif
 diff --git a/docs/Makefile b/docs/Makefile
-index b06badff..a5eb4ce2 100644
+index 950cd644..1ba51c00 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
-@@ -85,7 +85,7 @@ SPHINXBUILD   = sphinx-build
- BUILDDIR      = output
- 
- ifeq ($(BUILD_MODE), release)
--COMPILEDIR := ../target/release
-+COMPILEDIR := ../target/aarch64-unknown-linux-gnu/release
- SPHINXOPTS    += -t release
- else
- COMPILEDIR := ../target/debug
-@@ -98,16 +98,16 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
+@@ -65,16 +65,16 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
  all: ${MAN1_PAGES} ${MAN5_PAGES}
  
  config/%/config.rst: ${COMPILEDIR}/docgen
@@ -45,7 +23,7 @@ index b06badff..a5eb4ce2 100644
  
  ${MAN1_PAGES} ${MAN5_PAGES}: man-pages
  
-@@ -122,7 +122,7 @@ onlinehelpinfo:
+@@ -89,7 +89,7 @@ onlinehelpinfo:
  	@echo "Build finished. OnlineHelpInfo.js is in $(BUILDDIR)/scanrefs."
  
  api-viewer/apidata.js: ${COMPILEDIR}/docgen
@@ -55,52 +33,36 @@ index b06badff..a5eb4ce2 100644
  api-viewer/apidoc.js: ${API_VIEWER_FILES}
  	cat ${API_VIEWER_FILES} >$@.tmp
 diff --git a/pxar-bin/tests/pxar.rs b/pxar-bin/tests/pxar.rs
-index 321f24c3..d69d4c7b 100644
+index 23559bad..2b6f9a4a 100644
 --- a/pxar-bin/tests/pxar.rs
 +++ b/pxar-bin/tests/pxar.rs
-@@ -8,14 +8,15 @@ fn pxar_create_and_extract() {
-     let dest_dir = "../tests/catar_data/test_xattrs_dest/";
- 
-     let exec_path = if cfg!(debug_assertions) {
--        "../target/debug/pxar"
-+        "../target/aarch64-unknown-linux-gnu/debug/pxar"
-     } else {
--        "../target/release/pxar"
-+        "../target/aarch64-unknown-linux-gnu/release/pxar"
-     };
+@@ -17,7 +17,8 @@ fn pxar_create_and_extract() {
  
      println!("run '{} create archive.pxar {}'", exec_path, src_dir);
  
--    Command::new(exec_path)
+-    Command::new(&exec_path)
 +    Command::new("qemu-aarch64")
-+        .arg(exec_path)
++        .arg(&exec_path)
          .arg("create")
          .arg("./tests/archive.pxar")
          .arg(src_dir)
-@@ -24,7 +25,8 @@ fn pxar_create_and_extract() {
+@@ -26,7 +27,8 @@ fn pxar_create_and_extract() {
  
      println!("run '{} extract archive.pxar {}'", exec_path, dest_dir);
  
--    Command::new(exec_path)
+-    Command::new(&exec_path)
 +    Command::new("qemu-aarch64")
-+        .arg(exec_path)
++        .arg(&exec_path)
          .arg("extract")
          .arg("./tests/archive.pxar")
          .arg("--target")
-@@ -82,12 +84,13 @@ fn pxar_create_and_extract() {
- #[test]
- fn pxar_list_with_payload_input() {
-     let exec_path = if cfg!(debug_assertions) {
--        "../target/debug/pxar"
-+        "../target/aarch64-unknown-linux-gnu/debug/pxar"
-     } else {
--        "../target/release/pxar"
-+        "../target/aarch64-unknown-linux-gnu/release/pxar"
+@@ -91,7 +93,8 @@ fn pxar_list_with_payload_input() {
+         format!("../target/{target_subdir}/release/pxar")
      };
  
 -    let output = Command::new(exec_path)
 +    let output = Command::new("qemu-aarch64")
-+        .arg(exec_path)
++        .arg(&exec_path)
          .args([
              "list",
              "../tests/pxar/backup-client-pxar-expected.mpxar",

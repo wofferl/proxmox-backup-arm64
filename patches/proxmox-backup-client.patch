@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 03e93876..aab32c74 100644
+index dfbaacab..dc21b0b0 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,32 +4,21 @@ include defines.mk
@@ -40,7 +40,7 @@ index 03e93876..aab32c74 100644
  
  SUBCRATES != cargo metadata --no-deps --format-version=1 \
  	| jq -r .workspace_members'[]' \
-@@ -61,8 +50,7 @@ RESTORE_DEB=proxmox-backup-file-restore_$(DEB_VERSION)_$(ARCH).deb
+@@ -62,8 +51,7 @@ RESTORE_DEB=proxmox-backup-file-restore_$(DEB_VERSION)_$(ARCH).deb
  RESTORE_DBG_DEB=proxmox-backup-file-restore-dbgsym_$(DEB_VERSION)_$(ARCH).deb
  DOC_DEB=$(PACKAGE)-docs_$(DEB_VERSION)_all.deb
  
@@ -50,7 +50,7 @@ index 03e93876..aab32c74 100644
  
  DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
  
-@@ -159,30 +147,11 @@ cargo-build:
+@@ -163,31 +151,11 @@ cargo-build:
  $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-cargo-build
  .do-cargo-build:
  	$(CARGO) build $(CARGO_BUILD_ARGS) \
@@ -71,6 +71,7 @@ index 03e93876..aab32c74 100644
 -	    --bin proxmox-restore-daemon \
 -	    --package proxmox-backup \
 -	    --bin docgen \
+-	    --bin pbs2to3 \
 -	    --bin proxmox-backup-api \
 -	    --bin proxmox-backup-manager \
 -	    --bin proxmox-backup-proxy \
@@ -82,7 +83,7 @@ index 03e93876..aab32c74 100644
  	touch "$@"
  
  
-@@ -191,27 +160,28 @@ lint:
+@@ -196,27 +164,28 @@ lint:
  	cargo clippy -- -A clippy::all -D clippy::correctness
  
  install: $(COMPILED_BINS)
@@ -117,7 +118,7 @@ index 03e93876..aab32c74 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index 51cd9899..57cf3c25 100644
+index c38d55bc..57cf3c25 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -209,7 +210,7 @@ index 79c1ad76..95b1b1bf 100755
  override_dh_fixperms:
  	dh_fixperms --exclude sg-tape-cmd
 diff --git a/docs/Makefile b/docs/Makefile
-index d6c61c86..245badbd 100644
+index d23796b7..950cd644 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
 @@ -1,53 +1,15 @@

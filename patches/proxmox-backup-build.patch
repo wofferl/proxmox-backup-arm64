@@ -1,8 +1,8 @@
-diff --git a/.cargo/config b/.cargo/config
-index 3b5b6e48..50908c05 100644
---- a/.cargo/config
-+++ b/.cargo/config
-@@ -1,5 +1,17 @@
+diff --git a/.cargo/config.toml b/.cargo/config.toml
+index a439c97b..a95ae483 100644
+--- a/.cargo/config.toml
++++ b/.cargo/config.toml
+@@ -1,8 +1,20 @@
 -[source]
 -[source.debian-packages]
 -directory = "/usr/share/cargo/registry"
@@ -24,8 +24,11 @@ index 3b5b6e48..50908c05 100644
 +
 +[source.vendored-sources]
 +directory = "vendor"
+ 
+ [profile.release]
+ debug=true
 diff --git a/Cargo.toml b/Cargo.toml
-index 1a82e975..b73aa13c 100644
+index 7013a468..632f3b80 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -247,37 +247,37 @@ proxmox-rrd.workspace = true
@@ -97,7 +100,7 @@ index 1a82e975..b73aa13c 100644
  [features]
  default = []
 diff --git a/debian/rules b/debian/rules
-index 54a3c22b..79c1ad76 100755
+index a82c3e12..79c1ad76 100755
 --- a/debian/rules
 +++ b/debian/rules
 @@ -4,12 +4,9 @@
@@ -108,7 +111,7 @@ index 54a3c22b..79c1ad76 100755
  
  export BUILD_MODE=release
  
--CARGO=/usr/share/cargo/bin/cargo
+-export CARGO=/usr/share/cargo/bin/cargo
 -
  export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
  export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
