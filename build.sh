@@ -318,10 +318,10 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	dpkg-buildpackage -a${PACKAGE_ARCH} -b -us -uc ${BUILD_PROFILES}
 	cd ..
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
-		cp -a proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
+		mv -f proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
 			"${PACKAGES}"
 	else
-		cp -a proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
+		mv -f proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
 			proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
 			proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
 			proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
@@ -353,9 +353,9 @@ if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_"*".deb" ]; then
 	cd ..
 	cd xterm.js
 	make deb
-	cp -a pve-xtermjs_${PVE_XTERMJS_VER}_all.deb "${PACKAGES}"
+	mv -f pve-xtermjs_${PVE_XTERMJS_VER}_all.deb "${PACKAGES}"
 	cd ..
-	cp -a proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	mv -f proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
 else
 	echo "pve-xtermjs up-to-date"
 fi
@@ -372,7 +372,7 @@ if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_$
 	set_package_info
 	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
 	make deb
-	cp -a proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.* "${PACKAGES}"
+	mv -f proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.* "${PACKAGES}"
 	cd ..
 else
 	echo "proxmox-mini-journalreader up-to-date"
