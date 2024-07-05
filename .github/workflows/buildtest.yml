@@ -32,6 +32,15 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
+    - name: Free up disk space
+      run: |
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/lib/node_modules
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/share/swift
+        df -h
+
     - name: Checkout
       uses: actions/checkout@v4
 
@@ -43,7 +52,6 @@ jobs:
 
     - name: Build packages
       run: |
-        df -h
         [ "${{ github.event.inputs.package }}" = "client" ] && package="client"
         if [ "${{ github.event.inputs.arch }}" = "arm64" ]; then
           if [ "${RUNNER_DEBUG}" = "1" ]; then
@@ -58,9 +66,9 @@ jobs:
             docker buildx build -o packages --build-arg buildoptions="github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
           fi
         fi
-        df -h
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
       run: |
-          docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/${{ github.event.inputs.arch }} -f .github/Dockerfile.installtest .
+        df -h
+        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/${{ github.event.inputs.arch }} -f .github/Dockerfile.installtest .

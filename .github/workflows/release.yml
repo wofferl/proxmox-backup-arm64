@@ -19,6 +19,15 @@ jobs:
       contents: write
     runs-on: ubuntu-22.04
     steps:
+    - name: Free up disk space
+      run: |
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/lib/node_modules
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/share/swift
+        df -h
+
     - name: Checkout
       uses: actions/checkout@v4
 
@@ -30,7 +39,6 @@ jobs:
 
     - name: Build packages
       run: |
-        df -h
         baseimage="debian:bookworm-slim"
         echo "DEB_DIST=Debian/Bookworm" >> $GITHUB_ENV
         if [ "${RUNNER_DEBUG}" = "1" ]; then
@@ -38,11 +46,11 @@ jobs:
         else
           docker buildx build -o packages --build-arg buildoptions="cross github" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
         fi
-        df -h
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
       run: |
+        df -h
         baseimage="debian:bookworm-slim"
         docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
     - name: Release packages
