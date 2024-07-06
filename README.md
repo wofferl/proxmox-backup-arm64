@@ -56,7 +56,7 @@ docker buildx build -o packages --build-arg buildoptions="client debug" --build-
 
 Once the docker build is completed, packages will be copied from the docker build image to a folder named `packages` in the root folder.
 
-## Build using cross compiler (experimental)
+## Build using cross compiler
 ### Enable multi arch and install build essentials and dependencies
 For cross compiling you need to enable multiarch and install the needed build dependencies for the target architecture. For the tests to work qemu-user-binfmt is needed.
 
