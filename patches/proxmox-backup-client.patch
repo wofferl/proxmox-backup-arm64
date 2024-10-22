@@ -210,64 +210,64 @@ index 79c1ad76..95b1b1bf 100755
  override_dh_fixperms:
  	dh_fixperms --exclude sg-tape-cmd
 diff --git a/docs/Makefile b/docs/Makefile
-index d23796b7..950cd644 100644
+index d98302ff..8ee7d4e9 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
-@@ -1,53 +1,15 @@
+@@ -1,57 +1,18 @@
  include ../defines.mk
  
  GENERATED_SYNOPSIS := 						\
--	proxmox-tape/synopsis.rst				\
- 	proxmox-backup-client/synopsis.rst			\
- 	proxmox-backup-client/catalog-shell-synopsis.rst 	\
--	proxmox-backup-manager/synopsis.rst			\
--	proxmox-backup-debug/synopsis.rst			\
--	proxmox-file-restore/synopsis.rst			\
--	pxar/synopsis.rst					\
--	pmtx/synopsis.rst					\
--	pmt/synopsis.rst					\
--	config/media-pool/config.rst				\
--	config/notifications/config.rst				\
--	config/notifications-priv/config.rst				\
--	config/tape/config.rst					\
--	config/tape-job/config.rst				\
--	config/user/config.rst					\
--	config/remote/config.rst				\
--	config/sync/config.rst					\
--	config/verification/config.rst				\
 -	config/acl/roles.rst					\
 -	config/datastore/config.rst				\
--	config/domains/config.rst
-+	pxar/synopsis.rst
+-	config/domains/config.rst				\
+-	config/media-pool/config.rst				\
+-	config/notifications-priv/config.rst			\
+-	config/notifications/config.rst				\
+-	config/remote/config.rst				\
+-	config/sync/config.rst					\
+-	config/tape-job/config.rst				\
+-	config/tape/config.rst					\
+-	config/user/config.rst					\
+-	config/verification/config.rst				\
+-	pmt/synopsis.rst					\
+-	pmtx/synopsis.rst					\
+ 	proxmox-backup-client/catalog-shell-synopsis.rst 	\
+ 	proxmox-backup-client/synopsis.rst			\
+-	proxmox-backup-debug/synopsis.rst			\
+-	proxmox-backup-manager/synopsis.rst			\
+-	proxmox-file-restore/synopsis.rst			\
+-	proxmox-tape/synopsis.rst				\
+ 	pxar/synopsis.rst					\
  
  MAN1_PAGES := 				\
- 	pxar.1				\
--	pmtx.1				\
--	pmt.1				\
--	proxmox-tape.1			\
--	proxmox-backup-proxy.1		\
--	proxmox-backup-client.1		\
--	proxmox-backup-manager.1	\
--	proxmox-file-restore.1		\
--	proxmox-backup-debug.1		\
 -	pbs2to3.1			\
--
--MAN5_PAGES :=				\
--	media-pool.cfg.5		\
--	tape.cfg.5			\
--	tape-job.cfg.5			\
+-	pmt.1				\
+-	pmtx.1				\
+ 	proxmox-backup-client.1		\
+-	proxmox-backup-debug.1		\
+-	proxmox-backup-manager.1	\
+-	proxmox-backup-proxy.1		\
+-	proxmox-file-restore.1		\
+-	proxmox-tape.1			\
+ 	pxar.1				\
+ 
+ # FIXME: prefix all man pages that are not directly relating to an existing executable with
+ # `proxmox-backup.`, like the newer added proxmox-backup.node.cfg but add backwards compatible
+ # symlinks, e.g. with a "5pbs" man page "suffix section".
+ MAN5_PAGES :=				\
 -	acl.cfg.5			\
--	user.cfg.5			\
--	remote.cfg.5			\
--	sync.cfg.5			\
--	verification.cfg.5		\
 -	datastore.cfg.5			\
 -	domains.cfg.5			\
--	notifications.cfg.5		\
+-	media-pool.cfg.5		\
+-	proxmox-backup.node.cfg.5	\
 -	notifications-priv.cfg.5	\
-+	proxmox-backup-client.1
-+
-+MAN5_PAGES :=
+-	notifications.cfg.5		\
+-	remote.cfg.5			\
+-	sync.cfg.5			\
+-	tape-job.cfg.5			\
+-	tape.cfg.5			\
+-	user.cfg.5			\
+-	verification.cfg.5		\
  
  PRUNE_SIMULATOR_FILES := 					\
  	prune-simulator/index.html				\

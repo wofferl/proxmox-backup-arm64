@@ -274,9 +274,9 @@ EOF
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="3.2.7-1"
-PROXMOX_BACKUP_GIT="cb3d41e838dec0e1002aaf5ee4c0e6cd28284c74"
-PROXMOX_GIT="0652d81977a3a35a6f1b046faf0768246a71a8bf"
+PROXMOX_BACKUP_VER="3.2.8-1"
+PROXMOX_BACKUP_GIT="6c44f3e584ceefdb24dd7ae016965542229200f2"
+PROXMOX_GIT="1b70270b2d5ca6ee38c8ea8610135b74cd786d30"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 PXAR_GIT="ebe402c01c736eb6b822d984cda48538c0b7bf87" # 0.12.0-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
@@ -298,6 +298,11 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
 	sed -i 's/\(patchelf\|xindy\)\b/\1:native/' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|pve-eslint\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
+	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
+	# Add missing proxmox-shared-cache in 3.2.8-1
+	sed -i '/^proxmox-shared-memory.*path/aproxmox-shared-cache = { path = "../proxmox/proxmox-shared-cache" }' proxmox-backup/Cargo.toml
+	# fix compile error due different http versions
+	sed -i 's#^h2 = { version = "0.4"#h2 = { version = "0.3"#' proxmox-backup/Cargo.toml
 	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"

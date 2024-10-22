@@ -1,8 +1,8 @@
 diff --git a/docs/Makefile b/docs/Makefile
-index 950cd644..1ba51c00 100644
+index d98302ff..72af586d 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
-@@ -65,16 +65,16 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
+@@ -107,16 +107,16 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
  all: ${MAN1_PAGES} ${MAN5_PAGES}
  
  config/%/config.rst: ${COMPILEDIR}/docgen
@@ -23,7 +23,7 @@ index 950cd644..1ba51c00 100644
  
  ${MAN1_PAGES} ${MAN5_PAGES}: man-pages
  
-@@ -89,7 +89,7 @@ onlinehelpinfo:
+@@ -131,7 +131,7 @@ onlinehelpinfo:
  	@echo "Build finished. OnlineHelpInfo.js is in $(BUILDDIR)/scanrefs."
  
  api-viewer/apidata.js: ${COMPILEDIR}/docgen
@@ -33,7 +33,7 @@ index 950cd644..1ba51c00 100644
  api-viewer/apidoc.js: ${API_VIEWER_FILES}
  	cat ${API_VIEWER_FILES} >$@.tmp
 diff --git a/pxar-bin/tests/pxar.rs b/pxar-bin/tests/pxar.rs
-index 23559bad..2b6f9a4a 100644
+index 2da02990..0d54716d 100644
 --- a/pxar-bin/tests/pxar.rs
 +++ b/pxar-bin/tests/pxar.rs
 @@ -17,7 +17,8 @@ fn pxar_create_and_extract() {
@@ -56,13 +56,33 @@ index 23559bad..2b6f9a4a 100644
          .arg("extract")
          .arg("./tests/archive.pxar")
          .arg("--target")
-@@ -91,7 +93,8 @@ fn pxar_list_with_payload_input() {
-         format!("../target/{target_subdir}/release/pxar")
-     };
+@@ -96,7 +98,8 @@ fn pxar_split_archive_test() {
  
--    let output = Command::new(exec_path)
+     println!("run '{exec_path} create archive.mpxar {src_dir} --payload-output archive.ppxar'");
+ 
+-    Command::new(&exec_path)
++    Command::new("qemu-aarch64")
++        .arg(&exec_path)
+         .arg("create")
+         .arg("./tests/archive.mpxar")
+         .arg(src_dir)
+@@ -104,7 +107,8 @@ fn pxar_split_archive_test() {
+         .status()
+         .unwrap_or_else(|err| panic!("Failed to invoke '{exec_path}': {err}"));
+ 
+-    let output = Command::new(&exec_path)
 +    let output = Command::new("qemu-aarch64")
 +        .arg(&exec_path)
-         .args([
-             "list",
-             "../tests/pxar/backup-client-pxar-expected.mpxar",
+         .arg("list")
+         .arg("./tests/archive.mpxar")
+         .arg("--payload-input=./tests/archive.ppxar")
+@@ -125,7 +129,8 @@ fn pxar_split_archive_test() {
+ 
+     println!("run '{exec_path} extract archive.mpxar {dest_dir} --payload-input archive.ppxar'");
+ 
+-    Command::new(&exec_path)
++    Command::new("qemu-aarch64")
++        .arg(&exec_path)
+         .arg("extract")
+         .arg("./tests/archive.mpxar")
+         .arg("--payload-input=./tests/archive.ppxar")
