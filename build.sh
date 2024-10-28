@@ -152,7 +152,7 @@ function download_release() {
 	done
 }
 
-function install_release() {
+function install_server() {
 	sudo apt-get install -y \
 		${PACKAGES}/libjs-extjs_*_all.deb \
 		${PACKAGES}/libjs-qrcodejs_*_all.deb \
@@ -207,9 +207,8 @@ while [ "$#" -ge 1 ]; do
 		;;
 
 	install)
-
 		download_release
-		install_release
+		install_server
 		;;
 
 	download*)
