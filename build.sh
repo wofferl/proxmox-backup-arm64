@@ -137,6 +137,7 @@ function set_package_info() {
 	fi
 }
 
+file_list=()
 function download_release() {
 	version=${1:-latest}
 	release_url="https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/${version}"
@@ -149,21 +150,17 @@ function download_release() {
 			echo "Downloading ${file}"
 			curl -sSfLO ${download_url} --output-dir ${PACKAGES}
 		fi
+		file_list+=("${PACKAGES}/${file}")
 	done
 }
 
 function install_server() {
-	sudo apt-get install -y \
-		${PACKAGES}/libjs-extjs_*_all.deb \
-		${PACKAGES}/libjs-qrcodejs_*_all.deb \
-		${PACKAGES}/libproxmox-acme-plugins_*_all.deb \
-		${PACKAGES}/pbs-i18n_*_all.deb \
-		${PACKAGES}/proxmox-backup-docs_*_all.deb \
-		${PACKAGES}/proxmox-backup-server_*_arm64.deb \
-		${PACKAGES}/proxmox-mini-journalreader_*_arm64.deb \
-		${PACKAGES}/proxmox-widget-toolkit_*_all.deb \
-		${PACKAGES}/proxmox-termproxy_*_arm64.deb \
-		${PACKAGES}/pve-xtermjs_*_all.deb
+	if [ "${#file_list[@]}" -gt 0 ]; then
+		sudo apt-get install -y \
+			"${file_list[@]}"
+	else
+		echo "No files found!"
+	fi
 }
 
 SUDO="${SUDO:-sudo -E}"
