@@ -225,7 +225,7 @@ while [ "$#" -ge 1 ]; do
 		;;
 	debug)
 		exec &> >(tee "${LOGFILE}")
-		echo $@
+		echo "$@"
 		cat /etc/os-release
 		rustc -V
 		cargo -V
@@ -356,7 +356,7 @@ PVE_XTERMJS_VER="5.3.0-3"
 PVE_XTERMJS_GIT="3301e28678e6a26187e8731d920b2b7686c35cad"
 PROXMOX_XTERMJS_GIT="04e2d0e5c329b59c4ece59d77079443e39029883"
 PROXMOX_TERMPROXY_VER="1.0.1"
-if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_"*".deb" ]; then
+if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_all.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
 	patch -p1 -d pve-xtermjs/ <"${PATCHES}/pve-xtermjs-arm.patch"
