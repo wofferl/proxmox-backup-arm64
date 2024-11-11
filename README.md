@@ -9,7 +9,7 @@ With the script you can also download all files of the latest release at once
 ```
 ./build.sh download
 ```
-or install
+or download and install automatically
 ```
 ./build.sh install
 ```
