@@ -36,9 +36,9 @@ function download_package() {
 }
 
 function git_clone_or_fetch() {
-	url=${1}  # url/name.git
-	name_git=${url##*/}  # name.git
-	name=${name_git%.git}  # name
+	url=${1}              # url/name.git
+	name_git=${url##*/}   # name.git
+	name=${name_git%.git} # name
 
 	if [ ! -d "${name}" ]; then
 		git clone "${url}"
@@ -50,9 +50,9 @@ function git_clone_or_fetch() {
 function git_clean_and_checkout() {
 	commit_id=${1}
 	path=${2}
-	path_args=( )
+	path_args=()
 	if [[ "${path}" != "" ]]; then
-		path_args=( "-C" "${path}" )
+		path_args=("-C" "${path}")
 	fi
 
 	git "${path_args[@]}" clean -ffdx
@@ -62,9 +62,9 @@ function git_clean_and_checkout() {
 
 function load_packages() {
 	url=${1}
-	curl -sSf -H 'Cache-Control: no-cache' "${url}" \
-		| gzip -d - \
-		| awk -F": " '/^(Package|Version|Depends|Filename)/ {
+	curl -sSf -H 'Cache-Control: no-cache' "${url}" |
+		gzip -d - |
+		awk -F": " '/^(Package|Version|Depends|Filename)/ {
 				if($1 == "Package") {
 					version="";
 					depends="";
@@ -111,8 +111,8 @@ function select_package() {
 			file=${line%%;*}
 			line=${line##*${file};}
 			depends=${line}
-			if dpkg --compare-versions "${version}" "${version_test[@]}" \
-				&& dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+			if dpkg --compare-versions "${version}" "${version_test[@]}" &&
+				dpkg --compare-versions "${version}" '>>' "${version_target}"; then
 				if [ -n "$depends" ]; then
 					sudo apt satisfy -s "${depends}" >/dev/null 2>&1 || continue
 				fi
@@ -152,6 +152,20 @@ function download_release() {
 	done
 }
 
+function install_server() {
+	sudo apt-get install -y \
+		${PACKAGES}/libjs-extjs_*_all.deb \
+		${PACKAGES}/libjs-qrcodejs_*_all.deb \
+		${PACKAGES}/libproxmox-acme-plugins_*_all.deb \
+		${PACKAGES}/pbs-i18n_*_all.deb \
+		${PACKAGES}/proxmox-backup-docs_*_all.deb \
+		${PACKAGES}/proxmox-backup-server_*_arm64.deb \
+		${PACKAGES}/proxmox-mini-journalreader_*_arm64.deb \
+		${PACKAGES}/proxmox-widget-toolkit_*_all.deb \
+		${PACKAGES}/proxmox-termproxy_*_arm64.deb \
+		${PACKAGES}/pve-xtermjs_*_all.deb
+}
+
 SUDO="${SUDO:-sudo -E}"
 
 SCRIPT=$(realpath "${0}")
@@ -170,54 +184,59 @@ GITHUB_ACTION=""
 
 [ ! -d "${PACKAGES}" ] && mkdir -p "${PACKAGES}"
 
-while [ "$#" -ge 1 ]
-do
+while [ "$#" -ge 1 ]; do
 	case "$1" in
-		client)
-			BUILD_PACKAGE="client"
-			BUILD_PROFILES=${BUILD_PROFILES}",nodoc"
-			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
-			export DEB_BUILD_OPTIONS="nocheck"
+	client)
+		BUILD_PACKAGE="client"
+		BUILD_PROFILES=${BUILD_PROFILES}",nodoc"
+		[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
+		export DEB_BUILD_OPTIONS="nocheck"
 		;;
-		cross)
-			PACKAGE_ARCH=arm64
-			BUILD_PROFILES=${BUILD_PROFILES}",cross"
-			export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
-			export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER=qemu-aarch64
-			export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
-			export TARGET=aarch64-unknown-linux-gnu
-			export PKG_CONFIG=/usr/bin/aarch64-linux-gnu-pkg-config
-			export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig/
-			export CC=/usr/bin/aarch64-linux-gnu-gcc
-			export DEB_HOST_MULTIARCH=aarch64-linux-gnu
-			export DEB_HOST_RUST_TYPE=aarch64-unknown-linux-gnu
+	cross)
+		PACKAGE_ARCH=arm64
+		BUILD_PROFILES=${BUILD_PROFILES}",cross"
+		export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
+		export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER=qemu-aarch64
+		export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
+		export TARGET=aarch64-unknown-linux-gnu
+		export PKG_CONFIG=/usr/bin/aarch64-linux-gnu-pkg-config
+		export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig/
+		export CC=/usr/bin/aarch64-linux-gnu-gcc
+		export DEB_HOST_MULTIARCH=aarch64-linux-gnu
+		export DEB_HOST_RUST_TYPE=aarch64-unknown-linux-gnu
 		;;
-		download*)
-			if [[ "$1" =~ download=[0-9.-]+ ]]; then
-				download_release tags/${1/*=}
-			else
-				download_release
-			fi
-			exit 0
+
+	install)
+		download_release
+		install_server
 		;;
-		github)
-			GITHUB_ACTION="true"
+
+	download*)
+		if [[ "$1" =~ download=[0-9.-]+ ]]; then
+			download_release tags/${1/*=/}
+		else
+			download_release
+		fi
+		exit 0
 		;;
-		nocheck)
-			[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
-			export DEB_BUILD_OPTIONS="nocheck"
+	github)
+		GITHUB_ACTION="true"
 		;;
-		debug)
-			exec &> >(tee "${LOGFILE}")
-			echo $@
-			cat /etc/os-release
-			rustc -V
-			cargo -V
-			set -x
+	nocheck)
+		[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
+		export DEB_BUILD_OPTIONS="nocheck"
 		;;
-		*)
-			echo "usage $0 [client] [nocheck] [debug] [download]"
-			exit 1
+	debug)
+		exec &> >(tee "${LOGFILE}")
+		echo $@
+		cat /etc/os-release
+		rustc -V
+		cargo -V
+		set -x
+		;;
+	*)
+		echo "usage $0 [client] [nocheck] [debug] [download]"
+		exit 1
 		;;
 	esac
 	shift
@@ -232,12 +251,10 @@ fi
 [ ! -d "${PACKAGES_BUILD}" ] && mkdir -p "${PACKAGES_BUILD}"
 [ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
 
-
 echo "Download packages list from proxmox devel repository"
 PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/bookworm/main/binary-amd64/Packages.gz)
 echo "Download packages list from pbs-no-subscription repository"
 PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/bookworm/pbs-no-subscription/binary-amd64/Packages.gz)
-
 
 echo "Download dependencies"
 EXTJS_VER=(">=" "7~")
@@ -278,13 +295,13 @@ PROXMOX_BACKUP_VER="3.2.8-1"
 PROXMOX_BACKUP_GIT="6c44f3e584ceefdb24dd7ae016965542229200f2"
 PROXMOX_GIT="1b70270b2d5ca6ee38c8ea8610135b74cd786d30"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
-PXAR_GIT="ebe402c01c736eb6b822d984cda48538c0b7bf87" # 0.12.0-1
+PXAR_GIT="ebe402c01c736eb6b822d984cda48538c0b7bf87"         # 0.12.0-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
-		patch -p1 -d proxmox/ < "${PATCHES}/proxmox-arm64.patch"
+		patch -p1 -d proxmox/ <"${PATCHES}/proxmox-arm64.patch"
 	fi
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
 	git_clean_and_checkout ${PROMXOX_FUSE_GIT} proxmox-fuse
@@ -303,17 +320,17 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i '/^proxmox-shared-memory.*path/aproxmox-shared-cache = { path = "../proxmox/proxmox-shared-cache" }' proxmox-backup/Cargo.toml
 	# fix compile error due different http versions
 	sed -i 's#^h2 = { version = "0.4"#h2 = { version = "0.3"#' proxmox-backup/Cargo.toml
-	patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-build.patch"
+	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-client.patch"
+		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-client.patch"
 	fi
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.install
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.postinst
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-server.install
 	fi
-	[[ "${BUILD_PROFILES}" =~ cross ]] && \
-		patch -p1 -d proxmox-backup/ < "${PATCHES}/proxmox-backup-cross.patch"
+	[[ "${BUILD_PROFILES}" =~ cross ]] &&
+		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-cross.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
@@ -345,9 +362,9 @@ PROXMOX_TERMPROXY_VER="1.0.1"
 if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_"*".deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
-	patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-arm.patch"
-	[[ "${BUILD_PROFILES}" =~ cross ]] && \
-		patch -p1 -d pve-xtermjs/ < "${PATCHES}/pve-xtermjs-cross.patch"
+	patch -p1 -d pve-xtermjs/ <"${PATCHES}/pve-xtermjs-arm.patch"
+	[[ "${BUILD_PROFILES}" =~ cross ]] &&
+		patch -p1 -d pve-xtermjs/ <"${PATCHES}/pve-xtermjs-cross.patch"
 	cd pve-xtermjs/
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
@@ -370,9 +387,9 @@ PROXMOX_JOURNALREADER_GIT="66c4d47b853fbeddf1ddb725ac8e3908452554cb"
 if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-mini-journalreader.git
 	git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
-	patch -p1 -d proxmox-mini-journalreader/ < ${PATCHES}/proxmox-mini-journalreader.patch
-	[[ "${BUILD_PROFILES}" =~ cross ]] && \
-		patch -p1 -d proxmox-mini-journalreader/ < "${PATCHES}/proxmox-mini-journalreader-cross.patch"
+	patch -p1 -d proxmox-mini-journalreader/ <${PATCHES}/proxmox-mini-journalreader.patch
+	[[ "${BUILD_PROFILES}" =~ cross ]] &&
+		patch -p1 -d proxmox-mini-journalreader/ <"${PATCHES}/proxmox-mini-journalreader-cross.patch"
 	cd proxmox-mini-journalreader/
 	set_package_info
 	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .

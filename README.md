@@ -9,6 +9,10 @@ With the script you can also download all files of the latest release at once
 ```
 ./build.sh download
 ```
+or install
+```
+wget -qLO - https://raw.githubusercontent.com/wofferl/proxmox-backup-arm64/refs/heads/main/build.sh | bash -s install
+```
 
 or of a specific version
 ```
