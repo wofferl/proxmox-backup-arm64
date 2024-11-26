@@ -206,6 +206,7 @@ while [ "$#" -ge 1 ]; do
 	install)
 		download_release
 		install_server
+		exit 0
 		;;
 
 	download*)
