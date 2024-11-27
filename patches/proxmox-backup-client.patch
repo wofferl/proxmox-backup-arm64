@@ -118,7 +118,7 @@ index dfbaacab..dc21b0b0 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index ba4dc9da..57cf3c25 100644
+index 10d92ddf..57cf3c25 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -149,7 +149,7 @@ index ba4dc9da..57cf3c25 100644
 -         postfix | mail-transport-agent,
 -         proxmox-backup-docs,
 -         proxmox-mini-journalreader,
--         proxmox-widget-toolkit (>= 4.3.2),
+-         proxmox-widget-toolkit (>= 4.3.3),
 -         pve-xtermjs (>= 4.7.0-1),
 -         sg3-utils,
 -         smartmontools,
