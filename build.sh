@@ -289,18 +289,15 @@ EOF
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="3.3.2-2"
-PROXMOX_BACKUP_GIT="c312d5848879be9f3a49dc031ada49ac03654526"
-PROXMOX_GIT="212249e009a2f6b4312528110aa23f70f4b09f99"
+PROXMOX_BACKUP_VER="3.3.3-1"
+PROXMOX_BACKUP_GIT="d986714201591c167e5e23cb1a293557679d4ec7"
+PROXMOX_GIT="0f1b84e93cea47135142bd0c9b0e7f67a7ab5638"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 PXAR_GIT="16773abdda5eb260216e3ed021309cfa32416b38"         # 0.12.1-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
-	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
-		patch -p1 -d proxmox/ <"${PATCHES}/proxmox-arm64.patch"
-	fi
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
 	git_clean_and_checkout ${PROMXOX_FUSE_GIT} proxmox-fuse
 	git_clone_or_fetch https://git.proxmox.com/git/pxar.git
@@ -316,6 +313,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
 	# Add missing proxmox-shared-cache in 3.2.8-1
 	sed -i '/^proxmox-shared-memory.*path/aproxmox-shared-cache = { path = "../proxmox/proxmox-shared-cache" }' proxmox-backup/Cargo.toml
+	# Add missing pbs-api-types in 3.3.3-1
+	sed -i '/^\[patch.crates-io\]/apbs-api-types = { path = "../proxmox/pbs-api-types" }' proxmox-backup/Cargo.toml
 	# fix compile error due different http versions
 	sed -i 's#^h2 = { version = "0.4"#h2 = { version = "0.3"#' proxmox-backup/Cargo.toml
 	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"

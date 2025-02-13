@@ -118,7 +118,7 @@ index dfbaacab..dc21b0b0 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index 10d92ddf..57cf3c25 100644
+index 10d92ddf..5c98f407 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -210,10 +210,10 @@ index 79c1ad76..95b1b1bf 100755
  override_dh_fixperms:
  	dh_fixperms --exclude sg-tape-cmd
 diff --git a/docs/Makefile b/docs/Makefile
-index d98302ff..8ee7d4e9 100644
+index c57cbbc2..1631bbb8 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
-@@ -1,57 +1,18 @@
+@@ -1,59 +1,18 @@
  include ../defines.mk
  
  GENERATED_SYNOPSIS := 						\
@@ -229,6 +229,7 @@ index d98302ff..8ee7d4e9 100644
 -	config/tape/config.rst					\
 -	config/user/config.rst					\
 -	config/verification/config.rst				\
+-	config/prune/config.rst				\
 -	pmt/synopsis.rst					\
 -	pmtx/synopsis.rst					\
  	proxmox-backup-client/catalog-shell-synopsis.rst 	\
@@ -268,6 +269,7 @@ index d98302ff..8ee7d4e9 100644
 -	tape.cfg.5			\
 -	user.cfg.5			\
 -	verification.cfg.5		\
+-	prune.cfg.5				\
  
  PRUNE_SIMULATOR_FILES := 					\
  	prune-simulator/index.html				\
