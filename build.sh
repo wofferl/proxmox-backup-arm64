@@ -278,6 +278,12 @@ else
 		"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
 	)
 fi
+# download patched librust-h2 version
+if [ ! -e ${PACKAGES_BUILD}/librust-h2-dev_0.4.7-3~bpo12+pve1_amd64.deb ]; then
+	curl -sSfL "http://download.proxmox.com/debian/devel/dists/bookworm/main/binary-amd64/librust-h2-dev_0.4.7-3~bpo12%2Bpve1_amd64.deb" \
+		-o "${PACKAGES_BUILD}/librust-h2-dev_0.4.7-3~bpo12+pve1_amd64.deb"
+fi
+
 echo "Install build dependencies"
 ${SUDO} apt install -y "${packages_install[@]}"
 
@@ -313,8 +319,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
 	# Add missing proxmox-shared-cache in 3.2.8-1
 	sed -i '/^proxmox-shared-memory.*path/aproxmox-shared-cache = { path = "../proxmox/proxmox-shared-cache" }' proxmox-backup/Cargo.toml
-	# fix compile error due different http versions
-	sed -i 's#^h2 = { version = "0.4"#h2 = { version = "0.3"#' proxmox-backup/Cargo.toml
+	# use patched h2 version
+	sed -i '/^pxar.*path/ah2 =  { path = "../h2-0.4.7" }' proxmox-backup/Cargo.toml
 	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-client.patch"
@@ -326,6 +332,12 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	fi
 	[[ "${BUILD_PROFILES}" =~ cross ]] &&
 		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-cross.patch"
+	# unpack patched librust-h2 version
+	if [ ! -e librust-h2 ]; then
+		mkdir librust-h2
+		dpkg-deb -R  ${PACKAGES_BUILD}/librust-h2-dev_0.4.7-3~bpo12+pve1_amd64.deb librust-h2
+	fi
+	ln -sf librust-h2/usr/share/cargo/registry/h2-0.4.7 h2-0.4.7
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
