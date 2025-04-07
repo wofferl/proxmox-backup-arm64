@@ -362,11 +362,11 @@ fi
 
 [ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
-PVE_XTERMJS_VER="5.3.0-3"
-PVE_XTERMJS_GIT="3301e28678e6a26187e8731d920b2b7686c35cad"
-PROXMOX_XTERMJS_GIT="04e2d0e5c329b59c4ece59d77079443e39029883"
-PROXMOX_TERMPROXY_VER="1.0.1"
-if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_all.deb" ]; then
+PVE_XTERMJS_VER="5.5.0-2"
+PVE_XTERMJS_GIT="a29b36079fbaf18586615e26bb615992d1007c7e"
+PROXMOX_XTERMJS_GIT="deb32a6c4a21bea0d72059de0835fde504296bf0"
+PROXMOX_TERMPROXY_VER="1.1.0"
+if [ ! -e "${PACKAGES}/proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
 	patch -p1 -d pve-xtermjs/ <"${PATCHES}/pve-xtermjs-arm.patch"
