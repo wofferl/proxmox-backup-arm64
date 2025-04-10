@@ -27,8 +27,18 @@ index a439c97b..a95ae483 100644
  
  [profile.release]
  debug=true
+diff --git a/Makefile b/Makefile
+index d7470146..e5fc29ca 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,5 +1,4 @@
+ include /usr/share/dpkg/default.mk
+-include /usr/share/rustc/architecture.mk
+ include defines.mk
+ 
+ PACKAGE := proxmox-backup
 diff --git a/debian/rules b/debian/rules
-index a03fe11b..79c1ad76 100755
+index be7c93c2..df9e8e27 100755
 --- a/debian/rules
 +++ b/debian/rules
 @@ -4,12 +4,9 @@

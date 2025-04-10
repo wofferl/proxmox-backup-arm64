@@ -1,14 +1,8 @@
 diff --git a/Makefile b/Makefile
-index dfbaacab..dc21b0b0 100644
+index e5fc29ca..4efcb9f5 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -4,32 +4,21 @@ include defines.mk
- PACKAGE := proxmox-backup
- ARCH := $(DEB_BUILD_ARCH)
- 
--SUBDIRS := etc www docs templates
-+SUBDIRS := docs
- 
+@@ -10,27 +10,16 @@ SUBDIRS := etc www docs templates
  # Binaries usable by users
  USR_BIN := \
  	proxmox-backup-client 	\
@@ -40,17 +34,17 @@ index dfbaacab..dc21b0b0 100644
  
  SUBCRATES != cargo metadata --no-deps --format-version=1 \
  	| jq -r .workspace_members'[]' \
-@@ -62,8 +51,7 @@ RESTORE_DEB=proxmox-backup-file-restore_$(DEB_VERSION)_$(ARCH).deb
- RESTORE_DBG_DEB=proxmox-backup-file-restore-dbgsym_$(DEB_VERSION)_$(ARCH).deb
+@@ -73,8 +62,7 @@ STATIC_CLIENT_DEB=$(PACKAGE)-client-static_$(DEB_VERSION)_$(ARCH).deb
+ STATIC_CLIENT_DBG_DEB=$(PACKAGE)-client-static-dbgsym_$(DEB_VERSION)_$(ARCH).deb
  DOC_DEB=$(PACKAGE)-docs_$(DEB_VERSION)_all.deb
  
 -DEBS=$(SERVER_DEB) $(SERVER_DBG_DEB) $(CLIENT_DEB) $(CLIENT_DBG_DEB) \
--     $(RESTORE_DEB) $(RESTORE_DBG_DEB)
+-     $(RESTORE_DEB) $(RESTORE_DBG_DEB) $(STATIC_CLIENT_DEB) $(STATIC_CLIENT_DBG_DEB)
 +DEBS=${CLIENT_DEB} ${CLIENT_DBG_DEB}
  
  DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
  
-@@ -163,31 +151,11 @@ cargo-build:
+@@ -174,31 +162,11 @@ cargo-build:
  $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-cargo-build
  .do-cargo-build:
  	$(CARGO) build $(CARGO_BUILD_ARGS) \
@@ -83,10 +77,12 @@ index dfbaacab..dc21b0b0 100644
  	touch "$@"
  
  
-@@ -196,27 +164,28 @@ lint:
+@@ -206,29 +174,30 @@ $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-
+ lint:
  	cargo clippy -- -A clippy::all -D clippy::correctness
  
- install: $(COMPILED_BINS)
+-install: $(COMPILED_BINS) $(STATIC_BIN)
++install: $(COMPILED_BINS)
 +	@echo "$(DESTDIR)"
  	install -dm755 $(DESTDIR)$(BINDIR)
  	install -dm755 $(DESTDIR)$(ZSH_COMPL_DEST)
@@ -99,17 +95,25 @@ index dfbaacab..dc21b0b0 100644
  	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(SBINDIR)/ ; \
  	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
 -	install -m755 $(COMPILEDIR)/pbs2to3 $(DESTDIR)$(SBINDIR)/
+-	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup
+-	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore
+-	$(foreach i,$(RESTORE_BIN), \
+-	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
 +	#install -m755 $(COMPILEDIR)/pbs2to3 $(DESTDIR)$(SBINDIR)/
- 	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup
- 	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore
- 	$(foreach i,$(RESTORE_BIN), \
- 	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
++	#install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup
++	#install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore
++	#$(foreach i,$(RESTORE_BIN), \
++	#    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
  	# install sg-tape-cmd as setuid binary
 -	install -m4755 -o root -g root $(COMPILEDIR)/sg-tape-cmd $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/sg-tape-cmd
-+	#install -m4755 -o root -g root $(COMPILEDIR)/sg-tape-cmd $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/sg-tape-cmd
- 	$(foreach i,$(SERVICE_BIN), \
- 	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/ ;)
+-	$(foreach i,$(SERVICE_BIN), \
+-	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/ ;)
+-	install -m755 $(STATIC_COMPILEDIR)/proxmox-backup-client $(DESTDIR)$(BINDIR)/proxmox-backup-client-static
 -	$(MAKE) -C www install
++	#install -m4755 -o root -g root $(COMPILEDIR)/sg-tape-cmd $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/sg-tape-cmd
++	#$(foreach i,$(SERVICE_BIN), \
++	#    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/ ;)
++	#install -m755 $(STATIC_COMPILEDIR)/proxmox-backup-client $(DESTDIR)$(BINDIR)/proxmox-backup-client-static
 +	#$(MAKE) -C www install
  	$(MAKE) -C docs install
 -	$(MAKE) -C templates install
@@ -118,7 +122,7 @@ index dfbaacab..dc21b0b0 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index 10d92ddf..5c98f407 100644
+index 786f2e1c..24e8712b 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -130,7 +134,7 @@ index 10d92ddf..5c98f407 100644
                 rsync,
                 texlive-fonts-extra <!nodoc>,
                 texlive-fonts-recommended <!nodoc>,
-@@ -34,56 +34,9 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -35,35 +35,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
@@ -166,9 +170,17 @@ index 10d92ddf..5c98f407 100644
  Package: proxmox-backup-client
  Architecture: any
  Depends: qrencode, ${misc:Depends}, ${shlibs:Depends},
- Description: Proxmox Backup Client tools
+@@ -71,28 +42,3 @@ Description: Proxmox Backup Client tools
   This package contains the Proxmox Backup client, which provides a
   simple command line tool to create and restore backups.
+ 
+-Package: proxmox-backup-client-static
+-Architecture: any
+-Depends: qrencode, ${misc:Depends},
+-Conflicts: proxmox-backup-client
+-Description: Proxmox Backup Client tools (statically linked)
+- This package contains the Proxmox Backup client, which provides a
+- simple command line tool to create and restore backups.
 -
 -Package: proxmox-backup-docs
 -Build-Profiles: <!nodoc>
@@ -188,24 +200,25 @@ index 10d92ddf..5c98f407 100644
 - restoring individual files and folders from both host/container and VM/block
 - device backups. It includes a block device restore driver using QEMU.
 diff --git a/debian/rules b/debian/rules
-index 79c1ad76..95b1b1bf 100755
+index df9e8e27..00e276b5 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -37,12 +37,13 @@ override_dh_missing:
+@@ -37,14 +37,13 @@ override_dh_missing:
  override_dh_auto_install:
  	dh_auto_install -- \
  	    PROXY_USER=backup \
 -	    LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH)
+-	mkdir -p debian/proxmox-backup-client-static/usr/bin
+-	mv debian/tmp/usr/bin/proxmox-backup-client-static debian/proxmox-backup-client-static/usr/bin/proxmox-backup-client
 +	    LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) \
 +	    DESTDIR=$(PWD)/debian/tmp
  
--override_dh_installsystemd:
+ override_dh_installsystemd:
 -	dh_installsystemd -pproxmox-backup-server  proxmox-backup-daily-update.timer
-+#override_dh_installsystemd:
-+#	dh_installsystemd -pproxmox-backup-server  proxmox-backup-daily-update.timer
++	#dh_installsystemd -pproxmox-backup-server  proxmox-backup-daily-update.timer
  	# note: we start/try-reload-restart services manually in postinst
 -	dh_installsystemd --no-start --no-restart-after-upgrade --no-stop-on-upgrade
-+#	dh_installsystemd --no-start --no-restart-after-upgrade --no-stop-on-upgrade
++	#dh_installsystemd --no-start --no-restart-after-upgrade --no-stop-on-upgrade
  
  override_dh_fixperms:
  	dh_fixperms --exclude sg-tape-cmd
