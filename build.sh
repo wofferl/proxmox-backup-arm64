@@ -142,7 +142,7 @@ function download_release() {
 	version=${1:-latest}
 	release_url="https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/${version}"
 	echo "Downloading ${version} released files to "${PACKAGES}
-	for download_url in $(curl -sSf ${release_url} | sed -n '/browser_download_url/ {/dbgsym/!s/.*\(https[^"]*\)"/\1/p}'); do
+	for download_url in $(curl -sSf ${release_url} | sed -n '/browser_download_url/ {/static\|dbgsym/!s/.*\(https[^"]*\)"/\1/p}'); do
 		file=$(basename ${download_url})
 		if [ -e ${PACKAGES}/${file} ]; then
 			echo "${file} already exist"
