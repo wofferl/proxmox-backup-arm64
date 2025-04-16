@@ -300,8 +300,8 @@ EOF
 
 cd "${SOURCES}"
 
-PROXMOX_BACKUP_VER="3.4.0-1"
-PROXMOX_BACKUP_GIT="36ef1b01f76a452abb3aebea9f9c9e0fdc339c33"
+PROXMOX_BACKUP_VER="3.4.1-1"
+PROXMOX_BACKUP_GIT="58fb448be581219bb3b50d7f79e91e022953a3b5"
 PROXMOX_GIT="550ebbed7c546131bbc8704d5c854ae2b6cc74a0"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 PXAR_GIT="16773abdda5eb260216e3ed021309cfa32416b38"         # 0.12.1-1
@@ -355,7 +355,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		mv -f proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
 			"${PACKAGES}"
 	else
-		mv -f proxmox-backup-client{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
+		mv -f proxmox-backup-client{,-static}{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
 			proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
 			proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
 			proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \

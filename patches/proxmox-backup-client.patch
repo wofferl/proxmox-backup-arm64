@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index e5fc29ca..4efcb9f5 100644
+index c0bb1920..a3a8e9ec 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -10,27 +10,16 @@ SUBDIRS := etc www docs templates
@@ -34,7 +34,7 @@ index e5fc29ca..4efcb9f5 100644
  
  SUBCRATES != cargo metadata --no-deps --format-version=1 \
  	| jq -r .workspace_members'[]' \
-@@ -73,8 +62,7 @@ STATIC_CLIENT_DEB=$(PACKAGE)-client-static_$(DEB_VERSION)_$(ARCH).deb
+@@ -75,8 +64,7 @@ STATIC_CLIENT_DEB=$(PACKAGE)-client-static_$(DEB_VERSION)_$(ARCH).deb
  STATIC_CLIENT_DBG_DEB=$(PACKAGE)-client-static-dbgsym_$(DEB_VERSION)_$(ARCH).deb
  DOC_DEB=$(PACKAGE)-docs_$(DEB_VERSION)_all.deb
  
@@ -44,7 +44,7 @@ index e5fc29ca..4efcb9f5 100644
  
  DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
  
-@@ -174,31 +162,11 @@ cargo-build:
+@@ -176,31 +164,11 @@ cargo-build:
  $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-cargo-build
  .do-cargo-build:
  	$(CARGO) build $(CARGO_BUILD_ARGS) \
@@ -76,21 +76,8 @@ index e5fc29ca..4efcb9f5 100644
 +	    --bin pxar
  	touch "$@"
  
- 
-@@ -206,29 +174,30 @@ $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-
- lint:
- 	cargo clippy -- -A clippy::all -D clippy::correctness
- 
--install: $(COMPILED_BINS) $(STATIC_BIN)
-+install: $(COMPILED_BINS)
-+	@echo "$(DESTDIR)"
- 	install -dm755 $(DESTDIR)$(BINDIR)
- 	install -dm755 $(DESTDIR)$(ZSH_COMPL_DEST)
- 	$(foreach i,$(USR_BIN), \
--	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(BINDIR)/ ; \
-+	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)/$(BINDIR)/ ; \
- 	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
- 	install -dm755 $(DESTDIR)$(SBINDIR)
+ .PHONY: proxmox-backup-client-static
+@@ -231,20 +199,9 @@ install: $(COMPILED_BINS) $(STATIC_BINS)
  	$(foreach i,$(USR_SBIN), \
  	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(SBINDIR)/ ; \
  	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
@@ -99,30 +86,20 @@ index e5fc29ca..4efcb9f5 100644
 -	install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore
 -	$(foreach i,$(RESTORE_BIN), \
 -	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
-+	#install -m755 $(COMPILEDIR)/pbs2to3 $(DESTDIR)$(SBINDIR)/
-+	#install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup
-+	#install -dm755 $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore
-+	#$(foreach i,$(RESTORE_BIN), \
-+	#    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/file-restore/ ;)
- 	# install sg-tape-cmd as setuid binary
+-	# install sg-tape-cmd as setuid binary
 -	install -m4755 -o root -g root $(COMPILEDIR)/sg-tape-cmd $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/sg-tape-cmd
 -	$(foreach i,$(SERVICE_BIN), \
 -	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/ ;)
--	install -m755 $(STATIC_COMPILEDIR)/proxmox-backup-client $(DESTDIR)$(BINDIR)/proxmox-backup-client-static
+ 	install -m755 $(STATIC_COMPILEDIR)/proxmox-backup-client $(DESTDIR)$(BINDIR)/proxmox-backup-client-static
+ 	install -m755 $(STATIC_COMPILEDIR)/pxar $(DESTDIR)$(BINDIR)/pxar-static
 -	$(MAKE) -C www install
-+	#install -m4755 -o root -g root $(COMPILEDIR)/sg-tape-cmd $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/sg-tape-cmd
-+	#$(foreach i,$(SERVICE_BIN), \
-+	#    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(LIBEXECDIR)/proxmox-backup/ ;)
-+	#install -m755 $(STATIC_COMPILEDIR)/proxmox-backup-client $(DESTDIR)$(BINDIR)/proxmox-backup-client-static
-+	#$(MAKE) -C www install
  	$(MAKE) -C docs install
 -	$(MAKE) -C templates install
-+	#$(MAKE) -C templates install
  
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index 786f2e1c..24e8712b 100644
+index a9040a3a..a19c33b8 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -170,17 +147,10 @@ index 786f2e1c..24e8712b 100644
  Package: proxmox-backup-client
  Architecture: any
  Depends: qrencode, ${misc:Depends}, ${shlibs:Depends},
-@@ -71,28 +42,3 @@ Description: Proxmox Backup Client tools
+@@ -78,21 +49,3 @@ Conflicts: proxmox-backup-client,
+ Description: Proxmox Backup Client tools (statically linked)
   This package contains the Proxmox Backup client, which provides a
   simple command line tool to create and restore backups.
- 
--Package: proxmox-backup-client-static
--Architecture: any
--Depends: qrencode, ${misc:Depends},
--Conflicts: proxmox-backup-client
--Description: Proxmox Backup Client tools (statically linked)
-- This package contains the Proxmox Backup client, which provides a
-- simple command line tool to create and restore backups.
 -
 -Package: proxmox-backup-docs
 -Build-Profiles: <!nodoc>
@@ -200,28 +170,21 @@ index 786f2e1c..24e8712b 100644
 - restoring individual files and folders from both host/container and VM/block
 - device backups. It includes a block device restore driver using QEMU.
 diff --git a/debian/rules b/debian/rules
-index df9e8e27..00e276b5 100755
+index 176720e3..5c203bc9 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -37,14 +37,13 @@ override_dh_missing:
- override_dh_auto_install:
- 	dh_auto_install -- \
- 	    PROXY_USER=backup \
--	    LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH)
--	mkdir -p debian/proxmox-backup-client-static/usr/bin
--	mv debian/tmp/usr/bin/proxmox-backup-client-static debian/proxmox-backup-client-static/usr/bin/proxmox-backup-client
-+	    LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) \
-+	    DESTDIR=$(PWD)/debian/tmp
+@@ -42,11 +42,6 @@ override_dh_auto_install:
+ 	mv debian/tmp/usr/bin/proxmox-backup-client-static debian/proxmox-backup-client-static/usr/bin/proxmox-backup-client
+ 	mv debian/tmp/usr/bin/pxar-static debian/proxmox-backup-client-static/usr/bin/pxar
  
- override_dh_installsystemd:
+-override_dh_installsystemd:
 -	dh_installsystemd -pproxmox-backup-server  proxmox-backup-daily-update.timer
-+	#dh_installsystemd -pproxmox-backup-server  proxmox-backup-daily-update.timer
- 	# note: we start/try-reload-restart services manually in postinst
+-	# note: we start/try-reload-restart services manually in postinst
 -	dh_installsystemd --no-start --no-restart-after-upgrade --no-stop-on-upgrade
-+	#dh_installsystemd --no-start --no-restart-after-upgrade --no-stop-on-upgrade
- 
+-
  override_dh_fixperms:
  	dh_fixperms --exclude sg-tape-cmd
+ 
 diff --git a/docs/Makefile b/docs/Makefile
 index c57cbbc2..1631bbb8 100644
 --- a/docs/Makefile
