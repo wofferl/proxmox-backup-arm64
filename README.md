@@ -71,7 +71,7 @@ dpkg --add-architecture arm64
 apt update && apt-get install -y --no-install-recommends \
                 build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
                 pkg-config libudev-dev:arm64 libssl-dev:arm64 libapt-pkg-dev:arm64 apt:amd64 \
-                libclang-dev libpam0g-dev:arm64 \
+                libclang-dev libpam0g-dev:arm64 pkgconf:arm64 \
                 qemu-user-binfmt 
 ```
 (apt:amd64 is necessary because libapt-pkg-dev:arm64 would break the dependencies without it)
