@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt-get install -y --no-install-recommends \
 	build-essential curl ca-certificates sudo git lintian \
 	pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev \
-	libpam0g-dev
+	libpam0g-dev zlib1g-dev
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
 
