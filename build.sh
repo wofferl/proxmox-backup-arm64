@@ -327,17 +327,17 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="3.4.2-1"
-PROXMOX_BACKUP_GIT="37f1949335cad801f7cdaa0173cc114590a37e4e"
-PROXMOX_GIT="43419da4e397aeb0f241d2fcb501cfe9ebeaed70"
-PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
-PXAR_GIT="16773abdda5eb260216e3ed021309cfa32416b38"         # 0.12.1-1
-PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
+PROXMOX_BACKUP_VER="4.0.0-1"
+PROXMOX_BACKUP_GIT="d5e4a2bb715bb81b53d1d1d39cf6065d85477625"
+PROXMOX_GIT="35c28da99fc02a8f9de3e010ccac3dc8167e8c31"
+PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
+PXAR_GIT="993c66fcb8819770f279cb9fb4d13f58f367606c"         # 1.0.0-1
+PROXMOX_FUSE_GIT="87dbf9bfef9169286263bccffaae3206635ca108" # 1.0.0-1
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
-	git_clean_and_checkout ${PROMXOX_FUSE_GIT} proxmox-fuse
+	git_clean_and_checkout ${PROXMOX_FUSE_GIT} proxmox-fuse
 	git_clone_or_fetch https://git.proxmox.com/git/pxar.git
 	git_clean_and_checkout ${PXAR_GIT} pxar
 	git_clone_or_fetch https://git.proxmox.com/git/pathpatterns.git
@@ -346,7 +346,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
-	sed -i 's/\(patchelf\|xindy\)\b/\1:native/' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|pve-eslint\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
 	# Add missing proxmox-shared-cache in 3.2.8-1
@@ -355,6 +354,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i '/^pxar.*path/ah2 =  { path = "../h2-0.4.7" }' proxmox-backup/Cargo.toml
 	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
+		sed -i '/proxmox-biome/d' proxmox-backup/debian/control
 		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-client.patch"
 	fi
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
