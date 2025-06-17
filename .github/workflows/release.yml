@@ -1,5 +1,5 @@
 name: Release
-run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian (crossbuild/arm64)
+run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian/Trixie (crossbuild/arm64)
 
 on:
   workflow_dispatch:
@@ -8,10 +8,10 @@ on:
         type: choice
         description: Version
         options:
-        - 3.x
+        - 4.x
   push:
     tags:
-      - 3.**
+      - 4.**
 
 jobs:
   build:
@@ -39,7 +39,7 @@ jobs:
 
     - name: Build packages
       run: |
-        baseimage="debian:bookworm-slim"
+        baseimage="debian:trixie-slim"
         echo "DEB_DIST=Debian/Bookworm" >> $GITHUB_ENV
         if [ "${RUNNER_DEBUG}" = "1" ]; then
           docker buildx build -o packages --build-arg buildoptions="cross github debug" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
@@ -53,7 +53,7 @@ jobs:
     - name: Test packages
       run: |
         df -h
-        baseimage="debian:bookworm-slim"
+        baseimage="debian:trixie-slim"
         docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
     - name: Release packages
       uses: ncipollo/release-action@v1
