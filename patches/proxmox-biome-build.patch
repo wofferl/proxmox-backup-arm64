@@ -1,0 +1,13 @@
+diff --git a/debian/control b/debian/control
+index bcfa86d0..ec90b4df 100644
+--- a/debian/control
++++ b/debian/control
+@@ -2,7 +2,7 @@ Source: proxmox-biome
+ Section: admin
+ Priority: optional
+ Maintainer: Proxmox Support Team <support@proxmox.com>
+-Build-Depends: cargo, debhelper-compat (= 12), shellcheck,
++Build-Depends: debhelper-compat (= 12), shellcheck,
+ Homepage: https://biomejs.dev/
+ Standards-Version: 4.7.0.0
+ 

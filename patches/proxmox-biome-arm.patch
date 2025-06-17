@@ -1,0 +1,46 @@
+diff --git a/Makefile b/Makefile
+index 18e5ce27..d973b636 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,8 +2,8 @@ include /usr/share/dpkg/pkg-info.mk
+ 
+ PACKAGE=proxmox-biome
+ 
+-DEB=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION)_amd64.deb
+-DEB_DBG=$(PACKAGE)-dbgsym_$(DEB_VERSION_UPSTREAM_REVISION)_amd64.deb
++DEB=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_HOST_ARCH).deb
++DEB_DBG=$(PACKAGE)-dbgsym_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_HOST_ARCH).deb
+ 
+ BUILDDIR=$(PACKAGE)-$(DEB_VERSION_UPSTREAM)
+ 
+@@ -45,7 +45,7 @@ $(BUILDDIR):
+ 
+ deb: $(DEB)
+ $(DEB) $(DEB_DBG) &: $(BUILDDIR)
+-	cd $(BUILDDIR); dpkg-buildpackage -b -us -uc
++	cd $(BUILDDIR); dpkg-buildpackage -aarm64 -b -us -uc
+ 	lintian $(DEB)
+ 
+ .PHONY: upload
+diff --git a/debian/control b/debian/control
+index bcfa86d0..15bcba80 100644
+--- a/debian/control
++++ b/debian/control
+@@ -7,7 +7,7 @@ Homepage: https://biomejs.dev/
+ Standards-Version: 4.7.0.0
+ 
+ Package: proxmox-biome
+-Architecture: amd64
++Architecture: arm64
+ Depends: ${misc:Depends}, ${shlibs:Depends},
+ Description: Biome offers JS formatter and linter, usable via CLI and LSP.
+  Biome is a performant toolchain for web projects, it aims to provide developer
+diff --git a/debian/install b/debian/install
+index 80c48310..312138c2 100644
+--- a/debian/install
++++ b/debian/install
+@@ -1,3 +1,3 @@
+ src/biome.json usr/share/proxmox-biome/
+ src/proxmox-biome usr/bin/
+-target/release/biome usr/bin
++target/aarch64-unknown-linux-gnu/release/biome usr/bin
