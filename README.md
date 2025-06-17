@@ -1,11 +1,17 @@
+[!IMPORTANT]
+**The main branch is currently experimental to build pbs 4.x for Debian/Trixie, the 3.x build script has moved to the stable-3 branch**
+**Latest release will continue to be the latest 3.x version.**
+
 # proxmox-backup-arm64
-Script for building Proxmox Backup Server 3.x for Debian/Bookworm<br />
+Script for building Proxmox Backup Server **4.x** for **Debian/Trixie**<br />
+To build Proxmox Backup Server **3.x** for **Debian/Bookworm** use the stable-3 branch.
+
 At least 4 GB are required for compiling. On devices with low memory, SWAP must be used (see help section).
 
 ## Download pre-built packages
-You can find unoffical debian packages for bookworm that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
+You can find unoffical debian packages for **Bookworm** or **Trixie** that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
 
-With the script you can also download all files of the latest release at once
+With the script you can also download all files of the latest **Debian/Bookworm** release at once
 ```
 ./build.sh download
 ```
@@ -16,7 +22,7 @@ or download and install automatically
 
 or of a specific version
 ```
-./build.sh download=3.2.6-1
+./build.sh download=4.0.0-1
 ```
 
 ## Build manually
@@ -25,7 +31,7 @@ or of a specific version
 apt-get install -y --no-install-recommends \
 	build-essential curl ca-certificates sudo git lintian fakeroot \
 	pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev \
-	libpam0g-dev
+	libpam0g-dev zlib1g-dev
 ```
 ### Install ``rustup``
 ```
@@ -71,7 +77,7 @@ dpkg --add-architecture arm64
 apt update && apt-get install -y --no-install-recommends \
                 build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
                 pkg-config libudev-dev:arm64 libssl-dev:arm64 libapt-pkg-dev:arm64 apt:amd64 \
-                libclang-dev libpam0g-dev:arm64 pkgconf:arm64 \
+                libclang-dev libpam0g-dev:arm64 pkgconf:arm64 zlib1g-dev:arm64 \
                 qemu-user-binfmt 
 ```
 (apt:amd64 is necessary because libapt-pkg-dev:arm64 would break the dependencies without it)
