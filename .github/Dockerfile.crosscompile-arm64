@@ -10,7 +10,7 @@ RUN dpkg --add-architecture arm64
 RUN apt update && apt-get install -y --no-install-recommends \
 	build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
 	pkg-config libudev-dev:arm64 libssl-dev:arm64 libapt-pkg-dev:arm64 apt:amd64 \
-	libclang-dev libpam0g-dev:arm64 \
+	libclang-dev libpam0g-dev:arm64 zlib1g-dev:arm64 \
 	qemu-user-binfmt
 RUN grep -qi bookworm /etc/os-release && apt-get install -y pkg-config:arm64 || true
 
