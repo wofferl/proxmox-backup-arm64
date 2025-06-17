@@ -1,8 +1,14 @@
 diff --git a/Makefile b/Makefile
-index c0bb1920..a3a8e9ec 100644
+index 461ae3fe..14b33030 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -10,27 +10,16 @@ SUBDIRS := etc www docs templates
+@@ -5,32 +5,21 @@ PACKAGE := proxmox-backup
+ ARCH := $(DEB_BUILD_ARCH)
+ export DEB_HOST_RUST_TYPE
+ 
+-SUBDIRS := etc www docs templates
++SUBDIRS := docs
+ 
  # Binaries usable by users
  USR_BIN := \
  	proxmox-backup-client 	\
@@ -44,9 +50,9 @@ index c0bb1920..a3a8e9ec 100644
  
  DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
  
-@@ -176,31 +164,11 @@ cargo-build:
- $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen: .do-cargo-build
- .do-cargo-build:
+@@ -173,31 +161,11 @@ cargo-build:
+ 
+ $(COMPILED_BINS) $(COMPILEDIR)/dump-catalog-shell-cli $(COMPILEDIR)/docgen &:
  	$(CARGO) build $(CARGO_BUILD_ARGS) \
 -	    --package proxmox-backup-banner \
 -	    --bin proxmox-backup-banner \
@@ -77,7 +83,7 @@ index c0bb1920..a3a8e9ec 100644
  	touch "$@"
  
  .PHONY: proxmox-backup-client-static
-@@ -231,20 +199,9 @@ install: $(COMPILED_BINS) $(STATIC_BINS)
+@@ -228,20 +196,9 @@ install: $(COMPILED_BINS) $(STATIC_BINS)
  	$(foreach i,$(USR_SBIN), \
  	    install -m755 $(COMPILEDIR)/$(i) $(DESTDIR)$(SBINDIR)/ ; \
  	    install -m644 zsh-completions/_$(i) $(DESTDIR)$(ZSH_COMPL_DEST)/ ;)
