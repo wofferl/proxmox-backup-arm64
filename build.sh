@@ -331,8 +331,8 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="3.4.2-1"
-PROXMOX_BACKUP_GIT="37f1949335cad801f7cdaa0173cc114590a37e4e"
+PROXMOX_BACKUP_VER="3.4.3-1"
+PROXMOX_BACKUP_GIT="d84d10125d5de3653c3de2f0f31af5368bc09c35"
 PROXMOX_GIT="43419da4e397aeb0f241d2fcb501cfe9ebeaed70"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 PXAR_GIT="16773abdda5eb260216e3ed021309cfa32416b38"         # 0.12.1-1
@@ -350,7 +350,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
-	sed -i 's/\(patchelf\|xindy\)\b/\1:native/' proxmox-backup/debian/control
+	sed -i 's/\(patchelf\|xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|pve-eslint\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
 	# Add missing proxmox-shared-cache in 3.2.8-1
