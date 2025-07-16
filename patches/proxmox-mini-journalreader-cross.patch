@@ -1,30 +1,39 @@
 diff --git a/Makefile b/Makefile
-index 1a32c86..b1a4e0a 100644
+index 615c077..50a72ac 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -7,7 +7,7 @@ GITVERSION:=$(shell git rev-parse HEAD)
+@@ -7,8 +7,8 @@ GITVERSION:=$(shell git rev-parse HEAD)
  
  BUILDDIR ?= $(PACKAGE)-$(DEB_VERSION_UPSTREAM)
  
 -DEB=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_BUILD_ARCH).deb
+-DBGDEB=$(PACKAGE)-dbgsym_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_BUILD_ARCH).deb
 +DEB=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_HOST_ARCH).deb
- DBGDEB=$(PACKAGE)-dbgsym_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_BUILD_ARCH).deb
++DBGDEB=$(PACKAGE)-dbgsym_$(DEB_VERSION_UPSTREAM_REVISION)_$(DEB_HOST_ARCH).deb
  DEBS=$(DEB) $(DBGDEB)
  
-@@ -24,7 +24,7 @@ $(BUILDDIR): src debian
- deb: $(DEBS)
- $(DEBS): $(DEB)
+ DSC=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION).dsc
+@@ -24,13 +24,13 @@ $(BUILDDIR): src debian
+ deb: $(DEB)
+ $(DBGDEB): $(DEB)
  $(DEB): $(BUILDDIR)
 -	cd $(BUILDDIR); dpkg-buildpackage -b -us -uc
 +	cd $(BUILDDIR); dpkg-buildpackage -aarm64 -b -us -uc
- 	lintian $(DEB)
+ 	lintian $(DEBS)
  
  .PHONY: dsc
+ dsc: $(DSC)
+ $(DSC): $(BUILDDIR)
+-	cd $(BUILDDIR); dpkg-buildpackage -S -us -uc -d
++	cd $(BUILDDIR); dpkg-buildpackage -aarm64 -S -us -uc -d
+ 	lintian $(DSC)
+ 
+ sbuild: $(DSC)
 diff --git a/src/Makefile b/src/Makefile
-index 449004f..f437733 100644
+index 6807b67..3f31c07 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -13,7 +13,7 @@ LDFLAGS += $(shell pkg-config --libs $(LIBS))
+@@ -14,7 +14,7 @@ LDFLAGS += $(shell pkg-config --libs $(LIBS))
  all: $(PROGRAM)
  
  $(PROGRAM): $(SOURCES)
@@ -32,4 +41,4 @@ index 449004f..f437733 100644
 +	${CC} $< -o $@ $(CFLAGS) $(LDFLAGS)
  
  .PHONY: install
- install: $(PROGRAM) mini-journalreader.1
+ install: $(PROGRAM) $(MANPAGE)

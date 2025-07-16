@@ -1,17 +1,26 @@
 diff --git a/src/mini-journalreader.c b/src/mini-journalreader.c
-index 98bcaac..4fc5415 100644
+index 0489d4a..8fccb99 100644
 --- a/src/mini-journalreader.c
 +++ b/src/mini-journalreader.c
-@@ -169,7 +169,7 @@ static bool print_field(sd_journal *j, const char *field) {
+@@ -64,7 +64,7 @@ static void print_error_and_exit(const char *fmt, ...) {
+         fprintf(stdout, "], \"error\":\"");
+         for (int i = 0; i < message_len; i++) {
+             char c = message[i];
+-            if (c == '"' || c == '\\' || (c >= 0 && c <= 0x1F)) {
++            if (c == '"' || c == '\\' || c <= 0x1F) {
+                 fprintf(stdout, "\\u%04X", c);
+             } else {
+                 fprintf(stdout, "%c", c);
+@@ -216,7 +216,7 @@ static bool print_field(sd_journal *j, const char *field) {
      if (json) {
          char tmp[7];
-         for (size_t i = 0; i < l;i++) {
+         for (size_t i = 0; i < l; i++) {
 -            if (d[i] == '"' || d[i] == '\\' || (d[i] >= 0 && d[i] <= 0x1F)) {
-+	    if (d[i] == '"' || d[i] == '\\' || d[i] <= 0x1F) {
++            if (d[i] == '"' || d[i] == '\\' || d[i] <= 0x1F) {
                  sprintf(tmp, "\\u%04X", d[i]);
                  print_to_buf(tmp, 6);
              } else {
-@@ -257,10 +257,12 @@ int main(int argc, char *argv[]) {
+@@ -305,10 +305,12 @@ int main(int argc, char *argv[]) {
      uint64_t begin = 0;
      uint64_t end = 0;
      char c;
@@ -19,9 +28,9 @@ index 98bcaac..4fc5415 100644
  
      progname = argv[0];
  
--    while ((c = (char)getopt (argc, argv, "b:e:d:n:f:t:jh")) != -1) {
-+    while ((opt = getopt (argc, argv, "b:e:d:n:f:t:jh")) != -1) {
-+        c = (char) opt;
+-    while ((c = (char)getopt(argc, argv, "b:e:d:n:f:t:jh")) != -1) {
++    while ((getopt(argc, argv, "b:e:d:n:f:t:jh")) != -1) {
++	c = (char) opt;
          switch (c) {
-             case 'b':
-                 begin = arg_to_uint64(optarg);
+         case 'b':
+             begin = arg_to_uint64(optarg);
