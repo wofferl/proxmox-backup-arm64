@@ -45,12 +45,3 @@ index 7109d042..80bcb58b 100644
  Depends: ${misc:Depends}, ${shlibs:Depends},
  Description: Biome offers JS formatter and linter, usable via CLI and LSP.
   Biome is a performant toolchain for web projects, it aims to provide developer
-diff --git a/debian/install b/debian/install
-index 80c48310..312138c2 100644
---- a/debian/install
-+++ b/debian/install
-@@ -1,3 +1,3 @@
- src/biome.json usr/share/proxmox-biome/
- src/proxmox-biome usr/bin/
--target/release/biome usr/bin
-+target/aarch64-unknown-linux-gnu/release/biome usr/bin

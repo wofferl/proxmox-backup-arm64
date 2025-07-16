@@ -173,6 +173,7 @@ PATCHES="${BASE}/patches"
 SOURCES="${BASE}/sources"
 LOGFILE="build.log"
 PACKAGE_ARCH=$(dpkg-architecture -q DEB_BUILD_ARCH)
+HOST_ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
 HOST_CPU=$(dpkg-architecture -q DEB_HOST_GNU_CPU)
 HOST_SYSTEM=$(dpkg-architecture -q DEB_HOST_GNU_SYSTEM)
 BUILD_PACKAGE="server"
@@ -300,26 +301,32 @@ EOF
 
 cd "${SOURCES}"
 if [ "${BUILD_PACKAGE}" != "client" ]; then
-	PROXMOX_BIOME_VER="2.0.0-beta.6-2"
-	PROXMOX_BIOME_GIT="0440df4eae11820e85892e35a52482b8cd72d800" # 2.0.0
-	if [ ! -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${PACKAGE_ARCH}.deb" ]; then
+	PROXMOX_BIOME_VER="2.0.6-1~bpo12+1"
+	PROXMOX_BIOME_GIT="ddb28c67cad102cc8bbecbbaa1edc5d101c7f782" # 2.0.6-1
+	PROXMOX_BIOME_DOWNLOAD_VER=("=" "$PROXMOX_BIOME_VER")
+	if [ "${HOST_ARCH}" = "amd64" ]; then
+		download_package devel proxmox-biome "${PROXMOX_BIOME_DOWNLOAD_VER[@]}" "${PACKAGES_BUILD}"
+	fi
+	if [ ! -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
 		git_clone_or_fetch https://git.proxmox.com/git/proxmox-biome.git
 		git_clean_and_checkout ${PROXMOX_BIOME_GIT} proxmox-biome
 		patch -p1 -d proxmox-biome/ <"${PATCHES}/proxmox-biome-build.patch"
-		if [ "${PACKAGE_ARCH}" = "arm64" ]; then
+		if [ "${HOST_ARCH}" = "arm64" ]; then
 			patch -p1 -d proxmox-biome/ <"${PATCHES}/proxmox-biome-arm.patch"
 		fi
 		cd proxmox-biome
 		set_package_info
-		${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
-		make deb
-		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${PACKAGE_ARCH}.deb "${PACKAGES_BUILD}"
+		# set backport version
+		sed -i '1s/([0-9.-]\+)/('${PROXMOX_BIOME_VER}')/; 1s/trixie/bookworm-backports/' debian/changelog
+		${SUDO} apt -y build-dep .
+		env -i HOME=${HOME} TERM=${TERM} bash -c 'source /etc/profile; source ~/.cargo/env; env; make deb'
+		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb "${PACKAGES_BUILD}"
 		cd ..
 	else
 		echo "proxmox-biome up-to-date"
 	fi
-	if [ -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${PACKAGE_ARCH}.deb" ]; then
-		${SUDO} apt install -y "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${PACKAGE_ARCH}.deb"
+	if [ -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
+		${SUDO} apt install -y "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb"
 	else
 		echo "proxmox-biome dependency missing"
 		exit 1
