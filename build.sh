@@ -301,8 +301,8 @@ EOF
 
 cd "${SOURCES}"
 if [ "${BUILD_PACKAGE}" != "client" ]; then
-	PROXMOX_BIOME_VER="2.0.0-beta.6-2"
-	PROXMOX_BIOME_GIT="0440df4eae11820e85892e35a52482b8cd72d800" # 2.0.0
+	PROXMOX_BIOME_VER="2.0.6-1"
+	PROXMOX_BIOME_GIT="ddb28c67cad102cc8bbecbbaa1edc5d101c7f782" # 2.0.6-1
 	if [ ! -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
 		git_clone_or_fetch https://git.proxmox.com/git/proxmox-biome.git
 		git_clean_and_checkout ${PROXMOX_BIOME_GIT} proxmox-biome
@@ -313,7 +313,7 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 		cd proxmox-biome
 		set_package_info
 		${SUDO} apt -y build-dep .
-		make deb
+		env -i HOME=${HOME} TERM=${TERM} bash -c 'source /etc/profile; source ~/.cargo/env; env; make deb'
 		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb "${PACKAGES_BUILD}"
 		cd ..
 	else
