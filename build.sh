@@ -320,9 +320,9 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.0.2-1"
-PROXMOX_BACKUP_GIT="b19d2c393fd8b5d22f1a3aece78a24e0a8745c64"
-PROXMOX_GIT="8a9c280bd8a61562f6ad06972ba06473a44f6857"
+PROXMOX_BACKUP_VER="4.0.5-1"
+PROXMOX_BACKUP_GIT="7616c0a2ed079204c3a333622a0c5ef2b3469350"
+PROXMOX_GIT="a6edf8ecfa4a0766f0af7d2b2241d484f93ca4e9"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="993c66fcb8819770f279cb9fb4d13f58f367606c"         # 1.0.0-1
 PROXMOX_FUSE_GIT="87dbf9bfef9169286263bccffaae3206635ca108" # 1.0.0-1
@@ -341,6 +341,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
+	# Add missing proxmox-s3-client in 4.0.3-1
+	sed -i '/patch.crates-io/aproxmox-s3-client = { path = "../proxmox/proxmox-s3-client" }' proxmox-backup/Cargo.toml
 	# Add missing proxmox-shared-cache in 3.2.8-1
 	sed -i '/^proxmox-shared-memory.*path/aproxmox-shared-cache = { path = "../proxmox/proxmox-shared-cache" }' proxmox-backup/Cargo.toml
 	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
@@ -353,8 +355,10 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.postinst
 		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-server.install
 	fi
-	[[ "${BUILD_PROFILES}" =~ cross ]] &&
+	if [[ "${BUILD_PROFILES}" =~ cross ]]; then
 		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-cross.patch"
+		sed -i 's/\(xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
+	fi
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
