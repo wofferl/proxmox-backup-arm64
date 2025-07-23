@@ -256,7 +256,7 @@ fi
 [ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
 
 echo "Download packages list from proxmox devel repository"
-PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/bookworm/main/binary-amd64/Packages.gz)
+PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/trixie/main/binary-amd64/Packages.gz)
 echo "Download packages list from pbs-no-subscription repository"
 PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/bookworm/pbs-no-subscription/binary-amd64/Packages.gz)
 
@@ -301,7 +301,7 @@ EOF
 
 cd "${SOURCES}"
 if [ "${BUILD_PACKAGE}" != "client" ]; then
-	PROXMOX_BIOME_VER="2.0.6-1~bpo12+1"
+	PROXMOX_BIOME_VER="2.0.6-1"
 	PROXMOX_BIOME_GIT="ddb28c67cad102cc8bbecbbaa1edc5d101c7f782" # 2.0.6-1
 	PROXMOX_BIOME_DOWNLOAD_VER=("=" "$PROXMOX_BIOME_VER")
 	if [ "${HOST_ARCH}" = "amd64" ]; then
@@ -316,8 +316,6 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 		fi
 		cd proxmox-biome
 		set_package_info
-		# set backport version
-		sed -i '1s/([0-9.-]\+)/('${PROXMOX_BIOME_VER}')/; 1s/trixie/bookworm-backports/' debian/changelog
 		${SUDO} apt -y build-dep .
 		env -i HOME=${HOME} TERM=${TERM} bash -c 'source /etc/profile; source ~/.cargo/env; env; make deb'
 		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb "${PACKAGES_BUILD}"
