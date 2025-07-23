@@ -17,9 +17,10 @@ on:
         - 4.x
       arch:
         type: choice
-        description: Arch
+        description: Target Arch
         options:
-        - arm64
+        - arm64-native
+        - arm64-cross
         - amd64
       baseimage:
         type: choice
@@ -27,11 +28,14 @@ on:
         options:
         - debian:trixie-slim
         - debian:bookworm-slim
+        - ubuntu:noble
         - ubuntu:jammy
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  build-arm64-native:
+    if: ${{ github.event.inputs.arch == 'arm64-native' }}
+    runs-on: ubuntu-24.04-arm
+
     steps:
     - name: Free up disk space
       run: |
@@ -40,7 +44,6 @@ jobs:
         sudo rm -rf /usr/local/lib/node_modules
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /usr/share/swift
-        df -h
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -53,23 +56,80 @@ jobs:
 
     - name: Build packages
       run: |
-        [ "${{ github.event.inputs.package }}" = "client" ] && package="client"
-        if [ "${{ github.event.inputs.arch }}" = "arm64" ]; then
-          if [ "${RUNNER_DEBUG}" = "1" ]; then
-            docker buildx build -o packages --build-arg buildoptions="cross github debug ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
-          else
-            docker buildx build -o packages --build-arg buildoptions="cross github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
-          fi
-        else
-          if [ "${RUNNER_DEBUG}" = "1" ]; then
-            docker buildx build -o packages --build-arg buildoptions="github debug ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
-          else
-            docker buildx build -o packages --build-arg buildoptions="github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
-          fi
-        fi
+        options=""
+        [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
+        [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
+        docker buildx build -o packages --build-arg buildoptions="github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 .
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
       run: |
-        df -h
-        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/${{ github.event.inputs.arch }} -f .github/Dockerfile.installtest .
+        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 -f .github/Dockerfile.installtest .
+
+  build-arm64-cross:
+    if: ${{ github.event.inputs.arch == 'arm64-cross' }}
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Free up disk space
+      run: |
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/lib/node_modules
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/share/swift
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build packages
+      run: |
+        options=""
+        [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
+        [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
+        docker buildx build -o packages --build-arg buildoptions="cross github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+        echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
+        echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
+    - name: Test packages
+      run: |
+        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 -f .github/Dockerfile.installtest .
+
+  build-amd64:
+    if: ${{ github.event.inputs.arch == 'amd64' }}
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Free up disk space
+      run: |
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/lib/node_modules
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/share/swift
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build packages
+      run: |
+        options=""
+        [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
+        [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
+        docker buildx build -o packages --build-arg buildoptions="github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
+        echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
+        echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
+    - name: Test packages
+      run: |
+        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.installtest .
