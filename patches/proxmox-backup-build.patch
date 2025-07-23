@@ -28,7 +28,7 @@ index a439c97b..a95ae483 100644
  [profile.release]
  debug=true
 diff --git a/Makefile b/Makefile
-index d7470146..e5fc29ca 100644
+index 2012ae5d..51fbd408 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,5 +1,4 @@
@@ -37,33 +37,59 @@ index d7470146..e5fc29ca 100644
  include defines.mk
  
  PACKAGE := proxmox-backup
+@@ -42,7 +41,7 @@ SUBCRATES != cargo metadata --no-deps --format-version=1 \
+ STATIC_TARGET_DIR := target/static-build
+ ifeq ($(BUILD_MODE), release)
+ CARGO_BUILD_ARGS += --release --target $(DEB_HOST_RUST_TYPE)
+-CARGO_STATIC_CONFIG ?= --config debian/cargo_home/config.static.toml
++CARGO_STATIC_CONFIG ?= --config .cargo/config.static.toml
+ CARGO_STATIC_BUILD_ARGS += $(CARGO_STATIC_CONFIG) --release --target $(DEB_HOST_RUST_TYPE) --target-dir $(STATIC_TARGET_DIR)
+ COMPILEDIR := target/$(DEB_HOST_RUST_TYPE)/release
+ STATIC_COMPILEDIR := $(STATIC_TARGET_DIR)/$(DEB_HOST_RUST_TYPE)/release
 diff --git a/debian/rules b/debian/rules
-index be7c93c2..df9e8e27 100755
+index ab48cce1..723b714f 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -4,12 +4,9 @@
+@@ -4,10 +4,9 @@
  DH_VERBOSE = 1
  
  include /usr/share/dpkg/pkg-info.mk
 -include /usr/share/rustc/architecture.mk
  
  export BUILD_MODE=release
+-export CARGO_STATIC_CONFIG=--config debian/cargo_home/config.static.toml
++export CARGO_STATIC_CONFIG=--config .cargo/config.static.toml
+ 
+ # sync with Makefile!
+ STATIC_TARGET_DIR := target/static-build
+@@ -18,11 +17,9 @@ STATIC_COMPILEDIR := $(STATIC_TARGET_DIR)/$(DEB_HOST_RUST_TYPE)/debug
+ endif
+ # end sync with Makefile!
  
 -export CARGO=/usr/share/cargo/bin/cargo
 -
  export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
  export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
- export CARGO_HOME = $(CURDIR)/debian/cargo_home
-@@ -27,12 +24,6 @@ endif
+-export CARGO_HOME = $(CURDIR)/debian/cargo_home
++export CARGO_HOME = $(CURDIR)/.cargo
+ 
+ export DEB_CARGO_CRATE=proxmox-backup_$(DEB_VERSION_UPSTREAM)
+ export DEB_CARGO_PACKAGE=proxmox-backup
+@@ -37,15 +34,9 @@ endif
  override_dh_auto_configure:
  	@perl -ne 'if (/^version\s*=\s*"(\d+(?:\.\d+)+)"/) { my $$v_cargo = $$1; my $$v_deb = "$(DEB_VERSION_UPSTREAM)"; \
  	    die "ERROR: d/changelog <-> Cargo.toml version mismatch: $$v_cargo != $$v_deb\n" if $$v_cargo ne $$v_deb; exit(0); }' Cargo.toml
 -	$(CARGO) prepare-debian $(CURDIR)/debian/cargo_registry --link-from-system
+ 	# add a new config for static building, sync with Makefile!
+-	cp debian/cargo_home/config.toml debian/cargo_home/config.static.toml
+-	sed -ri -e 's!^(rustflags = .*)\]$$!\1, "-C", "target-feature=+crt-static", "-L", "$(STATIC_COMPILEDIR)/deps-stubs/"\]!' debian/cargo_home/config.static.toml
 -	# `cargo build` and `cargo install` have different config precedence, symlink
 -	# the wrapper config into a place where `build` picks it up as well..
 -	# https://doc.rust-lang.org/cargo/commands/cargo-install.html#configuration-discovery
 -	mkdir -p .cargo
 -	ln -s $(CARGO_HOME)/config.toml $(CURDIR)/.cargo/config.toml
++	cp $(CARGO_HOME)/config.toml $(CARGO_HOME)/config.static.toml
++	echo '[build]\nrustflags = ["-C", "target-feature=+crt-static"]' >> $(CARGO_HOME)/config.static.toml
  	dh_auto_configure
  
  override_dh_auto_build:
