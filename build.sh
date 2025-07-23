@@ -265,7 +265,6 @@ EXTJS_VER=(">=" "7~")
 PBS_I18N_VER=(">=" "0")
 PROXMOX_ACME_VER=(">=" "0")
 PROXMOX_WIDGETTOOLKIT_VER=(">=" "3.5.2")
-PVE_ESLINT_VER=(">=" "7.18.0-1")
 QRCODEJS_VER=(">=" "1.20201119")
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	download_package pbs pbs-i18n "${PBS_I18N_VER[@]}" "${PACKAGES}" >/dev/null
@@ -277,11 +276,6 @@ fi
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	packages_install=(
 		"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
-		"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
-	)
-else
-	packages_install=(
-		"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
 	)
 fi
 
