@@ -1,5 +1,5 @@
 name: Release
-run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian/Trixie (crossbuild/arm64)
+run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian/Trixie (arm64)
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
   build:
     permissions:
       contents: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04-arm
     steps:
     - name: Free up disk space
       run: |
@@ -40,11 +40,11 @@ jobs:
     - name: Build packages
       run: |
         baseimage="debian:trixie-slim"
-        echo "DEB_DIST=Debian/Bookworm" >> $GITHUB_ENV
+        echo "DEB_DIST=Debian/Trixie" >> $GITHUB_ENV
         if [ "${RUNNER_DEBUG}" = "1" ]; then
-          docker buildx build -o packages --build-arg buildoptions="cross github debug" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+          docker buildx build -o packages --build-arg buildoptions="github debug" --build-arg baseimage=${baseimage} --platform linux/arm64 -f Dockerfile .
         else
-          docker buildx build -o packages --build-arg buildoptions="cross github" --build-arg baseimage=${baseimage} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+          docker buildx build -o packages --build-arg buildoptions="github" --build-arg baseimage=${baseimage} --platform linux/arm64 -f Dockerfile .
         fi
         sudo apt -y install apt-listchanges
         apt-listchanges --latest=1 -f text packages/proxmox-backup-server_*.deb | sed -e '/^\(apt-listchanges.*\|[-]\+\)$/d' >> .github/PREBUILD.md
