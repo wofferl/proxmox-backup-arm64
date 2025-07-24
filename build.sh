@@ -290,11 +290,13 @@ EOF
 
 cd "${SOURCES}"
 if [ "${BUILD_PACKAGE}" != "client" ]; then
-	PROXMOX_BIOME_VER="2.0.6-1"
+	PROXMOX_BIOME_VER="2.0.6-2"
 	PROXMOX_BIOME_GIT="ddb28c67cad102cc8bbecbbaa1edc5d101c7f782" # 2.0.6-1
 	PROXMOX_BIOME_DOWNLOAD_VER=("=" "$PROXMOX_BIOME_VER")
 	if [ "${HOST_ARCH}" = "amd64" ]; then
+		set +e
 		download_package devel proxmox-biome "${PROXMOX_BIOME_DOWNLOAD_VER[@]}" "${PACKAGES_BUILD}"
+		set -e
 	fi
 	if [ ! -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
 		git_clone_or_fetch https://git.proxmox.com/git/proxmox-biome.git
