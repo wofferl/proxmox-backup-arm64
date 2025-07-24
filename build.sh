@@ -257,8 +257,8 @@ fi
 
 echo "Download packages list from proxmox devel repository"
 PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/trixie/main/binary-amd64/Packages.gz)
-echo "Download packages list from pbs-no-subscription repository"
-PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/bookworm/pbs-no-subscription/binary-amd64/Packages.gz)
+echo "Download packages list from pbs-test repository"
+PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/trixie/pbs-test/binary-amd64/Packages.gz)
 
 echo "Download dependencies"
 EXTJS_VER=(">=" "7~")
