@@ -291,7 +291,7 @@ EOF
 cd "${SOURCES}"
 if [ "${BUILD_PACKAGE}" != "client" ]; then
 	PROXMOX_BIOME_VER="2.0.6-2"
-	PROXMOX_BIOME_GIT="ddb28c67cad102cc8bbecbbaa1edc5d101c7f782" # 2.0.6-1
+	PROXMOX_BIOME_GIT="3c6f4292f32800a1e5d73d8940e5ae6f36af0c40" # 2.0.6-2
 	PROXMOX_BIOME_DOWNLOAD_VER=("=" "$PROXMOX_BIOME_VER")
 	if [ "${HOST_ARCH}" = "amd64" ]; then
 		set +e
