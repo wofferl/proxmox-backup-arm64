@@ -22,6 +22,7 @@ on:
         - arm64-native
         - arm64-cross
         - amd64
+        - all
       baseimage:
         type: choice
         description: Base Image
@@ -33,7 +34,7 @@ on:
 
 jobs:
   build-arm64-native:
-    if: ${{ github.event.inputs.arch == 'arm64-native' }}
+    if: ${{ github.event.inputs.arch == 'arm64-native' || github.event.inputs.arch == 'all' }}
     runs-on: ubuntu-24.04-arm
 
     steps:
@@ -59,7 +60,7 @@ jobs:
         options=""
         [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
         [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
-        docker buildx build -o packages --build-arg buildoptions="github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 .
+        docker buildx build -o packages --build-arg buildoptions="github ${options}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 .
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
@@ -67,7 +68,7 @@ jobs:
         docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 -f .github/Dockerfile.installtest .
 
   build-arm64-cross:
-    if: ${{ github.event.inputs.arch == 'arm64-cross' }}
+    if: ${{ github.event.inputs.arch == 'arm64-cross' || github.event.inputs.arch == 'all' }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -93,7 +94,7 @@ jobs:
         options=""
         [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
         [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
-        docker buildx build -o packages --build-arg buildoptions="cross github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+        docker buildx build -o packages --build-arg buildoptions="cross github ${options}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
@@ -101,7 +102,7 @@ jobs:
         docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 -f .github/Dockerfile.installtest .
 
   build-amd64:
-    if: ${{ github.event.inputs.arch == 'amd64' }}
+    if: ${{ github.event.inputs.arch == 'amd64' || github.event.inputs.arch == 'all' }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -127,7 +128,7 @@ jobs:
         options=""
         [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
         [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
-        docker buildx build -o packages --build-arg buildoptions="github ${package}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
+        docker buildx build -o packages --build-arg buildoptions="github ${options}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
     - name: Test packages
