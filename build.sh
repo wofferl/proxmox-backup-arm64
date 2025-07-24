@@ -262,10 +262,10 @@ PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/trixie
 
 echo "Download dependencies"
 EXTJS_VER=(">=" "7~")
-PBS_I18N_VER=(">=" "0")
-PROXMOX_ACME_VER=(">=" "0")
-PROXMOX_WIDGETTOOLKIT_VER=(">=" "3.5.2")
-QRCODEJS_VER=(">=" "1.20201119")
+PBS_I18N_VER=(">=" "3.5.0")
+PROXMOX_ACME_VER=(">=" "1.7.0")
+PROXMOX_WIDGETTOOLKIT_VER=(">=" "5.0.2")
+QRCODEJS_VER=(">=" "1.20230525")
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	download_package pbs pbs-i18n "${PBS_I18N_VER[@]}" "${PACKAGES}" >/dev/null
 	download_package pbs libjs-extjs "${EXTJS_VER[@]}" "${PACKAGES}" >/dev/null
