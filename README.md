@@ -13,18 +13,14 @@ At least 4 GB are required for compiling. On devices with low memory, SWAP must 
 You can find unoffical debian packages for **Bookworm** or **Trixie** that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
 
 With the script you can also download all files of the latest **Debian/Bookworm** release at once
-```
-./build.sh download
-```
-or download and install automatically
-```
-./build.sh install
-```
 
-or of a specific version
-```
-./build.sh download=4.0.0-1
-```
+**Download and install**
+
+ ```./build.sh install``` or a specific version ```./build.sh install=4.0.8-1```
+
+**Download only**
+
+```./build.sh download``` or a specific verision ```./build.sh download=4.0.8-1```
 
 ## Build manually
 ### Install build essentials and dependencies
