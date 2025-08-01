@@ -5,19 +5,15 @@ At least 4 GB are required for compiling. On devices with low memory, SWAP must 
 ## Download pre-built packages
 You can find unoffical debian packages for bookworm that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
 
-With the script you can also download all files of the latest release at once
-```
-./build.sh download
-```
-or download and install automatically
-```
-./build.sh install
-```
+With the script you can also download all files of the latest **Debian/Bookworm** release at once
 
-or of a specific version
-```
-./build.sh download=3.2.6-1
-```
+**Download and install**
+
+ ```./build.sh install``` or a specific version ```./build.sh install=3.4.3-1```
+
+**Download only**
+
+```./build.sh download``` or a specific verision ```./build.sh download=3.4.3-1```
 
 ## Build manually
 ### Install build essentials and dependencies

@@ -209,8 +209,12 @@ while [ "$#" -ge 1 ]; do
 		export DEB_HOST_RUST_TYPE=aarch64-unknown-linux-gnu
 		;;
 
-	install)
-		download_release
+	install*)
+		if [[ "$1" =~ install=[0-9.-]+ ]]; then
+			download_release tags/${1/*=/}
+		else
+			download_release
+		fi
 		install_server
 		exit 0
 		;;
