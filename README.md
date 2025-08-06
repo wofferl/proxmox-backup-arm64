@@ -9,11 +9,15 @@ With the script you can also download all files of the latest **Debian/Bookworm*
 
 **Download and install**
 
- ```./build.sh install``` or a specific version ```./build.sh install=3.4.3-1```
+```
+./build.sh install=3.4.4-1
+```
 
 **Download only**
 
-```./build.sh download``` or a specific verision ```./build.sh download=3.4.3-1```
+```
+./build.sh download=3.4.4-1
+```
 
 ## Build manually
 ### Install build essentials and dependencies
