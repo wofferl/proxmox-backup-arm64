@@ -139,7 +139,7 @@ function set_package_info() {
 
 file_list=()
 function download_release() {
-	version=${1:-latest}
+	version=${1}
 	release_url="https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/${version}"
 	echo "Downloading ${version} released files to "${PACKAGES}
 	for download_url in $(curl -sSf ${release_url} | sed -n '/browser_download_url/ {/static\|dbgsym/!s/.*\(https[^"]*\)"/\1/p}'); do
@@ -213,7 +213,8 @@ while [ "$#" -ge 1 ]; do
 		if [[ "$1" =~ install=[0-9.-]+ ]]; then
 			download_release tags/${1/*=/}
 		else
-			download_release
+			echo "usage $0 install=VERSION"
+			exit 1
 		fi
 		install_server
 		exit 0
@@ -223,7 +224,8 @@ while [ "$#" -ge 1 ]; do
 		if [[ "$1" =~ download=[0-9.-]+ ]]; then
 			download_release tags/${1/*=/}
 		else
-			download_release
+			echo "usage $0 download=VERSION"
+			exit 1
 		fi
 		exit 0
 		;;
@@ -243,7 +245,7 @@ while [ "$#" -ge 1 ]; do
 		set -x
 		;;
 	*)
-		echo "usage $0 [client] [nocheck] [debug] [download]"
+		echo "usage $0 [client] [nocheck] [debug] [download=VERSION] [install=VERSION]"
 		exit 1
 		;;
 	esac
@@ -281,11 +283,6 @@ fi
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	packages_install=(
 		"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
-		"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
-	)
-else
-	packages_install=(
-		"$(download_package devel pve-eslint "${PVE_ESLINT_VER[@]}" "${PACKAGES_BUILD}")"
 	)
 fi
 # download patched librust-h2 version
@@ -335,8 +332,8 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="3.4.3-1"
-PROXMOX_BACKUP_GIT="d84d10125d5de3653c3de2f0f31af5368bc09c35"
+PROXMOX_BACKUP_VER="3.4.4-1"
+PROXMOX_BACKUP_GIT="8ac8330818bc5609290f570cd91eaa85fce73d3b"
 PROXMOX_GIT="43419da4e397aeb0f241d2fcb501cfe9ebeaed70"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 PXAR_GIT="16773abdda5eb260216e3ed021309cfa32416b38"         # 0.12.1-1
@@ -355,7 +352,7 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
 	sed -i 's/\(patchelf\|xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
-	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|pve-eslint\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
+	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
 	# Add missing proxmox-shared-cache in 3.2.8-1
 	sed -i '/^proxmox-shared-memory.*path/aproxmox-shared-cache = { path = "../proxmox/proxmox-shared-cache" }' proxmox-backup/Cargo.toml

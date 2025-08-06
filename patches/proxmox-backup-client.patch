@@ -45,7 +45,7 @@ index 569c7e79..e3c82e26 100644
  DSC = rust-$(PACKAGE)_$(DEB_VERSION).dsc
  
 diff --git a/debian/control b/debian/control
-index bd22d453..f9b5180c 100644
+index 13b22529..f9b5180c 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -20,7 +20,7 @@ Build-Depends: bash-completion,
@@ -57,7 +57,7 @@ index bd22d453..f9b5180c 100644
                 rsync,
                 texlive-fonts-extra <!nodoc>,
                 texlive-fonts-recommended <!nodoc>,
-@@ -34,35 +34,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -34,36 +34,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
@@ -84,6 +84,7 @@ index bd22d453..f9b5180c 100644
 -         ${shlibs:Depends},
 -Recommends: ifupdown2,
 -            proxmox-mail-forward,
+-            proxmox-network-interface-pinning,
 -            proxmox-offline-mirror-helper,
 -            zfsutils-linux,
 -Description: Proxmox Backup Server daemon with tools and GUI
@@ -93,7 +94,7 @@ index bd22d453..f9b5180c 100644
  Package: proxmox-backup-client
  Architecture: any
  Depends: qrencode, ${misc:Depends}, ${shlibs:Depends},
-@@ -77,21 +48,3 @@ Conflicts: proxmox-backup-client,
+@@ -78,21 +48,3 @@ Conflicts: proxmox-backup-client,
  Description: Proxmox Backup Client tools (statically linked)
   This package contains the Proxmox Backup client, which provides a
   simple command line tool to create and restore backups.
