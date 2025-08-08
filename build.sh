@@ -288,7 +288,7 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cat <<EOF >rust-toolchain.toml
 [toolchain]
-channel="stable"
+channel="1.88.0"
 targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host/ { print $2 }')}" ]
 EOF
 
@@ -326,9 +326,9 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.0.11-4"
-PROXMOX_BACKUP_GIT="2486866bbbba692385d4121565fcb86372a08a92"
-PROXMOX_GIT="0232b0162c30efbf00dd6c0a488114ffb487408b"
+PROXMOX_BACKUP_VER="4.0.12-1"
+PROXMOX_BACKUP_GIT="e17239734487b54111a92c88703727c0ccc98c3b"
+PROXMOX_GIT="7de539b26cbca1bdc2a24f3591e59469d95746e1"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="993c66fcb8819770f279cb9fb4d13f58f367606c"         # 1.0.0-1
 PROXMOX_FUSE_GIT="87dbf9bfef9169286263bccffaae3206635ca108" # 1.0.0-1
