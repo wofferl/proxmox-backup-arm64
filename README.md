@@ -165,12 +165,18 @@ So you need to a 4k kernel on the RPi5 for Proxmox Backup Server to work.
 
 ### Raspberry Pi OS `apt update && apt upgrade` failing (https://github.com/wofferl/proxmox-backup-arm64/issues/60)
 
-As Proxmos source repository does not work for ARM architecture anyway in order to keep underlying Raspberry Pi OS
+As Proxmox source repository does not work for ARM architecture anyway in order to keep underlying Raspberry Pi OS
 up to date by running `apt update && apt upgrade` it is required to comment it out from apt sources.
 
 ```
-sudo sed -i '' 's/^\([^#]\)/#\1/g' /etc/apt/sources.list.d/pbs-enterprise.list
-
-cat /etc/apt/sources.list.d/pbs-enterprise.list
-# deb https://enterprise.proxmox.com/debian/pbs bookworm pbs-enterprise
+sudo sed -i 's#^Enabled:.*#Enabled: false#g' /etc/apt/sources.list.d/pbs-enterprise.sources
+```
+/etc/apt/sources.list.d/pbs-enterprise.sources
+```
+Types: deb
+URIs: https://enterprise.proxmox.com/debian/pbs
+Suites: trixie
+Components: pbs-enterprise
+Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+Enabled: false
 ```
