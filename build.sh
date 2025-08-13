@@ -332,9 +332,9 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="3.4.5-1"
-PROXMOX_BACKUP_GIT="5327a402a45b2fa26a2a955f31635bb200d0085d"
-PROXMOX_GIT="43419da4e397aeb0f241d2fcb501cfe9ebeaed70"
+PROXMOX_BACKUP_VER="3.4.6-1"
+PROXMOX_BACKUP_GIT="f37354cea29f4e563f031ffcefce95bd244f66e1"
+PROXMOX_GIT="9a93f5d340f97408ed01ef4ad61c28c17333f85a"
 PATHPATTERNS_GIT="281894a5b66099e919d167cd5f0644fff6aca234" # 0.3.0-1
 PXAR_GIT="16773abdda5eb260216e3ed021309cfa32416b38"         # 0.12.1-1
 PROMXOX_FUSE_GIT="8d57fb64f044ea3dcfdef77ed5f1888efdab0708" # 0.1.4
@@ -354,6 +354,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i 's/\(patchelf\|xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
+	# Add missing proxmox-network-api in 3.4.6-1
+	sed -i '/patch.crates-io/aproxmox-network-api = { path = "../proxmox/proxmox-network-api" }' proxmox-backup/Cargo.toml
 	# Add missing proxmox-shared-cache in 3.2.8-1
 	sed -i '/^proxmox-shared-memory.*path/aproxmox-shared-cache = { path = "../proxmox/proxmox-shared-cache" }' proxmox-backup/Cargo.toml
 	# use patched h2 version
