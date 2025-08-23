@@ -29,8 +29,22 @@ index 0489d4a..8fccb99 100644
      progname = argv[0];
  
 -    while ((c = (char)getopt(argc, argv, "b:e:d:n:f:t:jh")) != -1) {
-+    while ((getopt(argc, argv, "b:e:d:n:f:t:jh")) != -1) {
-+	c = (char) opt;
++    while ((opt = getopt(argc, argv, "b:e:d:n:f:t:jh")) != -1) {
++        c = (char) opt;
          switch (c) {
          case 'b':
              begin = arg_to_uint64(optarg);
+diff --git a/debian/changelog b/debian/changelog
+index 9cb9914..3575f4f 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,3 +1,9 @@
++proxmox-mini-journalreader (1.5-1) bookworm; urgency=medium
++
++  * fix ERROR: invalid option or missing argument
++
++ -- Wolfgang <github@proxmox.com>  Sat, 23 Aug 2025 08:46:01 +0200
++
+ proxmox-mini-journalreader (1.5) bookworm; urgency=medium
+ 
+   * install executable as /usr/libexec/proxmox-mini-journalreader with a
