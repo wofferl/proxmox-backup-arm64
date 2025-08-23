@@ -43,7 +43,7 @@ index 9cb9914..3575f4f 100644
 +
 +  * fix ERROR: invalid option or missing argument
 +
-+ -- Wolfgang <github@proxmox.com>  Sat, 23 Aug 2025 08:46:01 +0200
++ -- Wolfgang <github@linux-dude.de>  Sat, 23 Aug 2025 08:46:01 +0200
 +
  proxmox-mini-journalreader (1.5) bookworm; urgency=medium
  
