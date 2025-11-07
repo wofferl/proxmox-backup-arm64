@@ -326,9 +326,9 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.0.18-1"
-PROXMOX_BACKUP_GIT="2586548f25af89b6bce80a2886bd0e7748000ea2"
-PROXMOX_GIT="de54ac7f42817a66a9724e393d470a5730de5e72"
+PROXMOX_BACKUP_VER="4.0.19-1"
+PROXMOX_BACKUP_GIT="967883c2c280fedb88e0eb4ec43431594da098c3"
+PROXMOX_GIT="07aad061ee24502b2bdb4695c1e594b00818d90f"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="993c66fcb8819770f279cb9fb4d13f58f367606c"         # 1.0.0-1
 PROXMOX_FUSE_GIT="87dbf9bfef9169286263bccffaae3206635ca108" # 1.0.0-1
@@ -362,6 +362,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		sed -i 's/\(xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
 	fi
 	cd proxmox-backup/
+	# fix compile error with pxar
+	git revert --no-edit 6174f9b3c7d1cf366de230798d4bf9e271235dbe
 	set_package_info
 	cargo vendor
 	${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
