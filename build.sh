@@ -361,9 +361,9 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-cross.patch"
 		sed -i 's/\(xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
 	fi
-	cd proxmox-backup/
 	# fix compile error with pxar
-	git revert --no-edit 6174f9b3c7d1cf366de230798d4bf9e271235dbe
+	patch -p1 -R -d proxmox-backup/ < "${PATCHES}/proxmox-backup-compile-fix.patch"
+	cd proxmox-backup/
 	set_package_info
 	cargo vendor
 	${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
