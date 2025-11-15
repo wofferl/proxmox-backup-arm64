@@ -387,10 +387,10 @@ fi
 
 [ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
-PVE_XTERMJS_VER="5.5.0-2"
-PVE_XTERMJS_GIT="c69379f49db91429eb01ea56b47f2a2832fec8e7"
+PVE_XTERMJS_VER="5.5.0-3"
+PVE_XTERMJS_GIT="1c92330cccb21fb65abcff6e35848b712592dccb"
 PROXMOX_XTERMJS_GIT="deb32a6c4a21bea0d72059de0835fde504296bf0"
-PROXMOX_TERMPROXY_VER="2.0.2"
+PROXMOX_TERMPROXY_VER="2.0.3"
 if [ ! -e "${PACKAGES}/proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
 	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
