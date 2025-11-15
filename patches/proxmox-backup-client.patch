@@ -105,10 +105,10 @@ index 51fbd408..d1546dd4 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index 46789349..e63d9d12 100644
+index e9c6cbd7..f57ac84c 100644
 --- a/debian/control
 +++ b/debian/control
-@@ -19,7 +19,7 @@ Build-Depends: bash-completion,
+@@ -19,7 +19,7 @@ Build-Depends: debhelper (>= 12~),
                 proxmox-widget-toolkit-dev:all <!nodoc>,
                 python3-docutils,
                 python3-pygments,
@@ -117,7 +117,7 @@ index 46789349..e63d9d12 100644
                 rsync,
                 texlive-fonts-extra <!nodoc>,
                 texlive-fonts-recommended <!nodoc>,
-@@ -33,36 +33,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -33,37 +33,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
@@ -136,6 +136,7 @@ index 46789349..e63d9d12 100644
 -         postfix | mail-transport-agent,
 -         proxmox-backup-docs,
 -         proxmox-mini-journalreader,
+-         proxmox-termproxy (>= 2.0.3),
 -         proxmox-widget-toolkit (>= 4.3.3),
 -         pve-xtermjs (>= 4.7.0-1),
 -         sg3-utils,
@@ -154,7 +155,7 @@ index 46789349..e63d9d12 100644
  Package: proxmox-backup-client
  Architecture: any
  Depends: qrencode, ${misc:Depends}, ${shlibs:Depends},
-@@ -77,21 +47,3 @@ Conflicts: proxmox-backup-client,
+@@ -78,21 +47,3 @@ Conflicts: proxmox-backup-client,
  Description: Proxmox Backup Client tools (statically linked)
   This package contains the Proxmox Backup client, which provides a
   simple command line tool to create and restore backups.

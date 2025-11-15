@@ -1,8 +1,8 @@
 diff --git a/docs/Makefile b/docs/Makefile
-index d98302ff..72af586d 100644
+index 9aac52e8..24282e83 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
-@@ -107,16 +107,16 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
+@@ -67,16 +67,16 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
  all: ${MAN1_PAGES} ${MAN5_PAGES}
  
  config/%/config.rst: ${COMPILEDIR}/docgen
@@ -23,7 +23,7 @@ index d98302ff..72af586d 100644
  
  ${MAN1_PAGES} ${MAN5_PAGES}: man-pages
  
-@@ -131,7 +131,7 @@ onlinehelpinfo:
+@@ -91,7 +91,7 @@ onlinehelpinfo:
  	@echo "Build finished. OnlineHelpInfo.js is in $(BUILDDIR)/scanrefs."
  
  api-viewer/apidata.js: ${COMPILEDIR}/docgen
@@ -33,12 +33,12 @@ index d98302ff..72af586d 100644
  api-viewer/apidoc.js: ${API_VIEWER_FILES}
  	cat ${API_VIEWER_FILES} >$@.tmp
 diff --git a/pxar-bin/tests/pxar.rs b/pxar-bin/tests/pxar.rs
-index 2da02990..0d54716d 100644
+index 2da5884a..29851db8 100644
 --- a/pxar-bin/tests/pxar.rs
 +++ b/pxar-bin/tests/pxar.rs
 @@ -17,7 +17,8 @@ fn pxar_create_and_extract() {
  
-     println!("run '{} create archive.pxar {}'", exec_path, src_dir);
+     println!("run '{exec_path} create archive.pxar {src_dir}'");
  
 -    Command::new(&exec_path)
 +    Command::new("qemu-aarch64")
@@ -48,7 +48,7 @@ index 2da02990..0d54716d 100644
          .arg(src_dir)
 @@ -26,7 +27,8 @@ fn pxar_create_and_extract() {
  
-     println!("run '{} extract archive.pxar {}'", exec_path, dest_dir);
+     println!("run '{exec_path} extract archive.pxar {dest_dir}'");
  
 -    Command::new(&exec_path)
 +    Command::new("qemu-aarch64")
@@ -56,7 +56,7 @@ index 2da02990..0d54716d 100644
          .arg("extract")
          .arg("./tests/archive.pxar")
          .arg("--target")
-@@ -96,7 +98,8 @@ fn pxar_split_archive_test() {
+@@ -93,7 +95,8 @@ fn pxar_split_archive_test() {
  
      println!("run '{exec_path} create archive.mpxar {src_dir} --payload-output archive.ppxar'");
  
@@ -66,7 +66,7 @@ index 2da02990..0d54716d 100644
          .arg("create")
          .arg("./tests/archive.mpxar")
          .arg(src_dir)
-@@ -104,7 +107,8 @@ fn pxar_split_archive_test() {
+@@ -101,7 +104,8 @@ fn pxar_split_archive_test() {
          .status()
          .unwrap_or_else(|err| panic!("Failed to invoke '{exec_path}': {err}"));
  
@@ -76,7 +76,7 @@ index 2da02990..0d54716d 100644
          .arg("list")
          .arg("./tests/archive.mpxar")
          .arg("--payload-input=./tests/archive.ppxar")
-@@ -125,7 +129,8 @@ fn pxar_split_archive_test() {
+@@ -122,7 +126,8 @@ fn pxar_split_archive_test() {
  
      println!("run '{exec_path} extract archive.mpxar {dest_dir} --payload-input archive.ppxar'");
  
