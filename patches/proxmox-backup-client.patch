@@ -105,7 +105,7 @@ index 51fbd408..d1546dd4 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index e9c6cbd7..f57ac84c 100644
+index e9017665..f57ac84c 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -19,7 +19,7 @@ Build-Depends: debhelper (>= 12~),
@@ -117,14 +117,16 @@ index e9c6cbd7..f57ac84c 100644
                 rsync,
                 texlive-fonts-extra <!nodoc>,
                 texlive-fonts-recommended <!nodoc>,
-@@ -33,37 +33,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
+@@ -33,40 +33,6 @@ Vcs-Browser: https://git.proxmox.com/?p=proxmox-backup.git;a=summary
  Homepage: https://www.proxmox.com
  Rules-Requires-Root: binary-targets
  
 -Package: proxmox-backup-server
 -Architecture: any
--Depends: fonts-font-awesome,
+-Depends: dmidecode,
+-         fonts-font-awesome,
 -         gdisk,
+-         iproute2,
 -         libjs-extjs (>= 7~),
 -         libjs-qrcodejs (>= 1.20201119),
 -         libproxmox-acme-plugins,
@@ -133,6 +135,7 @@ index e9c6cbd7..f57ac84c 100644
 -         lvm2,
 -         openssh-server,
 -         pbs-i18n,
+-         pciutils,
 -         postfix | mail-transport-agent,
 -         proxmox-backup-docs,
 -         proxmox-mini-journalreader,
@@ -155,7 +158,7 @@ index e9c6cbd7..f57ac84c 100644
  Package: proxmox-backup-client
  Architecture: any
  Depends: qrencode, ${misc:Depends}, ${shlibs:Depends},
-@@ -78,21 +47,3 @@ Conflicts: proxmox-backup-client,
+@@ -81,21 +47,3 @@ Conflicts: proxmox-backup-client,
  Description: Proxmox Backup Client tools (statically linked)
   This package contains the Proxmox Backup client, which provides a
   simple command line tool to create and restore backups.
