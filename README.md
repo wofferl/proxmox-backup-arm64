@@ -11,11 +11,11 @@ With the script you can also download all files of the latest **Debian/Trixie** 
 
 **Download and install**
 
- ```./build.sh install``` or a specific version ```./build.sh install=4.0.22-1```
+ ```./build.sh install``` or a specific version ```./build.sh install=4.1.0-1```
 
 **Download only**
 
-```./build.sh download``` or a specific verision ```./build.sh download=4.0.22-1```
+```./build.sh download``` or a specific verision ```./build.sh download=4.1.0-1```
 
 ## Build manually
 ### Install build essentials and dependencies
