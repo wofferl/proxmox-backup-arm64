@@ -1,51 +1,61 @@
 # proxmox-backup-arm64
-Script for building Proxmox Backup Server **4.x** for **Debian/Trixie**<br />
+
+Script for building Proxmox Backup Server **4.x** for **Debian/Trixie**`<br />`
 To build Proxmox Backup Server **3.x** for **Debian/Bookworm** use the stable-3 branch.
 
 At least 4 GB are required for compiling. On devices with low memory, SWAP must be used (see help section).
 
 ## Download pre-built packages
+
 You can find unoffical debian packages for **Bookworm** or **Trixie** that are created with the build.sh script and github actions at https://github.com/wofferl/proxmox-backup-arm64/releases.
 
 With the script you can also download all files of the latest **Debian/Trixie** release at once
 
 **Download and install**
 
- ```./build.sh install``` or a specific version ```./build.sh install=4.1.0-1```
+ ``./build.sh install`` or a specific version ``./build.sh install=4.1.0-1``
 
 **Download only**
 
-```./build.sh download``` or a specific verision ```./build.sh download=4.1.0-1```
+``./build.sh download`` or a specific verision ``./build.sh download=4.1.0-1``
 
 ## Build manually
+
 ### Install build essentials and dependencies
+
 ```
 apt-get install -y --no-install-recommends \
 	build-essential curl ca-certificates sudo git lintian fakeroot \
 	pkg-config libudev-dev libssl-dev libapt-pkg-dev libclang-dev \
 	libpam0g-dev zlib1g-dev
 ```
+
 ### Install ``rustup``
+
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s
 source ~/.cargo/env
 ```
 
 ### Start build script
+
 ```
 ./build.sh 
 ```
-or 
+
+or
+
 ```
 ./build.sh client (build only proxmox-backup-client package)
 ```
 
-The compilation can take several hours.<br />
+The compilation can take several hours.`<br />`
 After that you can find the finished packages in the folder packages/
 
 ## Build using docker
 
 You can build arm64 .deb packages using the provided Dockerfile and docker buildx:
+
 ```
 docker buildx build -o packages --platform linux/arm64 .
 ```
@@ -59,12 +69,15 @@ docker buildx build -o packages --build-arg buildoptions="client debug" --build-
 Once the docker build is completed, packages will be copied from the docker build image to a folder named `packages` in the root folder.
 
 ## Build using cross compiler
+
 ### Enable multi arch and install build essentials and dependencies
+
 For cross compiling you need to enable multiarch and install the needed build dependencies for the target architecture. For the tests to work qemu-user-binfmt is needed.
 
 ```
 dpkg --add-architecture arm64
 ```
+
 ```
 apt update && apt-get install -y --no-install-recommends \
                 build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
@@ -72,9 +85,11 @@ apt update && apt-get install -y --no-install-recommends \
                 libclang-dev libpam0g-dev:arm64 pkgconf:arm64 zlib1g-dev:arm64 \
                 qemu-user-binfmt 
 ```
+
 (apt:amd64 is necessary because libapt-pkg-dev:arm64 would break the dependencies without it)
 
 ### Install ``rustup`` and add target arch
+
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s
 source ~/.cargo/env
@@ -82,12 +97,15 @@ rustup target add aarch64-unknown-linux-gnu
 ```
 
 ### Start build script
+
 ```
 ./build.sh cross
 ```
 
 ## Install all needed packages
+
 ### Server
+
 ```
 sudo apt install \
   ./libjs-extjs_*_all.deb \
@@ -103,6 +121,7 @@ sudo apt install \
 ```
 
 ### Client
+
 ```
 sudo apt install \
   ./proxmox-backup-client_*_arm64.deb \
@@ -110,12 +129,15 @@ sudo apt install \
 ```
 
 ## Help section
+
 ### Debugging
+
 you can add the debug option to redirect the complete build process output also to a file (build.log)
 
 ```
 ./build.sh debug
 ```
+
 ### Console commands
 
 to see PBS users:
@@ -133,6 +155,7 @@ proxmox-backup-manager user update root@pam --password {pwd}
 more info: https://pbs.proxmox.com/docs/user-management.html
 
 ### Create SWAP (at least 4G on low memory systems like Raspberry PI)
+
 from https://askubuntu.com/questions/178712/how-to-increase-swap-space/1263160#1263160
 
 Check swap memory:
@@ -157,11 +180,17 @@ sudo sed -i "s#.*CONF_\(SWAPSIZE\|MAXSWAP\)=.*#CONF_\1=4096#" /etc/dphys-swapfil
 sudo service dphys-swapfile restart
 ```
 
-
 ### 400 Bad Request on Raspberry Pi 5 (https://github.com/wofferl/proxmox-backup-arm64/issues/40)
 
-The Raspberry Pi 5 uses a kernel with 16k page-size, which is incompatible with Proxmox Backup Server (jemalloc/Rust).
-So you need to a 4k kernel on the RPi5 for Proxmox Backup Server to work.
+To fix the 400 Bad Request error on Raspberry Pi 5:
+
+1. Edit `/boot/firmware/config.txt` on the host system
+2. Add the following line at the end: `kernel=kernel8.img`
+3. Reboot the Raspberry Pi
+
+This switches to the 4k page-size kernel, which is compatible with Proxmox Backup Server.
+
+**Technical explanation:** The Raspberry Pi 5's default kernel uses 16k page-size, which is incompatible with jemalloc/Rust used by Proxmox Backup Server.
 
 ### Raspberry Pi OS `apt update && apt upgrade` failing (https://github.com/wofferl/proxmox-backup-arm64/issues/60)
 
@@ -171,7 +200,9 @@ up to date by running `apt update && apt upgrade` it is required to comment it o
 ```
 sudo sed -i 's#^Enabled:.*#Enabled: false#g' /etc/apt/sources.list.d/pbs-enterprise.sources
 ```
+
 /etc/apt/sources.list.d/pbs-enterprise.sources
+
 ```
 Types: deb
 URIs: https://enterprise.proxmox.com/debian/pbs
