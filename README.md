@@ -11,11 +11,11 @@ With the script you can also download all files of the latest **Debian/Trixie** 
 
 **Download and install**
 
- ```./build.sh install``` or a specific version ```./build.sh install=4.1.0-1```
+ `./build.sh install` or a specific version `./build.sh install=4.1.0-1`
 
 **Download only**
 
-```./build.sh download``` or a specific verision ```./build.sh download=4.1.0-1```
+`./build.sh download` or a specific verision `./build.sh download=4.1.0-1`
 
 ## Build manually
 ### Install build essentials and dependencies
@@ -35,7 +35,7 @@ source ~/.cargo/env
 ```
 ./build.sh 
 ```
-or 
+or
 ```
 ./build.sh client (build only proxmox-backup-client package)
 ```
@@ -44,8 +44,8 @@ The compilation can take several hours.<br />
 After that you can find the finished packages in the folder packages/
 
 ## Build using docker
-
 You can build arm64 .deb packages using the provided Dockerfile and docker buildx:
+
 ```
 docker buildx build -o packages --platform linux/arm64 .
 ```
@@ -65,6 +65,7 @@ For cross compiling you need to enable multiarch and install the needed build de
 ```
 dpkg --add-architecture arm64
 ```
+
 ```
 apt update && apt-get install -y --no-install-recommends \
                 build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
@@ -116,6 +117,7 @@ you can add the debug option to redirect the complete build process output also 
 ```
 ./build.sh debug
 ```
+
 ### Console commands
 
 to see PBS users:
@@ -157,11 +159,17 @@ sudo sed -i "s#.*CONF_\(SWAPSIZE\|MAXSWAP\)=.*#CONF_\1=4096#" /etc/dphys-swapfil
 sudo service dphys-swapfile restart
 ```
 
-
 ### 400 Bad Request on Raspberry Pi 5 (https://github.com/wofferl/proxmox-backup-arm64/issues/40)
 
-The Raspberry Pi 5 uses a kernel with 16k page-size, which is incompatible with Proxmox Backup Server (jemalloc/Rust).
-So you need to a 4k kernel on the RPi5 for Proxmox Backup Server to work.
+To fix the 400 Bad Request error on Raspberry Pi 5:
+
+1. Edit `/boot/firmware/config.txt` on the host system
+2. Add the following line at the end: `kernel=kernel8.img`
+3. Reboot the Raspberry Pi
+
+This switches to the 4k page-size kernel, which is compatible with Proxmox Backup Server.
+
+**Technical explanation:** The Raspberry Pi 5's default kernel uses 16k page-size, which is incompatible with jemalloc/Rust used by Proxmox Backup Server.
 
 ### Raspberry Pi OS `apt update && apt upgrade` failing (https://github.com/wofferl/proxmox-backup-arm64/issues/60)
 
@@ -171,7 +179,9 @@ up to date by running `apt update && apt upgrade` it is required to comment it o
 ```
 sudo sed -i 's#^Enabled:.*#Enabled: false#g' /etc/apt/sources.list.d/pbs-enterprise.sources
 ```
+
 /etc/apt/sources.list.d/pbs-enterprise.sources
+
 ```
 Types: deb
 URIs: https://enterprise.proxmox.com/debian/pbs
