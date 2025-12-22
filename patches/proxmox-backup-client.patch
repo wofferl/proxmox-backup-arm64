@@ -105,7 +105,7 @@ index 51fbd408..d1546dd4 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index e9017665..f57ac84c 100644
+index 29ce3576..f57ac84c 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -19,7 +19,7 @@ Build-Depends: debhelper (>= 12~),
@@ -140,7 +140,7 @@ index e9017665..f57ac84c 100644
 -         proxmox-backup-docs,
 -         proxmox-mini-journalreader,
 -         proxmox-termproxy (>= 2.0.3),
--         proxmox-widget-toolkit (>= 4.3.3),
+-         proxmox-widget-toolkit (>= 5.1.1),
 -         pve-xtermjs (>= 4.7.0-1),
 -         sg3-utils,
 -         smartmontools,

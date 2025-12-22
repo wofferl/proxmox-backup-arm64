@@ -326,9 +326,9 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.1.0-1"
-PROXMOX_BACKUP_GIT="373da3fa4e2bf15af4057736586eb62df4a037a7"
-PROXMOX_GIT="a9b9cc30be00ab755dd6053b7d55e6a42f20bd06"
+PROXMOX_BACKUP_VER="4.1.1-1"
+PROXMOX_BACKUP_GIT="c0b4e5998232abc4691b06915dcf082ba9d47d5c"
+PROXMOX_GIT="1ed1c4244f68ac9f1e0d98cb1c9be47ec3a8b492"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="993c66fcb8819770f279cb9fb4d13f58f367606c"         # 1.0.0-1
 PROXMOX_FUSE_GIT="87dbf9bfef9169286263bccffaae3206635ca108" # 1.0.0-1
@@ -361,8 +361,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-cross.patch"
 		sed -i 's/\(xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
 	fi
-	# fix compile error with pxar
-	patch -p1 -R -d proxmox-backup/ < "${PATCHES}/proxmox-backup-compile-fix.patch"
 	cd proxmox-backup/
 	set_package_info
 	cargo vendor
