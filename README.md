@@ -169,7 +169,7 @@ To fix the 400 Bad Request error on Raspberry Pi 5:
 
 This switches to the 4k page-size kernel, which is compatible with Proxmox Backup Server.
 
-**Technical explanation:** The Raspberry Pi 5's default kernel uses 16k page-size, which is incompatible with jemalloc/Rust used by Proxmox Backup Server.
+**Technical explanation:** The Raspberry Pi 5's default kernel uses 16k page-size, which is incompatible with Proxmox Backup Server.
 
 ### Raspberry Pi OS `apt update && apt upgrade` failing (https://github.com/wofferl/proxmox-backup-arm64/issues/60)
 
