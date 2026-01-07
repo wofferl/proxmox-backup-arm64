@@ -162,7 +162,7 @@ sudo service dphys-swapfile restart
 
 ### 400 Bad Request on Raspberry Pi 5 (https://github.com/wofferl/proxmox-backup-arm64/issues/40)
 
-The Raspberry Pi 5 uses a kernel with 16k page-size, which is incompatible with Proxmox Backup Server (jemalloc/Rust).
+The Raspberry Pi 5 uses a kernel with 16k page-size, which is incompatible with Proxmox Backup Server.
 So you need to a 4k kernel on the RPi5 for Proxmox Backup Server to work.
 
 ### Raspberry Pi OS `apt update && apt upgrade` failing (https://github.com/wofferl/proxmox-backup-arm64/issues/60)
