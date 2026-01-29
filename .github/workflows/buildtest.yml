@@ -47,25 +47,32 @@ jobs:
         sudo rm -rf /usr/share/swift
 
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+        persist-credentials: false
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
     - name: Build packages
       run: |
         options=""
-        [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
+        [ "${GITHUB_EVENT_INPUTS_PACKAGE}" = "client" ] && options="client"
         [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
-        docker buildx build -o packages --build-arg buildoptions="github ${options}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 .
+        docker buildx build -o packages --build-arg buildoptions="github ${options}" --build-arg baseimage=${GITHUB_EVENT_INPUTS_BASEIMAGE} --platform linux/arm64 .
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
+      env:
+        GITHUB_EVENT_INPUTS_PACKAGE: ${{ github.event.inputs.package }}
+        GITHUB_EVENT_INPUTS_BASEIMAGE: ${{ github.event.inputs.baseimage }}
     - name: Test packages
       run: |
-        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 -f .github/Dockerfile.installtest .
+        docker buildx build --build-arg baseimage=${GITHUB_EVENT_INPUTS_BASEIMAGE} --platform linux/arm64 -f .github/Dockerfile.installtest .
+      env:
+        GITHUB_EVENT_INPUTS_BASEIMAGE: ${{ github.event.inputs.baseimage }}
 
   build-arm64-cross:
     if: ${{ github.event.inputs.arch == 'arm64-cross' || github.event.inputs.arch == 'all' }}
@@ -81,25 +88,32 @@ jobs:
         sudo rm -rf /usr/share/swift
 
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+        persist-credentials: false
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
     - name: Build packages
       run: |
         options=""
-        [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
+        [ "${GITHUB_EVENT_INPUTS_PACKAGE}" = "client" ] && options="client"
         [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
-        docker buildx build -o packages --build-arg buildoptions="cross github ${options}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
+        docker buildx build -o packages --build-arg buildoptions="cross github ${options}" --build-arg baseimage=${GITHUB_EVENT_INPUTS_BASEIMAGE} --platform linux/amd64 -f .github/Dockerfile.crosscompile-arm64 .
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
+      env:
+        GITHUB_EVENT_INPUTS_PACKAGE: ${{ github.event.inputs.package }}
+        GITHUB_EVENT_INPUTS_BASEIMAGE: ${{ github.event.inputs.baseimage }}
     - name: Test packages
       run: |
-        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/arm64 -f .github/Dockerfile.installtest .
+        docker buildx build --build-arg baseimage=${GITHUB_EVENT_INPUTS_BASEIMAGE} --platform linux/arm64 -f .github/Dockerfile.installtest .
+      env:
+        GITHUB_EVENT_INPUTS_BASEIMAGE: ${{ github.event.inputs.baseimage }}
 
   build-amd64:
     if: ${{ github.event.inputs.arch == 'amd64' || github.event.inputs.arch == 'all' }}
@@ -115,22 +129,29 @@ jobs:
         sudo rm -rf /usr/share/swift
 
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+        persist-credentials: false
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
     - name: Build packages
       run: |
         options=""
-        [ "${{ github.event.inputs.package }}" = "client" ] && options="client"
+        [ "${GITHUB_EVENT_INPUTS_PACKAGE}" = "client" ] && options="client"
         [ "${RUNNER_DEBUG}" = "1" ] && options=$options" debug"
-        docker buildx build -o packages --build-arg buildoptions="github ${options}" --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 .
+        docker buildx build -o packages --build-arg buildoptions="github ${options}" --build-arg baseimage=${GITHUB_EVENT_INPUTS_BASEIMAGE} --platform linux/amd64 .
         echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
+      env:
+        GITHUB_EVENT_INPUTS_PACKAGE: ${{ github.event.inputs.package }}
+        GITHUB_EVENT_INPUTS_BASEIMAGE: ${{ github.event.inputs.baseimage }}
     - name: Test packages
       run: |
-        docker buildx build --build-arg baseimage=${{ github.event.inputs.baseimage }} --platform linux/amd64 -f .github/Dockerfile.installtest .
+        docker buildx build --build-arg baseimage=${GITHUB_EVENT_INPUTS_BASEIMAGE} --platform linux/amd64 -f .github/Dockerfile.installtest .
+      env:
+        GITHUB_EVENT_INPUTS_BASEIMAGE: ${{ github.event.inputs.baseimage }}

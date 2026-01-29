@@ -12,4 +12,6 @@ updates:
       interval: "weekly"
     labels:
       - "actions update"
+    cooldown:
+      default-days: 7
 
