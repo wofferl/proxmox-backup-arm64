@@ -326,12 +326,12 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.1.1-1"
-PROXMOX_BACKUP_GIT="c0b4e5998232abc4691b06915dcf082ba9d47d5c"
-PROXMOX_GIT="1ed1c4244f68ac9f1e0d98cb1c9be47ec3a8b492"
+PROXMOX_BACKUP_VER="4.1.2-1"
+PROXMOX_BACKUP_GIT="ef5bf28fe5c2b64d407ce4f34c4f92fcc2e87dc7"
+PROXMOX_GIT="09a1f4064e30287762aaa0e6dd7b632f14581ccd"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="993c66fcb8819770f279cb9fb4d13f58f367606c"         # 1.0.0-1
-PROXMOX_FUSE_GIT="87dbf9bfef9169286263bccffaae3206635ca108" # 1.0.0-1
+PROXMOX_FUSE_GIT="506314563706b0bcd95f99ebedc9b2d1c5532cc4" # 2.0.0-1
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
