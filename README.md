@@ -10,13 +10,13 @@ With the script you can also download all files of the latest **Debian/Bookworm*
 **Download and install**
 
 ```
-./build.sh install=3.4.8-2
+./build.sh install=3.4.8-3
 ```
 
 **Download only**
 
 ```
-./build.sh download=3.4.8-2
+./build.sh download=3.4.8-3
 ```
 
 ## Build manually
