@@ -28,7 +28,7 @@ index a439c97b..a95ae483 100644
  [profile.release]
  debug=true
 diff --git a/Makefile b/Makefile
-index 2012ae5d..51fbd408 100644
+index 6e4d0bb3..ecd4c061 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,5 +1,4 @@
@@ -47,7 +47,7 @@ index 2012ae5d..51fbd408 100644
  COMPILEDIR := target/$(DEB_HOST_RUST_TYPE)/release
  STATIC_COMPILEDIR := $(STATIC_TARGET_DIR)/$(DEB_HOST_RUST_TYPE)/release
 diff --git a/debian/rules b/debian/rules
-index ab48cce1..723b714f 100755
+index ab48cce1..04b0144e 100755
 --- a/debian/rules
 +++ b/debian/rules
 @@ -4,10 +4,9 @@
@@ -75,7 +75,7 @@ index ab48cce1..723b714f 100755
  
  export DEB_CARGO_CRATE=proxmox-backup_$(DEB_VERSION_UPSTREAM)
  export DEB_CARGO_PACKAGE=proxmox-backup
-@@ -37,15 +34,9 @@ endif
+@@ -37,16 +34,11 @@ endif
  override_dh_auto_configure:
  	@perl -ne 'if (/^version\s*=\s*"(\d+(?:\.\d+)+)"/) { my $$v_cargo = $$1; my $$v_deb = "$(DEB_VERSION_UPSTREAM)"; \
  	    die "ERROR: d/changelog <-> Cargo.toml version mismatch: $$v_cargo != $$v_deb\n" if $$v_cargo ne $$v_deb; exit(0); }' Cargo.toml
@@ -91,5 +91,7 @@ index ab48cce1..723b714f 100755
 +	cp $(CARGO_HOME)/config.toml $(CARGO_HOME)/config.static.toml
 +	echo '[build]\nrustflags = ["-C", "target-feature=+crt-static"]' >> $(CARGO_HOME)/config.static.toml
  	dh_auto_configure
++	cargo vendor
  
  override_dh_auto_build:
+ 	dh_auto_build -- \

@@ -288,7 +288,7 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cat <<EOF >rust-toolchain.toml
 [toolchain]
-channel="1.88.0"
+channel="1.90.0"
 targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host/ { print $2 }')}" ]
 EOF
 
@@ -330,7 +330,7 @@ PROXMOX_BACKUP_VER="4.1.4-1"
 PROXMOX_BACKUP_GIT="0de679b244377f9193993698b875636bab58d678"
 PROXMOX_GIT="615a1078e09ff5230f0c14047aabe4dcc855f200"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
-PXAR_GIT="993c66fcb8819770f279cb9fb4d13f58f367606c"         # 1.0.0-1
+PXAR_GIT="957acc8917294a62d829d51e06cff9dc88845fb3"         # 1.0.0-1 (20250908)
 PROXMOX_FUSE_GIT="506314563706b0bcd95f99ebedc9b2d1c5532cc4" # 2.0.0-1
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
@@ -363,7 +363,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	fi
 	cd proxmox-backup/
 	set_package_info
-	cargo vendor
 	${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
 	export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
 	export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
