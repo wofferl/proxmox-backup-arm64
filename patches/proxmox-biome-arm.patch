@@ -22,26 +22,3 @@ index 18e5ce27..65cf9e8d 100644
  	lintian $(DEB)
  
  .PHONY: upload
-diff --git a/biome/rust-toolchain.toml b/biome/rust-toolchain.toml
-index fbae3fa6..7c761706 100644
---- a/biome/rust-toolchain.toml
-+++ b/biome/rust-toolchain.toml
-@@ -2,4 +2,4 @@
- # The default profile includes rustc, rust-std, cargo, rust-docs, rustfmt and clippy.
- # https://rust-lang.github.io/rustup/concepts/profiles.html
- profile = "default"
--channel = "1.87.0"
-+channel = "stable"
-diff --git a/debian/control b/debian/control
-index 7109d042..80bcb58b 100644
---- a/debian/control
-+++ b/debian/control
-@@ -8,7 +8,7 @@ Homepage: https://biomejs.dev/
- Standards-Version: 4.7.0.0
- 
- Package: proxmox-biome
--Architecture: amd64
-+Architecture: arm64
- Depends: ${misc:Depends}, ${shlibs:Depends},
- Description: Biome offers JS formatter and linter, usable via CLI and LSP.
-  Biome is a performant toolchain for web projects, it aims to provide developer
