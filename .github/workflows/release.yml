@@ -30,7 +30,7 @@ jobs:
         echo "DEB_DIST=Debian/Trixie" >> $GITHUB_ENV
         echo "DEB_VERSION=1.4.7-1 >> $GITHUB_ENV
         echo "DEB_VERSION_UPSTREAM=1.4.7-1" >> $GITHUB_ENV
-      cat $GITHUB_ENV >> .github/PREBUILD.md
+        cat $GITHUB_ENV >> .github/PREBUILD.md
     - name: Release packages
       run: |
         env
