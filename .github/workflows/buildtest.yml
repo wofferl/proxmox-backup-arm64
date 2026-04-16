@@ -35,6 +35,8 @@ on:
 jobs:
   build-arm64-native:
     if: ${{ github.event.inputs.arch == 'arm64-native' || github.event.inputs.arch == 'all' }}
+    permissions:
+      contents: read # read only permission
     runs-on: ubuntu-24.04-arm
 
     steps:
@@ -76,6 +78,8 @@ jobs:
 
   build-arm64-cross:
     if: ${{ github.event.inputs.arch == 'arm64-cross' || github.event.inputs.arch == 'all' }}
+    permissions:
+      contents: read # read only permission
     runs-on: ubuntu-24.04
 
     steps:
@@ -117,6 +121,8 @@ jobs:
 
   build-amd64:
     if: ${{ github.event.inputs.arch == 'amd64' || github.event.inputs.arch == 'all' }}
+    permissions:
+      contents: read # read only permission
     runs-on: ubuntu-24.04
 
     steps:
