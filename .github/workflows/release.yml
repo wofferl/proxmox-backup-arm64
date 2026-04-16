@@ -66,3 +66,5 @@ jobs:
           --latest=false \
           --target ${GITHUB_REF} \
           packages/*.deb
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
