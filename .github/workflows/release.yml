@@ -16,7 +16,7 @@ on:
 jobs:
   build:
     permissions:
-      contents: write
+      contents: write # needed for uploading new release
     runs-on: ubuntu-24.04-arm
     steps:
     - name: Free up disk space
@@ -58,11 +58,12 @@ jobs:
         baseimage="debian:trixie-slim"
         docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
     - name: Release packages
-      uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
-      with:
-        artifacts: "packages/*.deb"
-        bodyFile: ".github/PREBUILD.md"
-        tag:  ${{ env.DEB_VERSION }}
-        name: Version ${{ env.DEB_VERSION }} (${{ env.DEB_DIST }})
-        draft: true
-        makeLatest: false
+      run: |
+        gh release create ${DEB_VERSION} \
+          --title "Version ${DEB_VERSION} (${DEB_DIST})" \
+          --notes-file .github/PREBUILD.md \
+          --draft \
+          --latest=false \
+          packages/*.deb
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
