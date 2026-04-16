@@ -46,7 +46,7 @@ jobs:
         if [ "${RUNNER_DEBUG}" = "1" ]; then
           docker buildx build -o packages --build-arg buildoptions="github debug" --build-arg baseimage=${baseimage} --platform linux/arm64 -f Dockerfile .
         else
-          docker buildx build -o packages --build-arg buildoptions="github" --build-arg baseimage=${baseimage} --platform linux/arm64 -f Dockerfile .
+          docker buildx build -o packages --build-arg buildoptions="client github" --build-arg baseimage=${baseimage} --platform linux/arm64 -f Dockerfile .
         fi
         sudo apt -y install apt-listchanges
         apt-listchanges --latest=1 -f text packages/proxmox-backup-server_*.deb | sed -e '/^\(apt-listchanges.*\|[-]\+\)$/d' >> .github/PREBUILD.md
@@ -59,6 +59,7 @@ jobs:
         docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
     - name: Release packages
       run: |
+        env
         gh release create ${DEB_VERSION} \
           --title "Version ${DEB_VERSION} (${DEB_DIST})" \
           --notes-file .github/PREBUILD.md \
