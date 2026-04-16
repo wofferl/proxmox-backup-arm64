@@ -41,7 +41,6 @@ jobs:
           --notes-file .github/PREBUILD.md \
           --draft \
           --latest=false \
-          --target ${GITHUB_SHA} \
           packages/*.deb
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
