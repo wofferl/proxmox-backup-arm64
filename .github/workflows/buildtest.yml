@@ -27,8 +27,10 @@ on:
         type: choice
         description: Base Image
         options:
+        - debian:forky-slim
         - debian:trixie-slim
         - debian:bookworm-slim
+        - ubuntu:resolute
         - ubuntu:noble
         - ubuntu:jammy
 
