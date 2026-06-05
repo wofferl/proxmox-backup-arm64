@@ -6,10 +6,27 @@ ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 ENV DEBIAN_FRONTEND=noninteractive
 
 SHELL ["/bin/bash", "-c"]
+# ubuntu has different repo urls for amd64/arm64
 RUN grep -qi ubuntu /etc/os-release && \
-	sed -i '/^deb /s/^deb /deb [arch=amd64] /' /etc/apt/sources.list || true
+	if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then \
+		sed -i '/^Signed-By:/a Architectures: amd64' \
+			/etc/apt/sources.list.d/ubuntu.sources; \
+	else \
+		sed -i '/^deb /s/^deb /deb [arch=amd64] /' \
+			/etc/apt/sources.list; \
+	fi || true
 RUN grep -qi ubuntu /etc/os-release && \
-	sed -i '/^deb /{p;s|http://.*/ubuntu|http://ports.ubuntu.com/ubuntu-ports|g;s|\[arch=amd64\]|[arch=arm64]|g}' /etc/apt/sources.list || true
+	if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then \
+		sed -e 's|^URIs: .*|URIs: http://ports.ubuntu.com/ubuntu-ports/|' \
+			-e '/^Architectures:/s/.*/Architectures: arm64/; t' \
+			-e '/^Suites:/a Architectures: arm64' \
+			/etc/apt/sources.list.d/ubuntu.sources \
+			> /etc/apt/sources.list.d/ubuntu-arm64.sources; \
+	else \
+		sed -E '/^deb /s|deb.*http://[^ ]+|deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports|' \
+			/etc/apt/sources.list \
+			> /etc/apt/sources.list.d/ubuntu-arm64.list; \
+	fi || true
 RUN dpkg --add-architecture arm64
 RUN apt update && apt-get install -y --no-install-recommends \
 	build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
