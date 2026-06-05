@@ -6,6 +6,10 @@ ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 ENV DEBIAN_FRONTEND=noninteractive
 
 SHELL ["/bin/bash", "-c"]
+RUN grep -qi ubuntu /etc/os-release && \
+	sed -i '/^deb /s/^deb /deb [arch=amd64] /' /etc/apt/sources.list || true
+RUN grep -qi ubuntu /etc/os-release && \
+	sed -i '/^deb /{p;s|http://.*/ubuntu|http://ports.ubuntu.com/ubuntu-ports|g;s|\[arch=amd64\]|[arch=arm64]|g}' /etc/apt/sources.list || true
 RUN dpkg --add-architecture arm64
 RUN apt update && apt-get install -y --no-install-recommends \
 	build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
