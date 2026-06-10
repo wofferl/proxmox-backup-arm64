@@ -982,7 +982,34 @@ for name in PATHPATTERNS PXAR PROXMOX_FUSE; do
   fi
 done
 
-if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
+if [ -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
+  echo "proxmox-backup up-to-date" && exit 0
+fi
+
+git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
+git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
+
+echo "Resolving commit hashes for version ${PROXMOX_BACKUP_VER}..."
+
+PROXMOX_BACKUP_GIT=$(resolve_commit "${PROXMOX_BACKUP_VER}" proxmox-backup proxmox-backup) || true
+if [ -z "${PROXMOX_BACKUP_GIT}" ]; then
+  echo "Error: Could not resolve proxmox-backup commit for version ${PROXMOX_BACKUP_VER}" >&2
+  exit 1
+fi
+
+echo "Using proxmox-backup commit: ${PROXMOX_BACKUP_GIT}"
+
+PROXMOX_GIT=$(resolve_dependency_repo_commit "${PROXMOX_BACKUP_GIT}" proxmox-backup proxmox proxmox-sys) || true
+if [ -z "${PROXMOX_GIT}" ]; then
+  echo "Error: Could not resolve proxmox commit for version ${PROXMOX_BACKUP_VER}" >&2
+  exit 1
+fi
+
+echo "Using Proxmox commit: ${PROXMOX_GIT}"
+
+
+
+
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
@@ -1028,9 +1055,6 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 			proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
 			"${PACKAGES}"
 	fi
-else
-	echo "proxmox-backup up-to-date"
-fi
 
 [ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
