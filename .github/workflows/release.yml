@@ -1,69 +1,101 @@
 name: Release
-run-name: Release ${{ github.ref_name }} ${{ github.event.inputs.version }} Debian/Trixie (arm64)
-
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        type: choice
-        description: Version
-        options:
-        - 4.x
-  push:
-    tags:
-      - 4.**
+  schedule:
+    - cron: '0 0 * * *'
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   build:
-    permissions:
-      contents: write # needed for uploading new release
+    name: Build
     runs-on: ubuntu-24.04-arm
+    permissions:
+      actions: write
+      packages: write
+      contents: write
     steps:
-    - name: Free up disk space
-      run: |
-        sudo rm -rf /usr/local/.ghcup
-        sudo rm -rf /usr/local/lib/android
-        sudo rm -rf /usr/local/lib/node_modules
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /usr/share/swift
-        df -h
-
-    - name: Checkout
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      with:
-        persist-credentials: false
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
-
-    - name: Build packages
-      run: |
-        baseimage="debian:trixie-slim"
-        echo "DEB_DIST=Debian/Trixie" >> $GITHUB_ENV
-        if [ "${RUNNER_DEBUG}" = "1" ]; then
-          docker buildx build -o packages --build-arg buildoptions="github debug" --build-arg baseimage=${baseimage} --platform linux/arm64 -f Dockerfile .
-        else
-          docker buildx build -o packages --build-arg buildoptions="github" --build-arg baseimage=${baseimage} --platform linux/arm64 -f Dockerfile .
-        fi
-        sudo apt -y install apt-listchanges
-        apt-listchanges --latest=1 -f text packages/proxmox-backup-server_*.deb | sed -e '/^\(apt-listchanges.*\|[-]\+\)$/d' >> .github/PREBUILD.md
-        echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
-        echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
-    - name: Test packages
-      run: |
-        df -h
-        baseimage="debian:trixie-slim"
-        docker buildx build --build-arg baseimage=${baseimage} --platform linux/arm64 -f .github/Dockerfile.installtest .
-    - name: Release packages
-      run: |
-        gh release create ${DEB_VERSION} \
-          --title "Version ${DEB_VERSION} (${DEB_DIST})" \
-          --notes-file .github/PREBUILD.md \
-          --draft \
-          --latest=false \
-          packages/*.deb
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Get remote package data
+        run: |
+          set -e -o pipefail
+          latest_tag=$(curl -fsSL "https://metadata.cdn.proxmox.com/download/changelogs/pdm/dists/trixie/pdm-no-subscription/p/proxmox-datacenter-manager/" | \
+          grep -oP '(?<=proxmox-datacenter-manager_)[0-9]+\.[0-9]+\.[0-9]+(?=\.changelog)' | sort -V | tail -1)
+          echo "Found tag: \"${latest_tag}\""
+          latest_version="${latest_tag%-*}"
+          major="${latest_version%%.*}"
+          minor="${latest_version#*.}"
+          minor="${minor%%.*}"
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+          echo "latest_version=$latest_version" >> $GITHUB_ENV
+          echo "latest_minor=$major.$minor" >> $GITHUB_ENV
+          echo "latest_major=$major" >> $GITHUB_ENV
+      - 
+        name: Check if the tag exists locally
+        uses: action-pack/tag-exists@v1
+        id: checkTag
+        with: 
+          tag: 'v${{ env.latest_tag }}'         
+      -
+        name: Finish when found
+        run: |
+          #!/bin/bash
+          val="${{ steps.checkTag.outputs.exists }}"
+          echo "exists=${val}" >> $GITHUB_ENV
+      -
+        name: Free up disk space
+        if: env.exists == 'false'
+        run: |
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/local/lib/node_modules
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/share/swift
+          df -h
+      -
+        name: Checkout
+        if: env.exists == 'false'
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      -
+        name: Set up Docker Buildx
+        if: env.exists == 'false'
+        uses: docker/setup-buildx-action@v4
+      -
+        name: Build packages
+        if: env.exists == 'false'
+        run: |
+          baseimage="debian:trixie-slim"
+          echo "DEB_DIST=Debian/Trixie" >> $GITHUB_ENV
+          docker buildx build -o packages --build-arg buildoptions="github=${{ env.latest_tag }}" --build-arg baseimage=${baseimage} --platform=linux/arm64 -f Dockerfile .
+          sudo apt -y install apt-listchanges
+          apt-listchanges --latest=1 -f text packages/proxmox-backup-server_*.deb | sed -e '/^\(apt-listchanges.*\|[-]\+\)$/d' >> .github/PREBUILD.md
+          echo "DEB_VERSION=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: //p')" >> $GITHUB_ENV
+          echo "DEB_VERSION_UPSTREAM=$(dpkg --info packages/proxmox-backup-server_*.deb | sed -n '/Version/ s/[^:]\+: \([0-9.]\+\)-[0-9]/\1/p')" >> $GITHUB_ENV
+      -
+        name: Release packages
+        if: env.exists == 'false'
+        run: |
+          gh release create ${DEB_VERSION} \
+            --title "v${DEB_VERSION}" \
+            --notes-file .github/PREBUILD.md \
+            --latest=true \
+            packages/*.deb
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Send mail
+        if: env.exists == 'false'
+        uses: action-pack/send-mail@v1
+        with:
+          to: ${{secrets.MAILTO}}
+          from: Github Actions <${{secrets.MAILTO}}>
+          connection_url: ${{secrets.MAIL_CONNECTION}}
+          subject: Build of ${{ github.event.repository.name }} v${{ env.latest_tag }} completed
+          body: |
+              The build job of ${{ github.event.repository.name }} v${{ env.latest_tag }} was completed successfully! 
+              
+              See https://github.com/${{ github.repository }}/actions for more information.
