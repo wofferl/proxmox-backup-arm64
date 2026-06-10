@@ -1,4 +1,4 @@
-ARG baseimage=debian:bullseye-slim
+ARG baseimage=debian:trixie-slim
 FROM ${baseimage} as builder-stage
 ENV DEBIAN_FRONTEND=noninteractive
 
