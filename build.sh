@@ -716,7 +716,7 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cd "${SOURCES}"
 
-if [ "${BUILD_PACKAGE}" == "TMPPPPPclient" ]; then
+if [ "${BUILD_PACKAGE}" != "client" ]; then
 
 	PROXMOX_BIOME_VER="$(latest_package_version devel proxmox-biome)"
 	echo "Using proxmox-biome package version: ${PROXMOX_BIOME_VER}"
