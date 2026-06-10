@@ -945,21 +945,39 @@ ${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
 export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
 export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
 
+echo "Building PBS package..."
 dpkg-buildpackage -a${PACKAGE_ARCH} -b -us -uc ${BUILD_PROFILES}
+
 cd ..
 
-	if [ "${BUILD_PACKAGE}" = "client" ]; then
-		mv -f proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
-			"${PACKAGES}"
-	else
-		mv -f proxmox-backup-client{,-static}{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
-			proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb \
-			proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
-			proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.* \
-			"${PACKAGES}"
-	fi
+if [ "${BUILD_PACKAGE}" = "client" ]; then
+	mv -f proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	exit 0
+fi
 
-[ "${BUILD_PACKAGE}" = "client" ] && exit 0
+shopt -s nullglob
+artifacts=(
+  proxmox-backup-client{,-static}{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.*
+  proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.*
+  proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.*
+  proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb
+)
+shopt -u nullglob
+
+if [ "${#artifacts[@]}" -eq 0 ]; then
+  echo "Error: no build artifacts found" >&2
+  ls -lh
+  exit 1
+fi
+
+mv -f "${artifacts[@]}" "${PACKAGES}"
+
+pbs_runtime_debs=(
+  "${PACKAGES}/proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb"
+  "${PACKAGES}/proxmox-backup-server_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb"
+)
+
+download_runtime_arch_all_dependencies "${pbs_runtime_debs[@]}"
 
 PVE_XTERMJS_VER="$(latest_package_version pve pve-xtermjs)"
 
