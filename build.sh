@@ -985,39 +985,87 @@ fi
 
 [ "${BUILD_PACKAGE}" = "client" ] && exit 0
 
-PVE_XTERMJS_VER="6.0.0-1"
-PVE_XTERMJS_GIT="1209ea0d5bda89fec71484d09f784bd3b94fafaf"
-PROXMOX_XTERMJS_GIT="deb32a6c4a21bea0d72059de0835fde504296bf0"
-PROXMOX_TERMPROXY_VER="2.1.0"
-if [ ! -e "${PACKAGES}/proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb" ] ||
-   [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_all.deb" ]; then
-	git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
-	git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
+PVE_XTERMJS_VER="$(latest_package_version pve pve-xtermjs)"
+
+# Download pve-xtermjs first, then use its package metadata to determine which
+# proxmox-termproxy version should be built. This avoids hardcoding both the
+# xtermjs commit and the termproxy version.
+echo "Using pve-xtermjs package version: ${PVE_XTERMJS_VER}"
+if [ ! -e "${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_all.deb" ]; then
+	echo "Downloading Architecture:all pve-xtermjs package"
+	pve_xtermjs_deb="$(download_package pve pve-xtermjs "${PVE_XTERMJS_VER}" "${PACKAGES}")"
+else
+	echo "pve-xtermjs up-to-date"
+	pve_xtermjs_deb="${PACKAGES}/pve-xtermjs_${PVE_XTERMJS_VER}_all.deb"
+fi
+
+termproxy_constraint="$(dependency_constraint_from_deb "${pve_xtermjs_deb}" proxmox-termproxy || true)"
+if [ -n "${termproxy_constraint}" ]; then
+	termproxy_relation="${termproxy_constraint%%;*}"
+	termproxy_required_version="${termproxy_constraint#*;}"
+	PROXMOX_TERMPROXY_VER="$(package_version_satisfying pve proxmox-termproxy "${termproxy_relation}" "${termproxy_required_version}")"
+	echo "Using proxmox-termproxy package version from pve-xtermjs dependency: ${PROXMOX_TERMPROXY_VER}"
+else
+	PROXMOX_TERMPROXY_VER="$(latest_package_version pve proxmox-termproxy)"
+	echo "Warning: pve-xtermjs does not declare proxmox-termproxy dependency; using latest available ${PROXMOX_TERMPROXY_VER}" >&2
+fi
+
+git_clone_or_fetch https://git.proxmox.com/git/pve-xtermjs.git
+PVE_XTERMJS_GIT="$(resolve_commit_for_package_version "${PROXMOX_TERMPROXY_VER}" pve-xtermjs proxmox-termproxy || true)"
+if [ -z "${PVE_XTERMJS_GIT}" ]; then
+	echo "Error: could not resolve pve-xtermjs commit containing proxmox-termproxy ${PROXMOX_TERMPROXY_VER}" >&2
+	echo "Available changelog heads:" >&2
+	git -C pve-xtermjs ls-files '*debian/changelog' | while read -r changelog; do
+		echo "--- ${changelog}" >&2
+		git -C pve-xtermjs show "HEAD:${changelog}" 2>/dev/null | head -5 >&2 || true
+	done
+	exit 1
+fi
+
+echo "Using pve-xtermjs commit for proxmox-termproxy ${PROXMOX_TERMPROXY_VER}: ${PVE_XTERMJS_GIT}"
+git_clean_and_checkout ${PVE_XTERMJS_GIT} pve-xtermjs
+
+if [ ! -e "${PACKAGES}/proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb" ]; then
 	patch -p1 -d pve-xtermjs/ <"${PATCHES}/pve-xtermjs-arm.patch"
-	[[ "${BUILD_PROFILES}" =~ cross ]] &&
-		patch -p1 -d pve-xtermjs/ <"${PATCHES}/pve-xtermjs-cross.patch"
+	[[ "${BUILD_PROFILES}" =~ cross ]] && patch -p1 -d pve-xtermjs/ <"${PATCHES}/pve-xtermjs-cross.patch"
 	cd pve-xtermjs/
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
+	PROXMOX_XTERMJS_GIT="$(resolve_commit_before "${PVE_XTERMJS_GIT}" . proxmox || true)"
+	if [ -z "${PROXMOX_XTERMJS_GIT}" ]; then
+		echo "Error: could not derive Proxmox commit for pve-xtermjs ${PVE_XTERMJS_GIT}" >&2
+		exit 1
+	fi
+	echo "Using pve-xtermjs Proxmox commit: ${PROXMOX_XTERMJS_GIT}"
 	git_clean_and_checkout ${PROXMOX_XTERMJS_GIT} proxmox
 	cd termproxy
 	set_package_info
 	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
 	BUILD_MODE=release make deb
-	cd ..
-	cd xterm.js
-	make deb
-	mv -f pve-xtermjs_${PVE_XTERMJS_VER}_all.deb "${PACKAGES}"
-	cd ..
-	mv -f proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	cd ../..
+	termproxy_deb="$(find "${SOURCES}/pve-xtermjs" -maxdepth 2 -type f -name "proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb" -print -quit)"
+	if [ -z "${termproxy_deb}" ]; then
+		echo "Error: proxmox-termproxy .deb not found" >&2
+		find "${SOURCES}/pve-xtermjs" -maxdepth 3 -type f -name 'proxmox-termproxy*.deb' -ls >&2
+		exit 1
+	fi
+	mv -f "${termproxy_deb}" "${PACKAGES}/"
+	rm -f "${SOURCES}/pve-xtermjs"/proxmox-termproxy-dbgsym_*.deb "${SOURCES}/pve-xtermjs"/termproxy/proxmox-termproxy-dbgsym_*.deb
 else
-	echo "pve-xtermjs up-to-date"
+	echo "proxmox-termproxy up-to-date"
 fi
 
-PROXMOX_JOURNALREADER_VER="1.6-1"
-PROXMOX_JOURNALREADER_GIT="b09ee543344fb7082a27346ecb0008f38af6367d"
-if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.deb" ]; then
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-mini-journalreader.git
-	git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
+git_clone_or_fetch https://git.proxmox.com/git/proxmox-mini-journalreader.git
+PROXMOX_JOURNALREADER_GIT="$(git -C proxmox-mini-journalreader log --all --format='%H' -1 -- debian/changelog)"
+if [ -z "${PROXMOX_JOURNALREADER_GIT}" ]; then
+	echo "Error: could not resolve proxmox-mini-journalreader commit" >&2
+	exit 1
+fi
+
+git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
+PROXMOX_JOURNALREADER_VER="$(cd proxmox-mini-journalreader && dpkg-parsechangelog -SVersion)"
+echo "Using proxmox-mini-journalreader package version: ${PROXMOX_JOURNALREADER_VER}"
+
+if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_${HOST_ARCH}.deb" ]; then
 	patch -p1 -d proxmox-mini-journalreader/ <${PATCHES}/proxmox-mini-journalreader.patch
 	[[ "${BUILD_PROFILES}" =~ cross ]] &&
 		patch -p1 -d proxmox-mini-journalreader/ <"${PATCHES}/proxmox-mini-journalreader-cross.patch"
@@ -1025,8 +1073,31 @@ if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_$
 	set_package_info
 	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
 	make deb
-	mv -f proxmox-mini-journalreader{,-dbgsym}_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+    journalreader_deb="$(
+      find "${SOURCES}/proxmox-mini-journalreader" \
+        -maxdepth 3 \
+        -type f \
+        -name "proxmox-mini-journalreader_*_${PACKAGE_ARCH}.deb" \
+        ! -name "*-dbgsym_*" \
+        -print -quit
+    )"	
+    if [ -z "${journalreader_deb}" ]; then
+		echo "Error: proxmox-mini-journalreader .deb not found" >&2
+		find "${SOURCES}/proxmox-mini-journalreader" -maxdepth 3 -type f -name 'proxmox-mini-journalreader*.deb' -ls >&2
+		exit 1
+	fi
+	mv -f "${journalreader_deb}" "${PACKAGES}/"
 	cd ..
 else
 	echo "proxmox-mini-journalreader up-to-date"
 fi
+
+# Rename platform independant packages to _all.deb
+for deb in "${PACKAGES}"/*_amd64.deb; do
+  [ -e "$deb" ] || continue
+  arch="$(dpkg-deb -f "$deb" Architecture 2>/dev/null || true)"
+  [ "$arch" = "all" ] || continue
+
+  fixed="${deb%_amd64.deb}_all.deb"
+  mv -f "$deb" "$fixed"
+done
