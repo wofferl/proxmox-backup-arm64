@@ -876,21 +876,19 @@ echo "Download packages list from PVE repository"
 PACKAGES_PVE=$(load_packages http://download.proxmox.com/debian/pve/dists/trixie/pve-no-subscription/binary-amd64/Packages.gz)
 
 echo "Download dependencies"
-EXTJS_VER=(">=" "7~")
-PBS_I18N_VER=(">=" "3.5.0")
-PROXMOX_ACME_VER=(">=" "1.7.0")
-PROXMOX_WIDGETTOOLKIT_VER=(">=" "5.0.2")
-QRCODEJS_VER=(">=" "1.20230525")
 if [ "${BUILD_PACKAGE}" = "server" ]; then
-	download_package pbs pbs-i18n "${PBS_I18N_VER[@]}" "${PACKAGES}" >/dev/null
-	download_package pbs libjs-extjs "${EXTJS_VER[@]}" "${PACKAGES}" >/dev/null
-	download_package pbs libjs-qrcodejs "${QRCODEJS_VER[@]}" "${PACKAGES}" >/dev/null
-	download_package pbs libproxmox-acme-plugins "${PROXMOX_ACME_VER[@]}" "${PACKAGES}" >/dev/null
-	download_package pbs proxmox-widget-toolkit "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES}" >/dev/null
-fi
-if [ "${BUILD_PACKAGE}" = "server" ]; then
+	# Build/runtime helper packages are selected dynamically from the loaded
+	# repository metadata, instead of pinning minimum versions in this script.
+	download_package_latest pbs pbs-i18n "${PACKAGES}" >/dev/null || true
+	libjs_extjs="$(download_package_latest pbs libjs-extjs "${PACKAGES}")"
+	download_package_latest pbs libjs-qrcodejs "${PACKAGES}" >/dev/null || true
+	proxmox_widget_toolkit="$(download_package_latest pbs proxmox-widget-toolkit "${PACKAGES}")"
+	download_package_latest pbs libproxmox-acme-plugins "${PACKAGES}" >/dev/null || true
+
 	packages_install=(
-		"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
+		"${libjs_extjs}"
+		"${proxmox_widget_toolkit}"
+		"$(download_package_latest devel proxmox-widget-toolkit-dev "${PACKAGES_BUILD}")"
 	)
 fi
 
