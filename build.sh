@@ -990,6 +990,10 @@ fi
 git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
 
+git_clone_or_fetch https://git.proxmox.com/git/pxar.git
+git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
+git_clone_or_fetch https://git.proxmox.com/git/pathpatterns.git
+
 echo "Resolving commit hashes for version ${PROXMOX_BACKUP_VER}..."
 
 PROXMOX_BACKUP_GIT=$(resolve_commit "${PROXMOX_BACKUP_VER}" proxmox-backup proxmox-backup) || true
@@ -1008,39 +1012,50 @@ fi
 
 echo "Using Proxmox commit: ${PROXMOX_GIT}"
 
+git_clean_and_checkout ${PROXMOX_GIT} proxmox
+git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
 
+git_clean_and_checkout ${PXAR_GIT} pxar
+git_clean_and_checkout ${PROXMOX_FUSE_GIT} proxmox-fuse
+git_clean_and_checkout ${PATHPATTERNS_GIT} pathpatterns
 
+# Use the project's Rust toolchain file when present. If the source does not
+# ship one, fall back to the currently installed rustup toolchain instead of
+# hardcoding a compiler version here.
+if [ -f proxmox-backup/rust-toolchain.toml ]; then
+	cp proxmox-backup/rust-toolchain.toml "${BASE}/rust-toolchain.toml"
+else
+	cat <<EOF >"${BASE}/rust-toolchain.toml"
+[toolchain]
+channel="$(rustc -vV 2>/dev/null | awk '/^release:/ { print $2 }')"
+targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host:/ { print $2 }')}" ]
+EOF
+fi
 
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
-	git_clean_and_checkout ${PROXMOX_GIT} proxmox
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
-	git_clean_and_checkout ${PROXMOX_FUSE_GIT} proxmox-fuse
-	git_clone_or_fetch https://git.proxmox.com/git/pxar.git
-	git_clean_and_checkout ${PXAR_GIT} pxar
-	git_clone_or_fetch https://git.proxmox.com/git/pathpatterns.git
-	git_clean_and_checkout ${PATHPATTERNS_GIT} pathpatterns
+sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
+sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
+sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
 
-	git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
-	git_clean_and_checkout ${PROXMOX_BACKUP_GIT} proxmox-backup
-	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
-	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
-	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
-	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
-	if [ "${BUILD_PACKAGE}" = "client" ]; then
-		sed -i '/proxmox-biome/d' proxmox-backup/debian/control
-		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-client.patch"
-	fi
-	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
-		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.install
-		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.postinst
-		sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-server.install
-	fi
-	if [[ "${BUILD_PROFILES}" =~ cross ]]; then
-		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-cross.patch"
-		sed -i 's/\(xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
-	fi
-	cd proxmox-backup/
-	set_package_info
+patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
+if [ "${BUILD_PACKAGE}" = "client" ]; then
+	sed -i '/proxmox-biome/d' proxmox-backup/debian/control
+	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-client.patch"
+fi
+	
+if [ "${PACKAGE_ARCH}" = "arm64" ]; then
+	sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.install
+	sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-file-restore.postinst
+	sed -i "s/x86_64-linux-gnu/aarch64-linux-gnu/" proxmox-backup/debian/proxmox-backup-server.install
+fi
+
+if [[ "${BUILD_PROFILES}" =~ cross ]]; then
+	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-cross.patch"
+	sed -i 's/\(xindy\|proxmox-biome\)\b/\1:native/' proxmox-backup/debian/control
+fi
+	
+cd proxmox-backup/
+set_package_info
+
 	${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
 	export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
 	export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
