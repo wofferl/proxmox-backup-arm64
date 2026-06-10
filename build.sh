@@ -729,7 +729,7 @@ while [ "$#" -ge 1 ]; do
 		;;
 	github*)
 		if [[ "$1" =~ github=[0-9.-]+ ]]; then
-			PROXMOX_DM_VER="${1#github=}"
+			PROXMOX_BACKUP_VER="${1#github=}"
 		fi
 		
 		GITHUB_ACTION="true"
@@ -934,7 +934,7 @@ This package was built from:
 
 proxmox-backup:
   repository: https://git.proxmox.com/git/proxmox-backup.git
-  commit: ${PROXMOX_DM_GIT}
+  commit: ${PROXMOX_BACKUP_GIT}
 
 proxmox:
   repository: https://git.proxmox.com/git/proxmox.git
