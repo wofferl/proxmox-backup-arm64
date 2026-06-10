@@ -791,14 +791,19 @@ export DEB_HOST_RUST_TYPE=${HOST_CPU}-unknown-${HOST_SYSTEM}
 while [ "$#" -ge 1 ]; do
 	case "$1" in
 	client)
-		BUILD_PACKAGE="client"
+	    BUILD_PACKAGE="client"
 		BUILD_PROFILES=${BUILD_PROFILES}",nodoc"
-		[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
-		export DEB_BUILD_OPTIONS="nocheck"
+ 		[[ ${BUILD_PROFILES} =~ nocheck ]] || BUILD_PROFILES=${BUILD_PROFILES}",nocheck"
+ 		export DEB_BUILD_OPTIONS="nocheck"
 		;;
-	cross)
+	cross*)
+	    if [[ "$1" =~ cross=[0-9.-]+ ]]; then
+			PROXMOX_PB_VER="${1#cross=}"
+		fi
+	
 		PACKAGE_ARCH=arm64
 		BUILD_PROFILES=${BUILD_PROFILES}",cross"
+
 		export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
 		export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER=qemu-aarch64
 		export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
@@ -844,7 +849,7 @@ while [ "$#" -ge 1 ]; do
 		set -x
 		;;
 	*)
-		echo "usage $0 [client] [nocheck] [debug] [download]"
+		echo "usage $0 [client] [cross] [nocheck] [debug] [download] [install]"
 		exit 1
 		;;
 	esac
