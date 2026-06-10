@@ -1,4 +1,4 @@
-ARG baseimage=debian:bookworm-slim
+ARG baseimage=debian:trixie-slim
 FROM ${baseimage} as builder-stage
 ARG buildoptions
 # workaround for memory bug https://github.com/rust-lang/cargo/issues/10583
@@ -16,7 +16,9 @@ COPY . /build/
 WORKDIR /build
 
 SHELL ["/bin/bash", "-c"]
+RUN chmod +x ./build.sh
 RUN source ~/.cargo/env && ./build.sh ${buildoptions}
+RUN touch /build/build.log
 
 FROM scratch
 COPY --from=builder-stage /build/*.log /build/packages/* /
