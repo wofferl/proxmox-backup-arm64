@@ -758,13 +758,13 @@ if [ "${BUILD_PACKAGE}" = "server" ]; then
 	# repository metadata, instead of pinning minimum versions in this script.
 	download_package_latest pbs pbs-i18n "${PACKAGES}" >/dev/null || true
 	libjs_extjs="$(download_package_latest pbs libjs-extjs "${PACKAGES}")"
-	libjs-qrcodejs="$(download_package_latest pbs libjs-qrcodejs "${PACKAGES}")"
+	libjs_qrcodejs="$(download_package_latest pbs libjs-qrcodejs "${PACKAGES}")"
 	proxmox_widget_toolkit="$(download_package_latest pbs proxmox-widget-toolkit "${PACKAGES}")"
 	download_package_latest pbs libproxmox-acme-plugins "${PACKAGES}" >/dev/null || true
 
 	packages_install=(
 		"${libjs_extjs}"
-	    "${libjs-qrcodejs}"
+	    "${libjs_qrcodejs}"
 		"${proxmox_widget_toolkit}"
 		"$(download_package_latest devel proxmox-widget-toolkit-dev "${PACKAGES_BUILD}")"
 	)
@@ -888,10 +888,18 @@ git_clean_and_checkout ${PATHPATTERNS_GIT} pathpatterns
 if [ -f proxmox-backup/rust-toolchain.toml ]; then
 	cp proxmox-backup/rust-toolchain.toml "${BASE}/rust-toolchain.toml"
 else
-	cat <<EOF >"${BASE}/rust-toolchain.toml"
+	rust_channel="$(rustc -vV 2>/dev/null | awk '/^release:/ { print $2 }')"
+
+	if [ -n "${CARGO_BUILD_TARGET:-}" ]; then
+		rust_target="${CARGO_BUILD_TARGET}"
+	else
+		rust_target="$(rustc -vV 2>/dev/null | awk '/^host:/ { print $2 }')"
+	fi
+
+	cat >"${BASE}/rust-toolchain.toml" <<EOF
 [toolchain]
-channel="$(rustc -vV 2>/dev/null | awk '/^release:/ { print $2 }')"
-targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host:/ { print $2 }')}" ]
+channel = "${rust_channel}"
+targets = [ "${rust_target}" ]
 EOF
 fi
 
