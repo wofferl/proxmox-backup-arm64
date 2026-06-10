@@ -615,7 +615,8 @@ function download_release() {
 	for download_url in "${download_urls[@]}"; do
 
 		file=$(basename "${download_url}")
-		
+
+		if [ -e "${PACKAGES}/${file}" ]; then
 			echo "${file} already exists"
 		else
 			echo "Downloading ${file}"
