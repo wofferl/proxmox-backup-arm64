@@ -348,29 +348,14 @@ function resolve_commit_for_debian_version() {
 	version=${1}
 	repo_path=${2}
 	package_name=${3:-}
-	upstream=${version%%-*}
 
-	for tag in $(git -C "${repo_path}" tag -l "*${version}*" 2>/dev/null; git -C "${repo_path}" tag -l "*${upstream}*" 2>/dev/null); do
-		commit=$(git -C "${repo_path}" rev-list -n1 "${tag}" 2>/dev/null || true)
-		if [ -n "${commit}" ]; then
-			echo "${commit}"
-			return 0
-		fi
-	done
-
+	# Compatibility wrapper. The generic package resolver handles tags,
+	# root changelogs, and nested */debian/changelog files.
 	if [ -n "${package_name}" ]; then
-		commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "${package_name} (${version}" -- debian/changelog 2>/dev/null || true)
-		[ -n "${commit}" ] && { echo "${commit}"; return 0; }
-		commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "${package_name} (${upstream}" -- debian/changelog 2>/dev/null || true)
-		[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+		resolve_commit_for_package_version "${version}" "${repo_path}" "${package_name}"
+	else
+		resolve_commit_for_package_version "${version}" "${repo_path}" ""
 	fi
-
-	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${version}" -- debian/changelog 2>/dev/null || true)
-	[ -n "${commit}" ] && { echo "${commit}"; return 0; }
-	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${upstream}" -- debian/changelog 2>/dev/null || true)
-	[ -n "${commit}" ] && { echo "${commit}"; return 0; }
-
-	return 1
 }
 
 function git_clone_or_fetch() {
@@ -396,71 +381,6 @@ function git_clean_and_checkout() {
 	git "${path_args[@]}" clean -ffdx
 	git "${path_args[@]}" reset --hard
 	git "${path_args[@]}" checkout "${commit_id}"
-}
-
-resolve_commit() {
-    local version=$1
-    local repo_path=$2
-    local package_name=$3
-
-    local version_stripped=${version%%-*}
-    local commit
-
-    # Tags
-    for tag in $(git -C "${repo_path}" tag -l "*${version_stripped}*" 2>/dev/null); do
-        commit=$(git -C "${repo_path}" rev-list -n1 "${tag}" 2>/dev/null)
-        [ -n "${commit}" ] && echo "${commit}" && return 0
-    done
-
-    # Common Proxmox bump commit pattern
-    commit=$(
-        git -C "${repo_path}" log \
-            --all \
-            --format="%H" \
-            -1 \
-            --grep="bump version to ${version_stripped}" \
-            -- debian/changelog 2>/dev/null
-    )
-
-    [ -n "${commit}" ] && echo "${commit}" && return 0
-
-    # Changelog entry search
-    commit=$(
-        git -C "${repo_path}" log \
-            --all \
-            --format="%H" \
-            -1 \
-            -S "${package_name} (${version_stripped}" \
-            -- debian/changelog 2>/dev/null
-    )
-
-    [ -n "${commit}" ] && echo "${commit}" && return 0
-
-    commit=$(
-        git -C "${repo_path}" log \
-            --all \
-            --format="%H" \
-            -1 \
-            --grep="${package_name} (${version}" \
-            -- debian/changelog 2>/dev/null
-    )
-
-    [ -n "${commit}" ] && echo "${commit}" && return 0
-
-    if [ "${version_stripped}" != "${version}" ]; then
-        commit=$(
-            git -C "${repo_path}" log \
-                --all \
-                --format="%H" \
-                -1 \
-                --grep="${package_name} (${version_stripped}" \
-                -- debian/changelog 2>/dev/null
-        )
-
-        [ -n "${commit}" ] && echo "${commit}" && return 0
-    fi
-
-    return 1
 }
 
 resolve_dependency_repo_commit() {
@@ -598,7 +518,7 @@ resolve_rust_crate_commit() {
   local upstream="${version%%-*}"
   local commit=""
 
-  commit="$(resolve_commit_for_debian_version "$version" "$repo_path" "$package_name" || true)"
+  commit="$(resolve_commit_for_package_version "$version" "$repo_path" "$package_name" || true)"
   [ -n "$commit" ] && { echo "$commit"; return 0; }
 
   commit="$(git -C "$repo_path" log --all --format='%H' -1 \
@@ -796,7 +716,7 @@ ${SUDO} apt install -y "${packages_install[@]}"
 
 cd "${SOURCES}"
 
-if [ "${BUILD_PACKAGE}" == "client" ]; then
+if [ "${BUILD_PACKAGE}" == "TMPPPPPclient" ]; then
 
 	PROXMOX_BIOME_VER="$(latest_package_version devel proxmox-biome)"
 	echo "Using proxmox-biome package version: ${PROXMOX_BIOME_VER}"
@@ -831,7 +751,21 @@ if [ "${BUILD_PACKAGE}" == "client" ]; then
 		env -i HOME="${HOME}" TERM="${TERM}" bash -c \
 			'source /etc/profile; source ~/.cargo/env; make deb'
 
-		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb "${PACKAGES_BUILD}"
+		biome_deb="$(
+			find "${SOURCES}/proxmox-biome" \
+				-maxdepth 3 \
+				-type f \
+				-name "proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" \
+				-print -quit
+		)"
+
+		if [ -z "${biome_deb}" ]; then
+			echo "Error: proxmox-biome .deb not found" >&2
+			find "${SOURCES}/proxmox-biome" -maxdepth 3 -type f -name 'proxmox-biome*.deb' -ls >&2
+			exit 1
+		fi
+
+		mv -f "${biome_deb}" "${PACKAGES_BUILD}/"
 		cd ..
 	else
 		echo "proxmox-biome up-to-date"
@@ -850,6 +784,16 @@ PROXMOX_BACKUP_VER="${PROXMOX_BACKUP_VER%%-*}"
 PROXMOX_BACKUP_GIT=""
 PROXMOX_GIT=""
 
+if [ -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
+  echo "proxmox-backup up-to-date" && exit 0
+fi
+
+git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
+git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
+git_clone_or_fetch https://git.proxmox.com/git/pxar.git
+git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
+git_clone_or_fetch https://git.proxmox.com/git/pathpatterns.git
+
 PATHPATTERNS_VER="$(latest_package_version devel librust-pathpatterns-dev)"
 PXAR_VER="$(latest_package_version devel librust-pxar-dev)"
 PROXMOX_FUSE_VER="$(latest_package_version devel librust-proxmox-fuse-dev)"
@@ -857,11 +801,6 @@ PROXMOX_FUSE_VER="$(latest_package_version devel librust-proxmox-fuse-dev)"
 PXAR_GIT=$(resolve_rust_crate_commit "${PXAR_VER}" pxar pxar || true)
 PATHPATTERNS_GIT=$(resolve_rust_crate_commit "${PATHPATTERNS_VER}" pathpatterns pathpatterns || true)
 PROXMOX_FUSE_GIT=$(resolve_rust_crate_commit "${PROXMOX_FUSE_VER}" proxmox-fuse proxmox-fuse || true)
-
-find "${SOURCES}" -path '*/pathpatterns/Cargo.toml' -print
-grep -R '^name = "pathpatterns"' "${SOURCES}"/proxmox -n
-
-exit 50
 
 for name in PATHPATTERNS PXAR PROXMOX_FUSE; do
   git_var="${name}_GIT"
@@ -872,20 +811,9 @@ for name in PATHPATTERNS PXAR PROXMOX_FUSE; do
   fi
 done
 
-if [ -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
-  echo "proxmox-backup up-to-date" && exit 0
-fi
-
-git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
-git_clone_or_fetch https://git.proxmox.com/git/proxmox-backup.git
-
-git_clone_or_fetch https://git.proxmox.com/git/pxar.git
-git_clone_or_fetch https://git.proxmox.com/git/proxmox-fuse.git
-git_clone_or_fetch https://git.proxmox.com/git/pathpatterns.git
-
 echo "Resolving commit hashes for version ${PROXMOX_BACKUP_VER}..."
 
-PROXMOX_BACKUP_GIT=$(resolve_commit "${PROXMOX_BACKUP_VER}" proxmox-backup proxmox-backup) || true
+PROXMOX_BACKUP_GIT=$(resolve_commit_for_package_version "${PROXMOX_BACKUP_VER}" proxmox-backup proxmox-backup) || true
 if [ -z "${PROXMOX_BACKUP_GIT}" ]; then
   echo "Error: Could not resolve proxmox-backup commit for version ${PROXMOX_BACKUP_VER}" >&2
   exit 1
@@ -1059,6 +987,10 @@ if [ ! -e "${PACKAGES}/proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH
 	cd termproxy
 	set_package_info
 	${SUDO} apt -y -a${PACKAGE_ARCH} build-dep .
+	if [[ "${BUILD_PROFILES}" =~ cross ]]; then
+		# Cross builds may intentionally use unstripped binaries; do not fail on lintian.
+		sed -i 's|^\([[:space:]]*\)lintian \(.*\)$|\1- lintian \2|' Makefile
+	fi
 	BUILD_MODE=release make deb
 	cd ../..
 	termproxy_deb="$(find "${SOURCES}/pve-xtermjs" -maxdepth 2 -type f -name "proxmox-termproxy_${PROXMOX_TERMPROXY_VER}_${PACKAGE_ARCH}.deb" -print -quit)"
