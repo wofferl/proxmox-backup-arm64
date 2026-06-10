@@ -1065,7 +1065,7 @@ git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
 PROXMOX_JOURNALREADER_VER="$(cd proxmox-mini-journalreader && dpkg-parsechangelog -SVersion)"
 echo "Using proxmox-mini-journalreader package version: ${PROXMOX_JOURNALREADER_VER}"
 
-if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_${HOST_ARCH}.deb" ]; then
+if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.deb" ]; then
 	patch -p1 -d proxmox-mini-journalreader/ <${PATCHES}/proxmox-mini-journalreader.patch
 	[[ "${BUILD_PROFILES}" =~ cross ]] &&
 		patch -p1 -d proxmox-mini-journalreader/ <"${PATCHES}/proxmox-mini-journalreader-cross.patch"
