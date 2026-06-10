@@ -591,6 +591,27 @@ function set_package_info() {
 	fi
 }
 
+resolve_rust_crate_commit() {
+  local version="$1"
+  local repo_path="$2"
+  local package_name="$3"
+  local upstream="${version%%-*}"
+  local commit=""
+
+  commit="$(resolve_commit_for_debian_version "$version" "$repo_path" "$package_name" || true)"
+  [ -n "$commit" ] && { echo "$commit"; return 0; }
+
+  commit="$(git -C "$repo_path" log --all --format='%H' -1 \
+    -S "version = \"$upstream\"" -- Cargo.toml 2>/dev/null || true)"
+  [ -n "$commit" ] && { echo "$commit"; return 0; }
+
+  commit="$(git -C "$repo_path" log --all --format='%H' -1 \
+    -S "version=\"$upstream\"" -- Cargo.toml 2>/dev/null || true)"
+  [ -n "$commit" ] && { echo "$commit"; return 0; }
+
+  return 1
+}
+
 file_list=()
 function download_release() {
 	version=${1:-latest}
@@ -833,9 +854,9 @@ PATHPATTERNS_VER="$(latest_package_version devel librust-pathpatterns-dev)"
 PXAR_VER="$(latest_package_version devel librust-pxar-dev)"
 PROXMOX_FUSE_VER="$(latest_package_version devel librust-proxmox-fuse-dev)"
 
-PXAR_GIT=$(resolve_commit_for_debian_version "${PXAR_VER}" pxar pxar || true)
-PATHPATTERNS_GIT=$(resolve_commit_for_debian_version "${PATHPATTERNS_VER}" pathpatterns pathpatterns || true)
-PROXMOX_FUSE_GIT=$(resolve_commit_for_debian_version "${PROXMOX_FUSE_VER}" proxmox-fuse proxmox-fuse || true)
+PXAR_GIT=$(resolve_rust_crate_commit "${PXAR_VER}" pxar pxar || true)
+PATHPATTERNS_GIT=$(resolve_rust_crate_commit "${PATHPATTERNS_VER}" pathpatterns pathpatterns || true)
+PROXMOX_FUSE_GIT=$(resolve_rust_crate_commit "${PROXMOX_FUSE_VER}" proxmox-fuse proxmox-fuse || true)
 
 for name in PATHPATTERNS PXAR PROXMOX_FUSE; do
   git_var="${name}_GIT"
