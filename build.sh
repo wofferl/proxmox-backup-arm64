@@ -858,6 +858,11 @@ PXAR_GIT=$(resolve_rust_crate_commit "${PXAR_VER}" pxar pxar || true)
 PATHPATTERNS_GIT=$(resolve_rust_crate_commit "${PATHPATTERNS_VER}" pathpatterns pathpatterns || true)
 PROXMOX_FUSE_GIT=$(resolve_rust_crate_commit "${PROXMOX_FUSE_VER}" proxmox-fuse proxmox-fuse || true)
 
+find "${SOURCES}" -path '*/pathpatterns/Cargo.toml' -print
+grep -R '^name = "pathpatterns"' "${SOURCES}"/proxmox -n
+
+exit 50
+
 for name in PATHPATTERNS PXAR PROXMOX_FUSE; do
   git_var="${name}_GIT"
   ver_var="${name}_VER"
