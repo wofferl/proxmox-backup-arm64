@@ -20,9 +20,11 @@ jobs:
       -
         name: Get remote package data
         run: |
+        
           set -e -o pipefail
-          latest_tag=$(curl -fsSL "https://metadata.cdn.proxmox.com/download/changelogs/pdm/dists/trixie/pdm-no-subscription/p/proxmox-datacenter-manager/" | \
-          grep -oP '(?<=proxmox-datacenter-manager_)[0-9]+\.[0-9]+\.[0-9]+(?=\.changelog)' | sort -V | tail -1)
+          latest_tag=$(curl -fsSL "https://metadata.cdn.proxmox.com/download/changelogs/pbs/dists/trixie/pbs-no-subscription/p/proxmox-backup/" | \
+          grep -oP '(?<=proxmox-backup_)[0-9]+\.[0-9]+\.[0-9]+(?=\.changelog)' | sort -V | tail -1)
+          
           echo "Found tag: \"${latest_tag}\""
           latest_version="${latest_tag%-*}"
           major="${latest_version%%.*}"
