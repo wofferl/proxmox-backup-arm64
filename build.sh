@@ -904,16 +904,16 @@ dpkg-buildpackage -a${PACKAGE_ARCH} -b -us -uc ${BUILD_PROFILES}
 cd ..
 
 if [ "${BUILD_PACKAGE}" = "client" ]; then
-	mv -f proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb "${PACKAGES}"
+	mv -f "proxmox-backup-client_${DEB_VERSION}_${PACKAGE_ARCH}.deb" "${PACKAGES}"
 	exit 0
 fi
 
 shopt -s nullglob
 artifacts=(
-  proxmox-backup-client{,-static}{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.*
-  proxmox-backup-file-restore{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.*
-  proxmox-backup-server{,-dbgsym}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.*
-  proxmox-backup-docs_${PROXMOX_BACKUP_VER}_all.deb
+  proxmox-backup-client{,-static}{,-dbgsym}_${DEB_VERSION}_${PACKAGE_ARCH}.*
+  proxmox-backup-file-restore{,-dbgsym}_${DEB_VERSION}_${PACKAGE_ARCH}.*
+  proxmox-backup-server{,-dbgsym}_${DEB_VERSION}_${PACKAGE_ARCH}.*
+  proxmox-backup-docs_${DEB_VERSION}_all.deb
 )
 shopt -u nullglob
 
