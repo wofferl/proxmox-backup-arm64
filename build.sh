@@ -52,134 +52,6 @@ function get_base() {
 	return 0
 }
 
-function download_package_by_upstream_version() {
-	repo=${1}
-	package_name=${2}
-	upstream_version=${3}
-	dest=${4}
-
-	url_base=http://download.proxmox.com/debian/${repo}
-	packages_target=$(get_base "${repo}")
-	version_target=0.0
-	file_target=
-
-	while IFS= read -r line; do
-		name=${line%%;*}
-		line=${line##*${name};}
-
-		if [[ "${name}" == "${package_name}" ]]; then
-			version=${line%%;*}
-			line=${line##*${version};}
-			file=${line%%;*}
-			line=${line##*${file};}
-			depends=${line}
-
-			# Match Debian revisions and binNMUs for the requested upstream version
-			case "${version}" in
-				"${upstream_version}"|"${upstream_version}"-*|"${upstream_version}"+*|"${upstream_version}"~*) ;;
-				*) continue ;;
-			esac
-
-			if dpkg --compare-versions "${version}" '>>' "${version_target}"; then
-				# Do not pre-filter packages by simulating their dependencies here.
-				version_target=${version}
-				file_target=${file}
-			fi
-		fi
-	done <<<"${packages_target}"
-
-	if [ -z "${file_target}" ]; then
-		return 1
-	fi
-
-	url=${url_base}/${file_target}
-	file="${dest}/${url##*/}"
-	if [ -e "${file}" ]; then
-		echo "${package_name} ${version_target} up-to-date" >&2
-		echo "${file}"
-		return 0
-	fi
-
-	echo "${package_name} ${version_target} downloading...${url}" >&2
-	curl -sSfL "${url}" -o "${file}"
-	echo "${file}"
-}
-
-function download_package_with_fallback() {
-	repo=${1}
-	package=${2}
-	dest=${3}
-	shift 3
-
-	for version in "$@"; do
-		[ -n "${version}" ] || continue
-
-		# First try an exact Debian package version.
-		if file=$(download_package "${repo}" "${package}" "${version}" "${dest}" 2>/dev/null); then
-			echo "${file}"
-			return 0
-		fi
-
-		# Then try the same value as an upstream version and accept Debian revisions
-		if file=$(download_package_by_upstream_version "${repo}" "${package}" "${version}" "${dest}" 2>/dev/null); then
-			echo "${file}"
-			return 0
-		fi
-	done
-
-	echo "Error: package ${package} not found in ${repo} for any requested version: $*" >&2
-	return 1
-}
-
-
-function download_package_prefix_no_deps() {
-	repo=${1}
-	package_name=${2}
-	upstream_version=${3}
-	dest=${4}
-
-	url_base=http://download.proxmox.com/debian/${repo}
-	packages_target=$(get_base "${repo}")
-	version_target=""
-	file_target=""
-
-	while IFS=';' read -r name version file depends; do
-		[[ "${name}" == "${package_name}" ]] || continue
-
-		case "${version}" in
-			"${upstream_version}"|"${upstream_version}"-*|"${upstream_version}"+*|"${upstream_version}"~*) ;;
-			*) continue ;;
-		esac
-
-		if [ -z "${version_target}" ] || dpkg --compare-versions "${version}" '>>' "${version_target}"; then
-			version_target=${version}
-			file_target=${file}
-		fi
-	done <<<"${packages_target}"
-
-	if [ -z "${file_target}" ]; then
-		echo "Error: package ${package_name} not found in ${repo} for upstream version ${upstream_version}" >&2
-		echo "Available ${package_name} versions in ${repo}:" >&2
-		while IFS=';' read -r name version file depends; do
-			[[ "${name}" == "${package_name}" ]] && echo "  ${version}" >&2
-		done <<<"${packages_target}"
-		return 1
-	fi
-
-	url=${url_base}/${file_target}
-	file="${dest}/${url##*/}"
-	if [ -e "${file}" ]; then
-		echo "${package_name} ${version_target} up-to-date" >&2
-		echo "${file}"
-		return 0
-	fi
-
-	echo "${package_name} ${version_target} downloading...${url}" >&2
-	curl -sSfL "${url}" -o "${file}"
-	echo "${file}"
-}
-
-
 function download_package_max_upstream_no_deps() {
 	repo=${1}
 	package_name=${2}
@@ -1032,6 +904,18 @@ targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host:/ { pri
 EOF
 fi
 
+cat >proxmox-backup/debian/SOURCE <<EOF
+This package was built from:
+
+proxmox-backup:
+  repository: https://git.proxmox.com/git/proxmox-backup.git
+  commit: ${PROXMOX_DM_GIT}
+
+proxmox:
+  repository: https://git.proxmox.com/git/proxmox.git
+  commit: ${PROXMOX_GIT}
+EOF
+
 sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
 sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
@@ -1056,11 +940,14 @@ fi
 cd proxmox-backup/
 set_package_info
 
-	${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
-	export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
-	export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
-	dpkg-buildpackage -a${PACKAGE_ARCH} -b -us -uc ${BUILD_PROFILES}
-	cd ..
+${SUDO} apt -y build-dep -a${PACKAGE_ARCH} ${BUILD_PROFILES} .
+
+export DEB_VERSION=$(dpkg-parsechangelog -SVersion)
+export DEB_VERSION_UPSTREAM=$(dpkg-parsechangelog -SVersion | cut -d- -f1)
+
+dpkg-buildpackage -a${PACKAGE_ARCH} -b -us -uc ${BUILD_PROFILES}
+cd ..
+
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		mv -f proxmox-backup-client_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb \
 			"${PACKAGES}"
