@@ -189,3 +189,7 @@ Components: pbs-enterprise
 Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
 Enabled: false
 ```
+
+## Acknowledgements
+
+Special thanks to [wofferl](https://github.com/wofferl), this project would not exist without his invaluable work.
