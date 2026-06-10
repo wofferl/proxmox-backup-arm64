@@ -1,14 +1,14 @@
 #!/bin/bash
 #
-# build script for proxmox backup server on arm64
-# https://github.com/wofferl/proxmox-backup-arm64
+# Build script for Proxmox Backup Server on ARM64
+# https://github.com/qemus/proxmox-backup-arm64
 
 set -eu
 
 function download_package() {
 	repo=${1}
 	package=${2}
-	if [ -n "${5}" ]; then
+    if [ -n "${5:-}" ]; then
 		version_test=("${3}" "${4}")
 		dest=${5}
 	else
@@ -35,6 +35,515 @@ function download_package() {
 	echo "${file}"
 }
 
+function download_package_by_upstream_version() {
+	repo=${1}
+	package_name=${2}
+	upstream_version=${3}
+	dest=${4}
+
+	url_base=http://download.proxmox.com/debian/${repo}
+	if [[ "${repo}" == "pdm" ]]; then
+		packages_target=${PACKAGES_PDM}
+	elif [[ "${repo}" == "devel" ]]; then
+		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "pve" ]]; then
+		packages_target=${PACKAGES_PVE}
+	else
+		echo "Unknown repo ${repo}" >&2
+		return 1
+	fi
+
+	version_target=0.0
+	file_target=
+
+	while IFS= read -r line; do
+		name=${line%%;*}
+		line=${line##*${name};}
+
+		if [[ "${name}" == "${package_name}" ]]; then
+			version=${line%%;*}
+			line=${line##*${version};}
+			file=${line%%;*}
+			line=${line##*${file};}
+			depends=${line}
+
+			# Match Debian revisions and binNMUs for the requested upstream version
+			case "${version}" in
+				"${upstream_version}"|"${upstream_version}"-*|"${upstream_version}"+*|"${upstream_version}"~*) ;;
+				*) continue ;;
+			esac
+
+			if dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+				# Do not pre-filter packages by simulating their dependencies here.
+				version_target=${version}
+				file_target=${file}
+			fi
+		fi
+	done <<<"${packages_target}"
+
+	if [ -z "${file_target}" ]; then
+		return 1
+	fi
+
+	url=${url_base}/${file_target}
+	file="${dest}/${url##*/}"
+	if [ -e "${file}" ]; then
+		echo "${package_name} ${version_target} up-to-date" >&2
+		echo "${file}"
+		return 0
+	fi
+
+	echo "${package_name} ${version_target} downloading...${url}" >&2
+	curl -sSfL "${url}" -o "${file}"
+	echo "${file}"
+}
+
+function download_package_with_fallback() {
+	repo=${1}
+	package=${2}
+	dest=${3}
+	shift 3
+
+	for version in "$@"; do
+		[ -n "${version}" ] || continue
+
+		# First try an exact Debian package version.
+		if file=$(download_package "${repo}" "${package}" "${version}" "${dest}" 2>/dev/null); then
+			echo "${file}"
+			return 0
+		fi
+
+		# Then try the same value as an upstream version and accept Debian revisions
+		if file=$(download_package_by_upstream_version "${repo}" "${package}" "${version}" "${dest}" 2>/dev/null); then
+			echo "${file}"
+			return 0
+		fi
+	done
+
+	echo "Error: package ${package} not found in ${repo} for any requested version: $*" >&2
+	return 1
+}
+
+
+function download_package_prefix_no_deps() {
+	repo=${1}
+	package_name=${2}
+	upstream_version=${3}
+	dest=${4}
+
+	url_base=http://download.proxmox.com/debian/${repo}
+	if [[ "${repo}" == "pdm" ]]; then
+		packages_target=${PACKAGES_PDM}
+	elif [[ "${repo}" == "devel" ]]; then
+		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "pve" ]]; then
+		packages_target=${PACKAGES_PVE}
+	else
+		echo "Unknown repo ${repo}" >&2
+		return 1
+	fi
+
+	version_target=""
+	file_target=""
+
+	while IFS=';' read -r name version file depends; do
+		[[ "${name}" == "${package_name}" ]] || continue
+
+		case "${version}" in
+			"${upstream_version}"|"${upstream_version}"-*|"${upstream_version}"+*|"${upstream_version}"~*) ;;
+			*) continue ;;
+		esac
+
+		if [ -z "${version_target}" ] || dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+			version_target=${version}
+			file_target=${file}
+		fi
+	done <<<"${packages_target}"
+
+	if [ -z "${file_target}" ]; then
+		echo "Error: package ${package_name} not found in ${repo} for upstream version ${upstream_version}" >&2
+		echo "Available ${package_name} versions in ${repo}:" >&2
+		while IFS=';' read -r name version file depends; do
+			[[ "${name}" == "${package_name}" ]] && echo "  ${version}" >&2
+		done <<<"${packages_target}"
+		return 1
+	fi
+
+	url=${url_base}/${file_target}
+	file="${dest}/${url##*/}"
+	if [ -e "${file}" ]; then
+		echo "${package_name} ${version_target} up-to-date" >&2
+		echo "${file}"
+		return 0
+	fi
+
+	echo "${package_name} ${version_target} downloading...${url}" >&2
+	curl -sSfL "${url}" -o "${file}"
+	echo "${file}"
+}
+
+
+function download_package_max_upstream_no_deps() {
+	repo=${1}
+	package_name=${2}
+	max_upstream_version=${3}
+	dest=${4}
+
+	url_base=http://download.proxmox.com/debian/${repo}
+	if [[ "${repo}" == "pdm" ]]; then
+		packages_target=${PACKAGES_PDM}
+	elif [[ "${repo}" == "devel" ]]; then
+		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "pve" ]]; then
+		packages_target=${PACKAGES_PVE}
+	else
+		echo "Unknown repo ${repo}" >&2
+		return 1
+	fi
+
+	version_target=""
+	file_target=""
+	upstream_target=""
+
+	while IFS=';' read -r name version file depends; do
+		[[ "${name}" == "${package_name}" ]] || continue
+		[ -n "${version}" ] || continue
+
+		# Compare by upstream part, so a repository version like 1.1.2 is accepted
+		# when the requested source version is 1.1.4, but 1.1.5 is not.
+		upstream=${version%%-*}
+		if ! dpkg --compare-versions "${upstream}" le "${max_upstream_version}"; then
+			continue
+		fi
+
+		if [ -z "${version_target}" ] || dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+			version_target=${version}
+			upstream_target=${upstream}
+			file_target=${file}
+		fi
+	done <<<"${packages_target}"
+
+	if [ -z "${file_target}" ]; then
+		echo "Error: package ${package_name} not found in ${repo} with upstream <= ${max_upstream_version}" >&2
+		echo "Available ${package_name} versions in ${repo}:" >&2
+		while IFS=';' read -r name version file depends; do
+			[[ "${name}" == "${package_name}" ]] && echo "  ${version}" >&2
+		done <<<"${packages_target}"
+		return 1
+	fi
+
+	if [ "${upstream_target}" != "${max_upstream_version}" ]; then
+		echo "Warning: using ${package_name} ${version_target}; requested source upstream is ${max_upstream_version}" >&2
+	else
+		echo "Using ${package_name} ${version_target}" >&2
+	fi
+
+	url=${url_base}/${file_target}
+	file="${dest}/${url##*/}"
+	if [ -e "${file}" ]; then
+		echo "${package_name} ${version_target} up-to-date" >&2
+		echo "${file}"
+		return 0
+	fi
+
+	echo "${package_name} ${version_target} downloading...${url}" >&2
+	curl -sSfL "${url}" -o "${file}"
+	echo "${file}"
+}
+
+
+function download_arch_all_package_satisfying() {
+	repo=${1}
+	package_name=${2}
+	relation=${3}
+	required_version=${4}
+	dest=${5}
+
+	url_base=http://download.proxmox.com/debian/${repo}
+	if [[ "${repo}" == "pdm" ]]; then
+		packages_target=${PACKAGES_PDM}
+	elif [[ "${repo}" == "devel" ]]; then
+		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "pve" ]]; then
+		packages_target=${PACKAGES_PVE}
+	else
+		return 1
+	fi
+
+	version_target=""
+	file_target=""
+
+	while IFS=';' read -r name version file depends; do
+		[[ "${name}" == "${package_name}" ]] || continue
+		[ -n "${version}" ] || continue
+
+		# Only auto-download Architecture:all packages. The package lists are
+		# amd64 indices, so downloading Architecture:any packages here would
+		# accidentally pull amd64 binaries into an ARM64 release.
+		[[ "${file##*/}" == *_all.deb ]] || continue
+
+		if [ -n "${relation}" ] && [ -n "${required_version}" ]; then
+			dpkg --compare-versions "${version}" "${relation}" "${required_version}" || continue
+		fi
+
+		if [ -z "${version_target}" ] || dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+			version_target=${version}
+			file_target=${file}
+		fi
+	done <<<"${packages_target}"
+
+	[ -n "${file_target}" ] || return 1
+
+	url=${url_base}/${file_target}
+	file="${dest}/${url##*/}"
+
+	if [ -e "${file}" ]; then
+		echo "${package_name} ${version_target} up-to-date" >&2
+		echo "${file}"
+		return 0
+	fi
+
+	echo "${package_name} ${version_target} downloading runtime dependency...${url}" >&2
+	curl -sSfL "${url}" -o "${file}"
+	echo "${file}"
+}
+
+function download_runtime_arch_all_dependency() {
+	package_name=${1}
+	relation=${2:-}
+	required_version=${3:-}
+	dest=${4}
+
+	# Try the project-specific repositories first, then the shared devel repo.
+	for repo in pdm pve devel; do
+		if file=$(download_arch_all_package_satisfying "${repo}" "${package_name}" "${relation}" "${required_version}" "${dest}" 2>/dev/null); then
+			echo "${file}"
+			return 0
+		fi
+	done
+
+	return 1
+}
+
+function download_runtime_arch_all_dependencies() {
+	if [ "$#" -eq 0 ]; then
+		return 0
+	fi
+
+	echo "Resolving Architecture:all runtime dependencies from built package metadata"
+
+	local deb fields line dep package_name relation required_version
+
+	for deb in "$@"; do
+		[ -e "${deb}" ] || continue
+
+		fields="$(dpkg-deb -f "${deb}" Pre-Depends Depends Recommends 2>/dev/null || true)"
+		[ -n "${fields}" ] || continue
+
+		while IFS= read -r line; do
+			# Use the first alternative. If that alternative is not in a Proxmox
+			# repo as Architecture:all, it is simply ignored.
+			dep="${line%%|*}"
+
+			# trim whitespace
+			dep="${dep#"${dep%%[![:space:]]*}"}"
+			dep="${dep%"${dep##*[![:space:]]}"}"
+			[ -n "${dep}" ] || continue
+
+			package_name="${dep%% *}"
+			package_name="${package_name%%:*}"
+			[ -n "${package_name}" ] || continue
+
+			relation=""
+			required_version=""
+
+			version_re='\\(([^[:space:]]+)[[:space:]]+([^)]*)\\)'
+			if [[ "${dep}" =~ ${version_re} ]]; then
+				relation="${BASH_REMATCH[1]}"
+				required_version="${BASH_REMATCH[2]}"
+			fi
+
+			download_runtime_arch_all_dependency "${package_name}" "${relation}" "${required_version}" "${PACKAGES}" >/dev/null || true
+		done < <(printf '%s\n' "${fields}" | tr ',' '\n')
+	done
+}
+
+function dependency_constraint_from_deb() {
+	deb=${1}
+	wanted=${2}
+
+	fields="$(dpkg-deb -f "${deb}" Pre-Depends Depends Recommends 2>/dev/null || true)"
+	[ -n "${fields}" ] || return 1
+
+	local line dep alt package_name relation required_version version_re
+	while IFS= read -r line; do
+		# Check every alternative, not only the first one, because packages may use
+		# alternatives for helper packages.
+		while IFS='|' read -r alt; do
+			dep="${alt}"
+			dep="${dep#"${dep%%[![:space:]]*}"}"
+			dep="${dep%"${dep##*[![:space:]]}"}"
+			[ -n "${dep}" ] || continue
+
+			package_name="${dep%% *}"
+			package_name="${package_name%%:*}"
+			[ "${package_name}" = "${wanted}" ] || continue
+
+			relation=""
+			required_version=""
+			version_re='\(([^[:space:]]+)[[:space:]]+([^)]*)\)'
+			if [[ "${dep}" =~ ${version_re} ]]; then
+				relation="${BASH_REMATCH[1]}"
+				required_version="${BASH_REMATCH[2]}"
+			fi
+
+			printf '%s;%s\n' "${relation}" "${required_version}"
+			return 0
+		done <<<"${line}"
+	done < <(printf '%s\n' "${fields}" | tr ',' '\n')
+
+	return 1
+}
+
+function package_version_satisfying() {
+	repo=${1}
+	package_name=${2}
+	relation=${3:-}
+	required_version=${4:-}
+
+	if [[ "${repo}" == "pdm" ]]; then
+		packages_target=${PACKAGES_PDM}
+	elif [[ "${repo}" == "devel" ]]; then
+		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "pve" ]]; then
+		packages_target=${PACKAGES_PVE}
+	else
+		echo "Unknown repo ${repo}" >&2
+		return 1
+	fi
+
+	version_target=""
+	while IFS=';' read -r name version file depends; do
+		[[ "${name}" == "${package_name}" ]] || continue
+		[ -n "${version}" ] || continue
+
+		if [ -n "${relation}" ] && [ -n "${required_version}" ]; then
+			dpkg --compare-versions "${version}" "${relation}" "${required_version}" || continue
+		fi
+
+		if [ -z "${version_target}" ] || dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+			version_target=${version}
+		fi
+	done <<<"${packages_target}"
+
+	[ -n "${version_target}" ] || return 1
+	echo "${version_target}"
+}
+
+function resolve_commit_for_package_version() {
+	version=${1}
+	repo_path=${2}
+	package_name=${3}
+
+	# BinNMUs such as 1.2.3-1+b1 do not normally appear in source changelogs.
+	source_version=${version%%+*}
+	upstream=${source_version%%-*}
+
+	for pattern in "${source_version}" "${version}" "${upstream}"; do
+		for tag in $(git -C "${repo_path}" tag -l "*${pattern}*" 2>/dev/null); do
+			commit=$(git -C "${repo_path}" rev-list -n1 "${tag}" 2>/dev/null || true)
+			if [ -n "${commit}" ]; then
+				echo "${commit}"
+				return 0
+			fi
+		done
+	done
+
+	# Search all Debian changelogs in the repository. Some Proxmox repos contain
+	# multiple packages below subdirectories, for example pve-xtermjs/termproxy.
+	local changelog commit
+	while IFS= read -r changelog; do
+		commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "${package_name} (${source_version}" -- "${changelog}" 2>/dev/null || true)
+		[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+
+		commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "${package_name} (${upstream}" -- "${changelog}" 2>/dev/null || true)
+		[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+	done < <(git -C "${repo_path}" ls-files '*debian/changelog' 2>/dev/null)
+
+	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${source_version}" 2>/dev/null || true)
+	[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${upstream}" 2>/dev/null || true)
+	[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+
+	return 1
+}
+
+
+function latest_package_version() {
+	repo=${1}
+	package_name=${2}
+
+	if [[ "${repo}" == "pdm" ]]; then
+		packages_target=${PACKAGES_PDM}
+	elif [[ "${repo}" == "devel" ]]; then
+		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "pve" ]]; then
+		packages_target=${PACKAGES_PVE}
+	else
+		echo "Unknown repo ${repo}" >&2
+		return 1
+	fi
+
+	version_target=""
+	while IFS=';' read -r name version file depends; do
+		[[ "${name}" == "${package_name}" ]] || continue
+		[ -n "${version}" ] || continue
+		if [ -z "${version_target}" ] || dpkg --compare-versions "${version}" '>>' "${version_target}"; then
+			version_target=${version}
+		fi
+	done <<<"${packages_target}"
+
+	[ -n "${version_target}" ] || return 1
+	echo "${version_target}"
+}
+
+function download_package_latest() {
+	repo=${1}
+	package=${2}
+	dest=${3}
+	version=$(latest_package_version "${repo}" "${package}")
+	download_package "${repo}" "${package}" "${version}" "${dest}"
+}
+
+function resolve_commit_for_debian_version() {
+	version=${1}
+	repo_path=${2}
+	package_name=${3:-}
+	upstream=${version%%-*}
+
+	for tag in $(git -C "${repo_path}" tag -l "*${version}*" 2>/dev/null; git -C "${repo_path}" tag -l "*${upstream}*" 2>/dev/null); do
+		commit=$(git -C "${repo_path}" rev-list -n1 "${tag}" 2>/dev/null || true)
+		if [ -n "${commit}" ]; then
+			echo "${commit}"
+			return 0
+		fi
+	done
+
+	if [ -n "${package_name}" ]; then
+		commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "${package_name} (${version}" -- debian/changelog 2>/dev/null || true)
+		[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+		commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "${package_name} (${upstream}" -- debian/changelog 2>/dev/null || true)
+		[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+	fi
+
+	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${version}" -- debian/changelog 2>/dev/null || true)
+	[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${upstream}" -- debian/changelog 2>/dev/null || true)
+	[ -n "${commit}" ] && { echo "${commit}"; return 0; }
+
+	return 1
+}
+
 function git_clone_or_fetch() {
 	url=${1}              # url/name.git
 	name_git=${url##*/}   # name.git
@@ -58,6 +567,106 @@ function git_clean_and_checkout() {
 	git "${path_args[@]}" clean -ffdx
 	git "${path_args[@]}" reset --hard
 	git "${path_args[@]}" checkout "${commit_id}"
+}
+
+function resolve_dm_commit() {
+	version=${1}
+	repo_path=${2}
+	local version_stripped=${version%%-*}
+
+	# Try tag formats commonly used by Proxmox
+	for tag in $(git -C "${repo_path}" tag -l "*${version_stripped}*" 2>/dev/null); do
+		commit=$(git -C "${repo_path}" rev-list -n1 "${tag}" 2>/dev/null)
+		if [ -n "${commit}" ]; then
+			echo "${commit}"
+			return 0
+		fi
+	done
+
+	# Search for the "bump version to X" commit message pattern used by Proxmox
+	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${version_stripped}" -- debian/changelog 2>/dev/null)
+	if [ -n "${commit}" ]; then
+		echo "${commit}"
+		return 0
+	fi
+
+	# Use pickaxe (-S) to find the commit that introduced the version in debian/changelog
+	commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "proxmox-datacenter-manager (${version_stripped}" -- debian/changelog 2>/dev/null)
+	if [ -n "${commit}" ]; then
+		echo "${commit}"
+		return 0
+	fi
+
+	# Fall back to searching commit messages for the changelog entry pattern
+	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="proxmox-datacenter-manager (${version})" -- debian/changelog 2>/dev/null)
+	if [ -n "${commit}" ]; then
+		echo "${commit}"
+		return 0
+	fi
+
+	if [ "${version_stripped}" != "${version}" ]; then
+		commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="proxmox-datacenter-manager (${version_stripped}" -- debian/changelog 2>/dev/null)
+		if [ -n "${commit}" ]; then
+			echo "${commit}"
+			return 0
+		fi
+	fi
+
+	return 1
+}
+
+function resolve_proxmox_commit() {
+	dm_commit=${1}
+	dm_path=${2}
+	proxmox_path=${3}
+
+	# Read the proxmox dependency version from Cargo.toml at the dm commit
+	proxmox_version=$(git -C "${dm_path}" show "${dm_commit}:Cargo.toml" 2>/dev/null | \
+		sed -n 's/.*proxmox-sys.*version\s*=\s*"\([^"]*\)".*/\1/p' | head -1)
+
+	if [ -n "${proxmox_version}" ]; then
+		# Try to find a matching tag in proxmox.git
+		for tag in $(git -C "${proxmox_path}" tag -l "*${proxmox_version}*" 2>/dev/null); do
+			commit=$(git -C "${proxmox_path}" rev-list -n1 "${tag}" 2>/dev/null)
+			if [ -n "${commit}" ]; then
+				echo "${commit}"
+				return 0
+			fi
+		done
+	fi
+
+	# Fall back to the most recent commit at or before the dm commit date
+	dm_date=$(git -C "${dm_path}" show -s --format=%ci "${dm_commit}" 2>/dev/null)
+	if [ -n "${dm_date}" ]; then
+		commit=$(git -C "${proxmox_path}" log --all --format="%H" -1 --before="${dm_date}" 2>/dev/null)
+		if [ -n "${commit}" ]; then
+			echo "${commit}"
+			return 0
+		fi
+	fi
+
+	return 1
+}
+
+
+function resolve_commit_before() {
+	source_commit=${1}
+	source_path=${2}
+	target_path=${3}
+
+	# Pick the newest commit in target_path at or before source_commit's date.
+	# This keeps bundled/nested Proxmox checkouts aligned with the project that uses them
+	# without needing to manually maintain a second hardcoded commit hash.
+	source_date=$(git -C "${source_path}" show -s --format=%ci "${source_commit}" 2>/dev/null || true)
+	if [ -n "${source_date}" ]; then
+		commit=$(git -C "${target_path}" log --all --format="%H" -1 --before="${source_date}" 2>/dev/null || true)
+		if [ -n "${commit}" ]; then
+			echo "${commit}"
+			return 0
+		fi
+	fi
+
+	return 1
 }
 
 function load_packages() {
@@ -93,6 +702,8 @@ function select_package() {
 		packages_target=${PACKAGES_PBS}
 	elif [[ "${repo}" == "devel" ]]; then
 		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "pve" ]]; then
+		packages_target=${PACKAGES_PVE}
 	else
 		echo "Unknown repo ${repo}" >&2
 		return 1
@@ -113,9 +724,9 @@ function select_package() {
 			depends=${line}
 			if dpkg --compare-versions "${version}" "${version_test[@]}" &&
 				dpkg --compare-versions "${version}" '>>' "${version_target}"; then
-				if [ -n "$depends" ]; then
-					sudo apt satisfy -s "${depends}" >/dev/null 2>&1 || continue
-				fi
+				# Do not pre-filter packages by simulating their dependencies here.
+				# The local build root might not yet have all repos/arches enabled,
+				# which can make apt satisfy reject an otherwise valid downloadable package.
 				version_target=${version}
 				file_target=${file}
 			fi
@@ -130,41 +741,61 @@ function select_package() {
 
 function set_package_info() {
 	if [ "$GITHUB_ACTION" ]; then
-		sed -i "s#^Maintainer:.*#Maintainer: Github Action <github@linux-dude.de>#" debian/control
-		sed -i "s#^Homepage:.*#Homepage: https://github.com/wofferl/proxmox-backup-arm64#" debian/control
+		sed -i "s#^Maintainer:.*#Maintainer: Github Action <no-reply@github.com>#" debian/control
+		sed -i "s#^Homepage:.*#Homepage: https://github.com/qemus/proxmox-backup-arm64#" debian/control
 	else
-		sed -i "s#^\(Maintainer.*\)\$#\1\nOrigin: https://github.com/wofferl/proxmox-backup-arm64#" debian/control
+		sed -i "s#^\(Maintainer.*\)\$#\1\nOrigin: https://github.com/qemus/proxmox-backup-arm64#" debian/control
 	fi
 }
 
 file_list=()
 function download_release() {
 	version=${1:-latest}
-	release_url="https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/${version}"
-	echo "Downloading ${version} released files to "${PACKAGES}
-	for download_url in $(curl -sSf ${release_url} | sed -n '/browser_download_url/ {/static\|dbgsym/!s/.*\(https[^"]*\)"/\1/p}'); do
-		file=$(basename ${download_url})
-		if [ -e ${PACKAGES}/${file} ]; then
-			echo "${file} already exist"
+	release_url="https://api.github.com/repos/qemus/proxmox-backup-arm64/releases/${version}"
+
+	echo "Downloading ${version} released files to ${PACKAGES}"
+
+	mapfile -t download_urls < <(
+		curl -sSfL "${release_url}" |
+			jq -r '
+				.assets[]
+				| select(.name | test("static|dbgsym") | not)
+				| .browser_download_url
+			'
+	)
+
+	if [ "${#download_urls[@]}" -eq 0 ]; then
+		echo "Error: no release assets found for ${version}" >&2
+		return 1
+	fi
+
+	for download_url in "${download_urls[@]}"; do
+
+		file=$(basename "${download_url}")
+		
+			echo "${file} already exists"
 		else
 			echo "Downloading ${file}"
-			curl -sSfLO ${download_url} --output-dir ${PACKAGES}
+			curl -sSfL "${download_url}" -o "${PACKAGES}/${file}"
 		fi
+
+        [[ "$file" == *"dbgsym"* ]] && continue
+        [[ "$file" == "proxmox-backup-client"* ]] && continue
+
 		file_list+=("${PACKAGES}/${file}")
 	done
 }
 
 function install_server() {
-	if [ "${#file_list[@]}" -gt 0 ]; then
-		sudo apt-get install -y \
-			"${file_list[@]}"
-	else
-		echo "No files found!"
+	if [ "${#file_list[@]}" -eq 0 ]; then
+		echo "Error: no files found to install" >&2
+		return 1
 	fi
+
+	${SUDO} apt-get install -y "${file_list[@]}"
 }
 
 SUDO="${SUDO:-sudo -E}"
-
 SCRIPT=$(realpath "${0}")
 BASE=$(dirname "${SCRIPT}")
 PACKAGES="${BASE}/packages"
@@ -179,7 +810,6 @@ HOST_SYSTEM=$(dpkg-architecture -q DEB_HOST_GNU_SYSTEM)
 BUILD_PACKAGE="server"
 BUILD_PROFILES=""
 GITHUB_ACTION=""
-
 
 export DEB_HOST_RUST_TYPE=${HOST_CPU}-unknown-${HOST_SYSTEM}
 
