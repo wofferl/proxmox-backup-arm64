@@ -895,38 +895,63 @@ fi
 echo "Install build dependencies"
 ${SUDO} apt install -y "${packages_install[@]}"
 
-cat <<EOF >rust-toolchain.toml
-[toolchain]
-channel="1.94.0"
-targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host/ { print $2 }')}" ]
-EOF
-
 cd "${SOURCES}"
+
 if [ "${BUILD_PACKAGE}" != "client" ]; then
-	PROXMOX_BIOME_VER="2.4.6-1"
-	PROXMOX_BIOME_GIT="7fee460a12a304b67fefa57cf36176aac44f5018" # 2.4.6-1
-	PROXMOX_BIOME_DOWNLOAD_VER=("=" "$PROXMOX_BIOME_VER")
+
+	PROXMOX_BIOME_VER="$(latest_package_version devel proxmox-biome)"
+	echo "Using proxmox-biome package version: ${PROXMOX_BIOME_VER}"
+
 	if [ "${HOST_ARCH}" = "amd64" ]; then
-		set +e
-		download_package devel proxmox-biome "${PROXMOX_BIOME_DOWNLOAD_VER[@]}" "${PACKAGES_BUILD}"
-		set -e
+		download_package devel proxmox-biome "${PROXMOX_BIOME_VER}" "${PACKAGES_BUILD}" || true
 	fi
+
 	if [ ! -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
+	
 		git_clone_or_fetch https://git.proxmox.com/git/proxmox-biome.git
-		git_clean_and_checkout ${PROXMOX_BIOME_GIT} proxmox-biome
+		PROXMOX_BIOME_GIT=$(resolve_commit_for_debian_version "${PROXMOX_BIOME_VER}" proxmox-biome proxmox-biome || true)
+
+		if [ -z "${PROXMOX_BIOME_GIT}" ]; then
+			echo "Error: could not resolve proxmox-biome commit for version ${PROXMOX_BIOME_VER}" >&2
+			exit 1
+		fi
+
+		echo "Using proxmox-biome commit: ${PROXMOX_BIOME_GIT}"
+		git_clean_and_checkout "${PROXMOX_BIOME_GIT}" proxmox-biome
+
 		patch -p1 -d proxmox-biome/ <"${PATCHES}/proxmox-biome-build.patch"
+
 		if [ "${HOST_ARCH}" = "arm64" ]; then
 			patch -p1 -d proxmox-biome/ <"${PATCHES}/proxmox-biome-arm.patch"
 		fi
+
 		cd proxmox-biome
 		set_package_info
 		${SUDO} apt -y build-dep .
-		env -i HOME=${HOME} TERM=${TERM} bash -c 'source /etc/profile; source ~/.cargo/env; env; make deb'
-		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb "${PACKAGES_BUILD}"
+
+		env -i HOME="${HOME}" TERM="${TERM}" bash -c \
+			'source /etc/profile; source ~/.cargo/env; make deb'
+
+		biome_deb="$(
+			find "${SOURCES}/proxmox-biome" \
+				-maxdepth 2 \
+				-type f \
+				-name "proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" \
+				-print -quit
+		)"
+
+		if [ -z "${biome_deb}" ]; then
+			echo "Error: proxmox-biome .deb not found" >&2
+			find "${SOURCES}/proxmox-biome" -maxdepth 3 -type f -name 'proxmox-biome*.deb' -ls >&2
+			exit 1
+		fi
+
+		mv -f "${biome_deb}" "${PACKAGES_BUILD}/"
 		cd ..
 	else
 		echo "proxmox-biome up-to-date"
 	fi
+
 	if [ -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
 		${SUDO} apt install -y "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb"
 	else
