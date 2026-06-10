@@ -35,6 +35,23 @@ function download_package() {
 	echo "${file}"
 }
 
+function get_base() {
+	local repo="$1"
+
+	if [[ "${repo}" == "pbs" ]]; then
+		echo "${PACKAGES_PBS}"
+	elif [[ "${repo}" == "devel" ]]; then
+		echo "${PACKAGES_DEVEL}"
+	elif [[ "${repo}" == "pve" ]]; then
+		echo "${PACKAGES_PVE}"
+	else
+		echo "Unknown repo ${repo}" >&2
+		exit 1
+	fi
+
+	return 0
+}
+
 function download_package_by_upstream_version() {
 	repo=${1}
 	package_name=${2}
@@ -42,17 +59,7 @@ function download_package_by_upstream_version() {
 	dest=${4}
 
 	url_base=http://download.proxmox.com/debian/${repo}
-	if [[ "${repo}" == "pdm" ]]; then
-		packages_target=${PACKAGES_PDM}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
-	elif [[ "${repo}" == "pve" ]]; then
-		packages_target=${PACKAGES_PVE}
-	else
-		echo "Unknown repo ${repo}" >&2
-		return 1
-	fi
-
+	packages_target=$(get_base "${repo}")
 	version_target=0.0
 	file_target=
 
@@ -132,17 +139,7 @@ function download_package_prefix_no_deps() {
 	dest=${4}
 
 	url_base=http://download.proxmox.com/debian/${repo}
-	if [[ "${repo}" == "pdm" ]]; then
-		packages_target=${PACKAGES_PDM}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
-	elif [[ "${repo}" == "pve" ]]; then
-		packages_target=${PACKAGES_PVE}
-	else
-		echo "Unknown repo ${repo}" >&2
-		return 1
-	fi
-
+	packages_target=$(get_base "${repo}")
 	version_target=""
 	file_target=""
 
@@ -190,17 +187,7 @@ function download_package_max_upstream_no_deps() {
 	dest=${4}
 
 	url_base=http://download.proxmox.com/debian/${repo}
-	if [[ "${repo}" == "pdm" ]]; then
-		packages_target=${PACKAGES_PDM}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
-	elif [[ "${repo}" == "pve" ]]; then
-		packages_target=${PACKAGES_PVE}
-	else
-		echo "Unknown repo ${repo}" >&2
-		return 1
-	fi
-
+	packages_target=$(get_base "${repo}")
 	version_target=""
 	file_target=""
 	upstream_target=""
@@ -260,16 +247,7 @@ function download_arch_all_package_satisfying() {
 	dest=${5}
 
 	url_base=http://download.proxmox.com/debian/${repo}
-	if [[ "${repo}" == "pdm" ]]; then
-		packages_target=${PACKAGES_PDM}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
-	elif [[ "${repo}" == "pve" ]]; then
-		packages_target=${PACKAGES_PVE}
-	else
-		return 1
-	fi
-
+	packages_target=$(get_base "${repo}")
 	version_target=""
 	file_target=""
 
@@ -315,7 +293,7 @@ function download_runtime_arch_all_dependency() {
 	dest=${4}
 
 	# Try the project-specific repositories first, then the shared devel repo.
-	for repo in pdm pve devel; do
+	for repo in pbs pve devel; do
 		if file=$(download_arch_all_package_satisfying "${repo}" "${package_name}" "${relation}" "${required_version}" "${dest}" 2>/dev/null); then
 			echo "${file}"
 			return 0
@@ -411,17 +389,7 @@ function package_version_satisfying() {
 	relation=${3:-}
 	required_version=${4:-}
 
-	if [[ "${repo}" == "pdm" ]]; then
-		packages_target=${PACKAGES_PDM}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
-	elif [[ "${repo}" == "pve" ]]; then
-		packages_target=${PACKAGES_PVE}
-	else
-		echo "Unknown repo ${repo}" >&2
-		return 1
-	fi
-
+	packages_target=$(get_base "${repo}")
 	version_target=""
 	while IFS=';' read -r name version file depends; do
 		[[ "${name}" == "${package_name}" ]] || continue
@@ -478,22 +446,11 @@ function resolve_commit_for_package_version() {
 	return 1
 }
 
-
 function latest_package_version() {
 	repo=${1}
 	package_name=${2}
 
-	if [[ "${repo}" == "pdm" ]]; then
-		packages_target=${PACKAGES_PDM}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
-	elif [[ "${repo}" == "pve" ]]; then
-		packages_target=${PACKAGES_PVE}
-	else
-		echo "Unknown repo ${repo}" >&2
-		return 1
-	fi
-
+	packages_target=$(get_base "${repo}")
 	version_target=""
 	while IFS=';' read -r name version file depends; do
 		[[ "${name}" == "${package_name}" ]] || continue
@@ -569,65 +526,89 @@ function git_clean_and_checkout() {
 	git "${path_args[@]}" checkout "${commit_id}"
 }
 
-function resolve_dm_commit() {
-	version=${1}
-	repo_path=${2}
-	local version_stripped=${version%%-*}
+resolve_commit() {
+    local version=$1
+    local repo_path=$2
+    local package_name=$3
 
-	# Try tag formats commonly used by Proxmox
-	for tag in $(git -C "${repo_path}" tag -l "*${version_stripped}*" 2>/dev/null); do
-		commit=$(git -C "${repo_path}" rev-list -n1 "${tag}" 2>/dev/null)
-		if [ -n "${commit}" ]; then
-			echo "${commit}"
-			return 0
-		fi
-	done
+    local version_stripped=${version%%-*}
+    local commit
 
-	# Search for the "bump version to X" commit message pattern used by Proxmox
-	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="bump version to ${version_stripped}" -- debian/changelog 2>/dev/null)
-	if [ -n "${commit}" ]; then
-		echo "${commit}"
-		return 0
-	fi
+    # Tags
+    for tag in $(git -C "${repo_path}" tag -l "*${version_stripped}*" 2>/dev/null); do
+        commit=$(git -C "${repo_path}" rev-list -n1 "${tag}" 2>/dev/null)
+        [ -n "${commit}" ] && echo "${commit}" && return 0
+    done
 
-	# Use pickaxe (-S) to find the commit that introduced the version in debian/changelog
-	commit=$(git -C "${repo_path}" log --all --format="%H" -1 -S "proxmox-datacenter-manager (${version_stripped}" -- debian/changelog 2>/dev/null)
-	if [ -n "${commit}" ]; then
-		echo "${commit}"
-		return 0
-	fi
+    # Common Proxmox bump commit pattern
+    commit=$(
+        git -C "${repo_path}" log \
+            --all \
+            --format="%H" \
+            -1 \
+            --grep="bump version to ${version_stripped}" \
+            -- debian/changelog 2>/dev/null
+    )
 
-	# Fall back to searching commit messages for the changelog entry pattern
-	commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="proxmox-datacenter-manager (${version})" -- debian/changelog 2>/dev/null)
-	if [ -n "${commit}" ]; then
-		echo "${commit}"
-		return 0
-	fi
+    [ -n "${commit}" ] && echo "${commit}" && return 0
 
-	if [ "${version_stripped}" != "${version}" ]; then
-		commit=$(git -C "${repo_path}" log --all --format="%H" -1 --grep="proxmox-datacenter-manager (${version_stripped}" -- debian/changelog 2>/dev/null)
-		if [ -n "${commit}" ]; then
-			echo "${commit}"
-			return 0
-		fi
-	fi
+    # Changelog entry search
+    commit=$(
+        git -C "${repo_path}" log \
+            --all \
+            --format="%H" \
+            -1 \
+            -S "${package_name} (${version_stripped}" \
+            -- debian/changelog 2>/dev/null
+    )
 
-	return 1
+    [ -n "${commit}" ] && echo "${commit}" && return 0
+
+    commit=$(
+        git -C "${repo_path}" log \
+            --all \
+            --format="%H" \
+            -1 \
+            --grep="${package_name} (${version}" \
+            -- debian/changelog 2>/dev/null
+    )
+
+    [ -n "${commit}" ] && echo "${commit}" && return 0
+
+    if [ "${version_stripped}" != "${version}" ]; then
+        commit=$(
+            git -C "${repo_path}" log \
+                --all \
+                --format="%H" \
+                -1 \
+                --grep="${package_name} (${version_stripped}" \
+                -- debian/changelog 2>/dev/null
+        )
+
+        [ -n "${commit}" ] && echo "${commit}" && return 0
+    fi
+
+    return 1
 }
 
-function resolve_proxmox_commit() {
-	dm_commit=${1}
-	dm_path=${2}
-	proxmox_path=${3}
+resolve_dependency_repo_commit() {
+	local source_commit=${1}
+	local source_path=${2}
+	local dependency_repo_path=${3}
+	local dependency_crate=${4:-proxmox-sys}
+	local dependency_version commit source_date
 
-	# Read the proxmox dependency version from Cargo.toml at the dm commit
-	proxmox_version=$(git -C "${dm_path}" show "${dm_commit}:Cargo.toml" 2>/dev/null | \
-		sed -n 's/.*proxmox-sys.*version\s*=\s*"\([^"]*\)".*/\1/p' | head -1)
+	# Read dependency crate version from Cargo.toml at the source commit.
+	dependency_version="$(
+		git -C "${source_path}" show "${source_commit}:Cargo.toml" 2>/dev/null |
+			sed -n "s/.*${dependency_crate}.*version[[:space:]]*=[[:space:]]*\"\([^\"]*\)\".*/\1/p" |
+			head -1
+	)"
 
-	if [ -n "${proxmox_version}" ]; then
-		# Try to find a matching tag in proxmox.git
-		for tag in $(git -C "${proxmox_path}" tag -l "*${proxmox_version}*" 2>/dev/null); do
-			commit=$(git -C "${proxmox_path}" rev-list -n1 "${tag}" 2>/dev/null)
+	if [ -n "${dependency_version}" ]; then
+		# Try to find a matching tag in the dependency repository.
+		for tag in $(git -C "${dependency_repo_path}" tag -l "*${dependency_version}*" 2>/dev/null); do
+			commit="$(git -C "${dependency_repo_path}" rev-list -n1 "${tag}" 2>/dev/null || true)"
 			if [ -n "${commit}" ]; then
 				echo "${commit}"
 				return 0
@@ -635,10 +616,10 @@ function resolve_proxmox_commit() {
 		done
 	fi
 
-	# Fall back to the most recent commit at or before the dm commit date
-	dm_date=$(git -C "${dm_path}" show -s --format=%ci "${dm_commit}" 2>/dev/null)
-	if [ -n "${dm_date}" ]; then
-		commit=$(git -C "${proxmox_path}" log --all --format="%H" -1 --before="${dm_date}" 2>/dev/null)
+	# Fall back to newest dependency repo commit at or before source commit date.
+	source_date="$(git -C "${source_path}" show -s --format=%ci "${source_commit}" 2>/dev/null || true)"
+	if [ -n "${source_date}" ]; then
+		commit="$(git -C "${dependency_repo_path}" log --all --format="%H" -1 --before="${source_date}" 2>/dev/null || true)"
 		if [ -n "${commit}" ]; then
 			echo "${commit}"
 			return 0
@@ -647,7 +628,6 @@ function resolve_proxmox_commit() {
 
 	return 1
 }
-
 
 function resolve_commit_before() {
 	source_commit=${1}
@@ -698,17 +678,8 @@ function select_package() {
 	package_name=${2}
 	version_test=("${3}" "${4}")
 	url_base=http://download.proxmox.com/debian/${repo}
-	if [[ "${repo}" == "pbs" ]]; then
-		packages_target=${PACKAGES_PBS}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
-	elif [[ "${repo}" == "pve" ]]; then
-		packages_target=${PACKAGES_PVE}
-	else
-		echo "Unknown repo ${repo}" >&2
-		return 1
-	fi
 
+	packages_target=$(get_base "${repo}")
 	version_target=0.0
 	file_target=
 
