@@ -965,9 +965,23 @@ PROXMOX_BACKUP_VER="${PROXMOX_BACKUP_VER%%-*}"
 PROXMOX_BACKUP_GIT=""
 PROXMOX_GIT=""
 
-PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
-PXAR_GIT="091a8a382d0d6fc71025351fb35c51b1f3b0074d"         # 1.0.1-1
-PROXMOX_FUSE_GIT="258788a3d66f7a77040a480170fff9890d4939aa" # 3.0.0-1
+PATHPATTERNS_VER="$(latest_package_version devel librust-pathpatterns-dev)"
+PXAR_VER="$(latest_package_version devel librust-pxar-dev)"
+PROXMOX_FUSE_VER="$(latest_package_version devel librust-proxmox-fuse-dev)"
+
+PXAR_GIT=$(resolve_commit_for_debian_version "${PXAR_VER}" pxar pxar || true)
+PATHPATTERNS_GIT=$(resolve_commit_for_debian_version "${PATHPATTERNS_VER}" pathpatterns pathpatterns || true)
+PROXMOX_FUSE_GIT=$(resolve_commit_for_debian_version "${PROXMOX_FUSE_VER}" proxmox-fuse proxmox-fuse || true)
+
+for name in PATHPATTERNS PXAR PROXMOX_FUSE; do
+  git_var="${name}_GIT"
+  ver_var="${name}_VER"
+  if [ -z "${!git_var}" ]; then
+    echo "Error: could not resolve ${name} commit for version ${!ver_var}" >&2
+    exit 1
+  fi
+done
+
 if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox.git
 	git_clean_and_checkout ${PROXMOX_GIT} proxmox
