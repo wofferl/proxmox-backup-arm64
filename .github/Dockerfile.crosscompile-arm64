@@ -1,4 +1,4 @@
-ARG baseimage=debian:bullseye-slim
+ARG baseimage=debian:trixie-slim
 FROM ${baseimage} as builder-stage
 ARG buildoptions
 # workaround for memory bug https://github.com/rust-lang/cargo/issues/10583
@@ -32,8 +32,8 @@ RUN apt update && apt-get install -y --no-install-recommends \
 	build-essential crossbuild-essential-arm64 curl ca-certificates sudo git lintian \
 	pkg-config libudev-dev:arm64 libssl-dev:arm64 libapt-pkg-dev:arm64 apt:amd64 \
 	libclang-dev libpam0g-dev:arm64 pkgconf:arm64 zlib1g-dev:arm64 nettle-dev:arm64 \
-	qemu-user-binfmt
-RUN grep -qi bookworm /etc/os-release && apt-get install -y pkg-config:arm64 || true
+    qemu-user-binfmt
+RUN grep -qi trixie /etc/os-release && apt-get install -y pkg-config:arm64 || true
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
 RUN source ~/.cargo/env && rustup target add aarch64-unknown-linux-gnu
@@ -41,8 +41,9 @@ RUN source ~/.cargo/env && rustup target add aarch64-unknown-linux-gnu
 COPY . /build/
 WORKDIR /build
 
-RUN df -h
+RUN chmod +x ./build.sh
 RUN source ~/.cargo/env && ./build.sh ${buildoptions}
+RUN touch /build/build.log
 
 FROM scratch
 COPY --from=builder-stage /build/*.log /build/packages/* /
