@@ -935,9 +935,11 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.2.1-1"
-PROXMOX_BACKUP_GIT="04249710f076bea8966c4e60ce32198d626ad9d6"
-PROXMOX_GIT="99c5453fbd9856b6cffdd0227a535d23f258fd93"
+PROXMOX_BACKUP_VER="${PROXMOX_BACKUP_VER:-4.2.1}"
+PROXMOX_BACKUP_VER="${PROXMOX_BACKUP_VER%%-*}"
+PROXMOX_BACKUP_GIT=""
+PROXMOX_GIT=""
+
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="091a8a382d0d6fc71025351fb35c51b1f3b0074d"         # 1.0.1-1
 PROXMOX_FUSE_GIT="258788a3d66f7a77040a480170fff9890d4939aa" # 3.0.0-1
@@ -1099,13 +1101,3 @@ if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_$
 else
 	echo "proxmox-mini-journalreader up-to-date"
 fi
-
-# Rename platform independant packages to _all.deb
-for deb in "${PACKAGES}"/*_amd64.deb; do
-  [ -e "$deb" ] || continue
-  arch="$(dpkg-deb -f "$deb" Architecture 2>/dev/null || true)"
-  [ "$arch" = "all" ] || continue
-
-  fixed="${deb%_amd64.deb}_all.deb"
-  mv -f "$deb" "$fixed"
-done
