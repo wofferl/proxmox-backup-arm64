@@ -805,21 +805,7 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 		env -i HOME="${HOME}" TERM="${TERM}" bash -c \
 			'source /etc/profile; source ~/.cargo/env; make deb'
 
-		biome_deb="$(
-			find "${SOURCES}/proxmox-biome" \
-				-maxdepth 2 \
-				-type f \
-				-name "proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" \
-				-print -quit
-		)"
-
-		if [ -z "${biome_deb}" ]; then
-			echo "Error: proxmox-biome .deb not found" >&2
-			find "${SOURCES}/proxmox-biome" -maxdepth 3 -type f -name 'proxmox-biome*.deb' -ls >&2
-			exit 1
-		fi
-
-		mv -f "${biome_deb}" "${PACKAGES_BUILD}/"
+		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb "${PACKAGES_BUILD}"
 		cd ..
 	else
 		echo "proxmox-biome up-to-date"
