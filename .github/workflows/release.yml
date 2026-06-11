@@ -81,7 +81,7 @@ jobs:
         name: Release packages
         if: env.exists == 'false'
         run: |
-          gh release create ${{ env.latest_tag }} \
+          gh release create "v${{ env.latest_tag }}" \
             --title "v${{ env.latest_tag }}" \
             --notes-file .github/PREBUILD.md \
             --latest=true \
