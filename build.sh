@@ -20,7 +20,7 @@ function download_package() {
 
 	if [ -z "${url}" ]; then
 		echo "Error package ${package} in version " "${version_test[@]}" " not found" >&2
-		return 1
+		exit 1
 	fi
 
 	file="${dest}/${url##*/}"
@@ -175,46 +175,79 @@ function download_runtime_arch_all_dependency() {
 	return 1
 }
 
+function parse_deb_runtime_dependencies() {
+	deb=${1}
+	[ -e "${deb}" ] || return 0
+
+	fields="$(dpkg-deb -f "${deb}" Pre-Depends Depends Recommends 2>/dev/null || true)"
+	[ -n "${fields}" ] || return 0
+
+	local line dep package_name relation required_version version_re
+
+	while IFS= read -r line; do
+		# Use the first alternative. If that alternative is not in a Proxmox
+		# repo as Architecture:all, it is simply ignored.
+		dep="${line%%|*}"
+
+		# trim whitespace
+		dep="${dep#"${dep%%[![:space:]]*}"}"
+		dep="${dep%"${dep##*[![:space:]]}"}"
+		[ -n "${dep}" ] || continue
+
+		package_name="${dep%% *}"
+		package_name="${package_name%%:*}"
+		[ -n "${package_name}" ] || continue
+
+		relation=""
+		required_version=""
+
+		version_re='\(([^[:space:]]+)[[:space:]]+([^)]*)\)'
+		if [[ "${dep}" =~ ${version_re} ]]; then
+			relation="${BASH_REMATCH[1]}"
+			required_version="${BASH_REMATCH[2]}"
+		fi
+
+		printf '%s;%s;%s
+' "${package_name}" "${relation}" "${required_version}"
+	done < <(printf '%s
+' "${fields}" | tr ',' '
+')
+}
+
 function download_runtime_arch_all_dependencies() {
 	if [ "$#" -eq 0 ]; then
 		return 0
 	fi
 
-	echo "Resolving Architecture:all runtime dependencies from built package metadata"
+	echo "Resolving runtime dependencies recursively from package metadata"
 
-	local deb fields line dep package_name relation required_version
+	local queue=() seen=() deb dep package_name relation required_version downloaded_file key already_seen
 
-	for deb in "$@"; do
+	queue=("$@")
+
+	while [ "${#queue[@]}" -gt 0 ]; do
+		deb="${queue[0]}"
+		queue=("${queue[@]:1}")
 		[ -e "${deb}" ] || continue
 
-		fields="$(dpkg-deb -f "${deb}" Pre-Depends Depends Recommends 2>/dev/null || true)"
-		[ -n "${fields}" ] || continue
-
-		while IFS= read -r line; do
-			# Use the first alternative. If that alternative is not in a Proxmox
-			# repo as Architecture:all, it is simply ignored.
-			dep="${line%%|*}"
-
-			# trim whitespace
-			dep="${dep#"${dep%%[![:space:]]*}"}"
-			dep="${dep%"${dep##*[![:space:]]}"}"
-			[ -n "${dep}" ] || continue
-
-			package_name="${dep%% *}"
-			package_name="${package_name%%:*}"
+		while IFS=';' read -r package_name relation required_version; do
 			[ -n "${package_name}" ] || continue
+			key="${package_name};${relation};${required_version}"
 
-			relation=""
-			required_version=""
+			already_seen=false
+			for dep in "${seen[@]}"; do
+				if [ "${dep}" = "${key}" ]; then
+					already_seen=true
+					break
+				fi
+			done
+			${already_seen} && continue
+			seen+=("${key}")
 
-			version_re='\\(([^[:space:]]+)[[:space:]]+([^)]*)\\)'
-			if [[ "${dep}" =~ ${version_re} ]]; then
-				relation="${BASH_REMATCH[1]}"
-				required_version="${BASH_REMATCH[2]}"
+			if downloaded_file="$(download_runtime_arch_all_dependency "${package_name}" "${relation}" "${required_version}" "${PACKAGES}" 2>/dev/null)"; then
+				[ -e "${downloaded_file}" ] && queue+=("${downloaded_file}")
 			fi
-
-			download_runtime_arch_all_dependency "${package_name}" "${relation}" "${required_version}" "${PACKAGES}" >/dev/null || true
-		done < <(printf '%s\n' "${fields}" | tr ',' '\n')
+		done < <(parse_deb_runtime_dependencies "${deb}")
 	done
 }
 
