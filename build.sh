@@ -412,12 +412,11 @@ else
 	echo "pve-xtermjs up-to-date"
 fi
 
-PROXMOX_JOURNALREADER_VER="1.6-1"
-PROXMOX_JOURNALREADER_GIT="b09ee543344fb7082a27346ecb0008f38af6367d"
+PROXMOX_JOURNALREADER_VER="1.7"
+PROXMOX_JOURNALREADER_GIT="a5dca1a3044226df598b24aaec73f3fc707f4302"
 if [ ! -e "${PACKAGES}/proxmox-mini-journalreader_${PROXMOX_JOURNALREADER_VER}_${PACKAGE_ARCH}.deb" ]; then
 	git_clone_or_fetch https://git.proxmox.com/git/proxmox-mini-journalreader.git
 	git_clean_and_checkout ${PROXMOX_JOURNALREADER_GIT} proxmox-mini-journalreader
-	patch -p1 -d proxmox-mini-journalreader/ <${PATCHES}/proxmox-mini-journalreader.patch
 	[[ "${BUILD_PROFILES}" =~ cross ]] &&
 		patch -p1 -d proxmox-mini-journalreader/ <"${PATCHES}/proxmox-mini-journalreader-cross.patch"
 	cd proxmox-mini-journalreader/
