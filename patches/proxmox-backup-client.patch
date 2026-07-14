@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 51fbd408..d1546dd4 100644
+index ecd4c0612..5bd541cc4 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -5,32 +5,21 @@ PACKAGE := proxmox-backup
@@ -105,7 +105,7 @@ index 51fbd408..d1546dd4 100644
  .PHONY: upload
  upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 diff --git a/debian/control b/debian/control
-index 29ce3576..f57ac84c 100644
+index 34da34e67..f57ac84cb 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -19,7 +19,7 @@ Build-Depends: debhelper (>= 12~),
@@ -138,9 +138,9 @@ index 29ce3576..f57ac84c 100644
 -         pciutils,
 -         postfix | mail-transport-agent,
 -         proxmox-backup-docs,
--         proxmox-mini-journalreader,
+-         proxmox-mini-journalreader (>= 1.7),
 -         proxmox-termproxy (>= 2.0.3),
--         proxmox-widget-toolkit (>= 5.1.1),
+-         proxmox-widget-toolkit (>= 5.2.1),
 -         pve-xtermjs (>= 4.7.0-1),
 -         sg3-utils,
 -         smartmontools,
@@ -181,10 +181,10 @@ index 29ce3576..f57ac84c 100644
 - restoring individual files and folders from both host/container and VM/block
 - device backups. It includes a block device restore driver using QEMU.
 diff --git a/debian/rules b/debian/rules
-index 723b714f..07299c88 100755
+index 04b0144ed..1d0fc273f 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -55,11 +55,6 @@ override_dh_auto_install:
+@@ -56,11 +56,6 @@ override_dh_auto_install:
  	mv debian/tmp/usr/bin/proxmox-backup-client-static debian/proxmox-backup-client-static/usr/bin/proxmox-backup-client
  	mv debian/tmp/usr/bin/pxar-static debian/proxmox-backup-client-static/usr/bin/pxar
  
@@ -197,7 +197,7 @@ index 723b714f..07299c88 100755
  	dh_fixperms --exclude sg-tape-cmd
  
 diff --git a/docs/Makefile b/docs/Makefile
-index 5cf5fc17..9aac52e8 100644
+index 5cf5fc179..9aac52e80 100644
 --- a/docs/Makefile
 +++ b/docs/Makefile
 @@ -1,59 +1,17 @@

@@ -326,9 +326,9 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.2.2-1"
-PROXMOX_BACKUP_GIT="79bee229d155eed18834cd12b7b101ac27808b64"
-PROXMOX_GIT="99c5453fbd9856b6cffdd0227a535d23f258fd93"
+PROXMOX_BACKUP_VER="4.2.3-1"
+PROXMOX_BACKUP_GIT="bc863d45e7fbadb3690143613ea70600535f23a1"
+PROXMOX_GIT="82941eaf48e008d980fdbce82fd65dd6b4869cd9"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="091a8a382d0d6fc71025351fb35c51b1f3b0074d"         # 1.0.1-1
 PROXMOX_FUSE_GIT="258788a3d66f7a77040a480170fff9890d4939aa" # 3.0.0-1
@@ -347,6 +347,8 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	sed -i '/dh-cargo\|cargo:native\|rustc:native\|librust-/d' proxmox-backup/debian/control
 	sed -i 's/\(latexmk\|proxmox-widget-toolkit-dev\|python3-sphinx\)/\1:all/' proxmox-backup/debian/control
 	sed -i '/patch.crates-io/,/pxar/s/^#//' proxmox-backup/Cargo.toml
+	# add missing proxmox-syslog-api introduced in 4.2.3-1
+	sed -i '/patch.crates-io/aproxmox-syslog-api = { path = "../proxmox/proxmox-syslog-api" }' proxmox-backup/Cargo.toml
 	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		sed -i '/proxmox-biome/d' proxmox-backup/debian/control
