@@ -326,9 +326,9 @@ if [ "${BUILD_PACKAGE}" != "client" ]; then
 	fi
 fi
 
-PROXMOX_BACKUP_VER="4.2.3-1"
-PROXMOX_BACKUP_GIT="bc863d45e7fbadb3690143613ea70600535f23a1"
-PROXMOX_GIT="82941eaf48e008d980fdbce82fd65dd6b4869cd9"
+PROXMOX_BACKUP_VER="4.2.4-1"
+PROXMOX_BACKUP_GIT="b750ffceca49e1b7bf3415cceb152c0f31f8fe9e"
+PROXMOX_GIT="89c1d597a9d15743049eadcb1add380573265904"
 PATHPATTERNS_GIT="42e5e96e30297da878a4d4b3a7fa52b65c1be0ab" # 1.0.0-1
 PXAR_GIT="091a8a382d0d6fc71025351fb35c51b1f3b0074d"         # 1.0.1-1
 PROXMOX_FUSE_GIT="258788a3d66f7a77040a480170fff9890d4939aa" # 3.0.0-1
@@ -352,6 +352,13 @@ if [ ! -e "${PACKAGES}/proxmox-backup-${BUILD_PACKAGE}_${PROXMOX_BACKUP_VER}_${P
 	patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-build.patch"
 	if [ "${BUILD_PACKAGE}" = "client" ]; then
 		sed -i '/proxmox-biome/d' proxmox-backup/debian/control
+		sed -i \
+			-e 's/python3-sphinx:all <!nodoc>/python3-sphinx:all/' \
+			-e '/^Package: proxmox-backup-server$/,/^Package: proxmox-backup-client$/{
+				/^Package: proxmox-backup-client$/!d
+			}' \
+			-e '/^Package: proxmox-backup-docs$/,$d' \
+			proxmox-backup/debian/control
 		patch -p1 -d proxmox-backup/ <"${PATCHES}/proxmox-backup-client.patch"
 	fi
 	if [ "${PACKAGE_ARCH}" = "arm64" ]; then
