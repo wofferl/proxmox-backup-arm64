@@ -95,6 +95,7 @@ sudo apt install \
   ./libjs-qrcodejs_*_all.deb \
   ./libproxmox-acme-plugins_*_all.deb \
   ./pbs-i18n_*_all.deb \
+  ./proxmox-enterprise-support-keyring_*_all.deb \
   ./proxmox-backup-docs_*_all.deb \
   ./proxmox-backup-server_*_arm64.deb \
   ./proxmox-mini-journalreader_*_arm64.deb \

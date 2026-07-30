@@ -268,7 +268,8 @@ echo "Download dependencies"
 EXTJS_VER=(">=" "7~")
 PBS_I18N_VER=(">=" "3.5.0")
 PROXMOX_ACME_VER=(">=" "1.7.0")
-PROXMOX_WIDGETTOOLKIT_VER=(">=" "5.0.2")
+PROXMOX_WIDGETTOOLKIT_VER=(">=" "5.2.1")
+PROXMOX_KEYRING_VER=(">=" "1.0")
 QRCODEJS_VER=(">=" "1.20230525")
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	download_package pbs pbs-i18n "${PBS_I18N_VER[@]}" "${PACKAGES}" >/dev/null
@@ -276,6 +277,7 @@ if [ "${BUILD_PACKAGE}" = "server" ]; then
 	download_package pbs libjs-qrcodejs "${QRCODEJS_VER[@]}" "${PACKAGES}" >/dev/null
 	download_package pbs libproxmox-acme-plugins "${PROXMOX_ACME_VER[@]}" "${PACKAGES}" >/dev/null
 	download_package pbs proxmox-widget-toolkit "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES}" >/dev/null
+	download_package pbs proxmox-enterprise-support-keyring "${PROXMOX_KEYRING_VER[@]}" "${PACKAGES}" >/dev/null
 fi
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	packages_install=(
