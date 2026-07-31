@@ -2,8 +2,14 @@ ARG baseimage=debian:bullseye-slim
 FROM ${baseimage} as builder-stage
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY . /build/
-WORKDIR /build/packages
+RUN apt update && apt-get install -y sudo
+RUN useradd -m -s /bin/bash build
+RUN echo "build ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/build
+USER build
+
+COPY --chown=build . /home/build/
+WORKDIR /home/build/
 
 RUN ls -l
-RUN apt update && apt-get -y install $(find /build/packages/ -name '*.deb' ! -name '*static*.deb')
+RUN sudo apt-get -y install $(find . -name '*.deb' ! -name '*static*.deb')
+RUN sudo proxmox-backup-manager version
