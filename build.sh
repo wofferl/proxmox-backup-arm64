@@ -260,7 +260,7 @@ fi
 [ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
 
 echo "Download packages list from proxmox devel repository"
-PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/trixie/main/binary-amd64/Packages.gz)
+PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/trixie/main/binary-${HOST_ARCH}/Packages.gz)
 echo "Download packages list from pbs-test repository"
 PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/trixie/pbs-test/binary-amd64/Packages.gz)
 
@@ -269,6 +269,7 @@ EXTJS_VER=(">=" "7~")
 PBS_I18N_VER=(">=" "3.5.0")
 PROXMOX_ACME_VER=(">=" "1.7.0")
 PROXMOX_WIDGETTOOLKIT_VER=(">=" "5.2.1")
+PROXMOX_BIOME_VER=(">=" "2.4.6")
 PROXMOX_KEYRING_VER=(">=" "1.0")
 QRCODEJS_VER=(">=" "1.20230525")
 if [ "${BUILD_PACKAGE}" = "server" ]; then
@@ -282,6 +283,7 @@ fi
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	packages_install=(
 		"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
+		"$(download_package devel proxmox-biome "${PROXMOX_BIOME_VER[@]}" "${PACKAGES_BUILD}")"
 	)
 fi
 
@@ -295,38 +297,6 @@ targets = [ "${CARGO_BUILD_TARGET:-$(rustc -vV 2>/dev/null | awk '/^host/ { prin
 EOF
 
 cd "${SOURCES}"
-if [ "${BUILD_PACKAGE}" != "client" ]; then
-	PROXMOX_BIOME_VER="2.4.6-2"
-	PROXMOX_BIOME_GIT="82dcf88a737c72a1d71fd196b6beaddbdd6834f0" # 2.4.6-2
-	PROXMOX_BIOME_DOWNLOAD_VER=("=" "$PROXMOX_BIOME_VER")
-	if [ "${HOST_ARCH}" = "amd64" ]; then
-		set +e
-		download_package devel proxmox-biome "${PROXMOX_BIOME_DOWNLOAD_VER[@]}" "${PACKAGES_BUILD}"
-		set -e
-	fi
-	if [ ! -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
-		git_clone_or_fetch https://git.proxmox.com/git/proxmox-biome.git
-		git_clean_and_checkout ${PROXMOX_BIOME_GIT} proxmox-biome
-		patch -p1 -d proxmox-biome/ <"${PATCHES}/proxmox-biome-build.patch"
-		if [ "${HOST_ARCH}" = "arm64" ]; then
-			patch -p1 -d proxmox-biome/ <"${PATCHES}/proxmox-biome-arm.patch"
-		fi
-		cd proxmox-biome
-		set_package_info
-		${SUDO} apt -y build-dep .
-		env -i HOME=${HOME} TERM=${TERM} bash -c 'source /etc/profile; source ~/.cargo/env; env; make deb'
-		mv -f proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb "${PACKAGES_BUILD}"
-		cd ..
-	else
-		echo "proxmox-biome up-to-date"
-	fi
-	if [ -e "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb" ]; then
-		${SUDO} apt install -y "${PACKAGES_BUILD}/proxmox-biome_${PROXMOX_BIOME_VER}_${HOST_ARCH}.deb"
-	else
-		echo "proxmox-biome dependency missing"
-		exit 1
-	fi
-fi
 
 PROXMOX_BACKUP_VER="4.2.5-1"
 PROXMOX_BACKUP_GIT="5f890fcb6dc07148c22568ad03bf9c079bcad249"
