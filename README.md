@@ -127,12 +127,6 @@ to see PBS users:
 proxmox-backup-manager user list
 ```
 
-to update root user pwd:
-
-```
-proxmox-backup-manager user update root@pam --password {pwd}
-```
-
 more info: https://pbs.proxmox.com/docs/user-management.html
 
 ### Create SWAP (at least 4G on low memory systems like Raspberry PI)
