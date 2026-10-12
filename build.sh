@@ -205,6 +205,11 @@ while [ "$#" -ge 1 ]; do
 		export PKG_CONFIG=/usr/bin/aarch64-linux-gnu-pkg-config
 		export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig/
 		export CC=/usr/bin/aarch64-linux-gnu-gcc
+		# prevent build scripts and proc-macros from using aarch64 cross compiler CFLAGS
+		export HOST_CC=/usr/bin/cc
+		export DEB_BUILD_MAINT_OPTIONS="${DEB_BUILD_MAINT_OPTIONS:+${DEB_BUILD_MAINT_OPTIONS} }hardening=-branch"
+		export CFLAGS_aarch64_unknown_linux_gnu="-mbranch-protection=standard"
+		export CXXFLAGS_aarch64_unknown_linux_gnu="-mbranch-protection=standard"
 		export DEB_HOST_MULTIARCH=aarch64-linux-gnu
 		export DEB_HOST_RUST_TYPE=aarch64-unknown-linux-gnu
 		;;
