@@ -12,4 +12,4 @@ WORKDIR /home/build/
 
 RUN ls -l
 RUN sudo apt-get -y install $(find . -name '*.deb' ! -name '*static*.deb')
-RUN sudo proxmox-backup-manager version
+RUN sudo which proxmox-backup-manager && proxmox-backup-manager version || proxmox-backup-client version
