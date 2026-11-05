@@ -273,7 +273,7 @@ echo "Download dependencies"
 EXTJS_VER=(">=" "7~")
 PBS_I18N_VER=(">=" "3.5.0")
 PROXMOX_ACME_VER=(">=" "1.7.0")
-PROXMOX_WIDGETTOOLKIT_VER=(">=" "5.2.1")
+PROXMOX_WIDGETTOOLKIT_VER=(">=" "5.2.12")
 PROXMOX_BIOME_VER=(">=" "2.4.6")
 PROXMOX_KEYRING_VER=(">=" "1.0")
 QRCODEJS_VER=(">=" "1.20230525")
