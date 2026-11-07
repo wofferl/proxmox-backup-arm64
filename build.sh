@@ -88,15 +88,19 @@ function select_package() {
 	repo=${1}
 	package_name=${2}
 	version_test=("${3}" "${4}")
-	url_base=http://download.proxmox.com/debian/${repo}
 	if [[ "${repo}" == "pbs" ]]; then
 		packages_target=${PACKAGES_PBS}
-	elif [[ "${repo}" == "devel" ]]; then
-		packages_target=${PACKAGES_DEVEL}
+	elif [[ "${repo}" == "devel-amd64" ]]; then
+		packages_target=${PACKAGES_DEVEL_AMD64}
+		repo="devel"
+	elif [[ "${repo}" == "devel-arm64" ]]; then
+		packages_target=${PACKAGES_DEVEL_ARM64}
+		repo="devel"
 	else
 		echo "Unknown repo ${repo}" >&2
 		return 1
 	fi
+	url_base=http://download.proxmox.com/debian/${repo}
 
 	version_target=0.0
 	file_target=
@@ -265,7 +269,8 @@ fi
 [ ! -d "${SOURCES}" ] && mkdir -p "${SOURCES}"
 
 echo "Download packages list from proxmox devel repository"
-PACKAGES_DEVEL=$(load_packages http://download.proxmox.com/debian/devel/dists/trixie/main/binary-${HOST_ARCH}/Packages.gz)
+PACKAGES_DEVEL_AMD64=$(load_packages http://download.proxmox.com/debian/devel/dists/trixie/main/binary-amd64/Packages.gz)
+PACKAGES_DEVEL_ARM64=$(load_packages http://download.proxmox.com/debian/devel/dists/trixie/main/binary-arm64/Packages.gz)
 echo "Download packages list from pbs-test repository"
 PACKAGES_PBS=$(load_packages http://download.proxmox.com/debian/pbs/dists/trixie/pbs-test/binary-amd64/Packages.gz)
 
@@ -287,8 +292,8 @@ if [ "${BUILD_PACKAGE}" = "server" ]; then
 fi
 if [ "${BUILD_PACKAGE}" = "server" ]; then
 	packages_install=(
-		"$(download_package devel proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
-		"$(download_package devel proxmox-biome "${PROXMOX_BIOME_VER[@]}" "${PACKAGES_BUILD}")"
+		"$(download_package devel-amd64 proxmox-widget-toolkit-dev "${PROXMOX_WIDGETTOOLKIT_VER[@]}" "${PACKAGES_BUILD}")"
+		"$(download_package devel-${HOST_ARCH} proxmox-biome "${PROXMOX_BIOME_VER[@]}" "${PACKAGES_BUILD}")"
 	)
 fi
 
